@@ -2,7 +2,7 @@ import argparse
 import numpy as np
 import pickle
 from scipy import stats
-import stockholm
+from .. import stockholm
 from tqdm import tqdm
 import typing
 
@@ -28,6 +28,7 @@ def __main__(args: typing.Optional[typing.Iterable[str]] = None) -> None:
         parser.add_argument(f"--{param}_prior", type=lambda x: [float(x) for x in x.split(",")],
                             help=f"concentration parameters `(a, b)` for the beta prior of {param}",
                             default=prior_args)
+        parser.add_argument(f"--{param}", type=float, help=f"value of {param}")
     args: argparse.Namespace = parser.parse_args(args)
 
     # Construct the priors and normalize parameters.
@@ -37,7 +38,9 @@ def __main__(args: typing.Optional[typing.Iterable[str]] = None) -> None:
     graph_sequences = []
     param_sequence = {}
     for _ in tqdm(range(args.num_samples)):
-        params = {key: prior.rvs() for key, prior in priors.items()}
+        # Sample and use fixed values if provided.
+        params = {key: prior.rvs() for key, prior in priors.items()} \
+            | {key: value for key in priors if (value := getattr(args, key)) is not None}
         for key, param in params.items():
             param_sequence.setdefault(key, []).append(param)
         sequence = []
