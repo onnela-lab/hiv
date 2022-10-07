@@ -1,6 +1,11 @@
+-e file:.
 doit-interface
+jupyter
+line_profiler
 matplotlib
 networkx
 numpy
+pytest
 scipy
+snakeviz
 tqdm
