@@ -57,8 +57,30 @@ def add_edges_from_candidates(graph: nx.Graph, candidates: np.ndarray, **kwargs)
     return edges
 
 
+def _maybe_verify_state(verify: bool, graph: nx.Graph, num_steady_edges: int) -> None:
+    if not verify:
+        return
+    # Verify number of edges of each type.
+    assert evaluate_num_edges(graph, False) == num_steady_edges
+    assert graph.number_of_edges() == num_steady_edges + evaluate_num_edges(graph, True)
+
+    # Verify status flags for each node.
+    for node, data in graph.nodes(data=True):
+        # Nodes that are single should have zero edges that are not casual. Nodes that are paired
+        # should have exactly one edge that is not casual.
+        single_degree = sum(not edge_data["is_casual"] for *_, edge_data in
+                            graph.edges(node, data=True))
+        assert (data["is_single"] and single_degree == 0) \
+            or (not data["is_single"] and single_degree == 1)
+        # Nodes that have a casual relationship should have exactly one of them.
+        casual_degree = sum(edge_data["is_casual"] for *_, edge_data in
+                            graph.edges(node, data=True))
+        assert (data["has_casual"] and casual_degree == 1) \
+            or (not data["has_casual"] and casual_degree == 0)
+
+
 def simulate(n: float, mu: float, sigma: float, rho: float, w0: float, w1: float, num_steps: int,
-             graph: nx.Graph = None, step: int = 0) -> tuple[nx.Graph, dict]:
+             graph: nx.Graph = None, step: int = 0, verify: bool = False) -> tuple[nx.Graph, dict]:
     """
     Simulate the Stockholm model.
 
@@ -87,15 +109,21 @@ def simulate(n: float, mu: float, sigma: float, rho: float, w0: float, w1: float
     for step in step + np.arange(num_steps):
         # Identify nodes to be removed and evaluate the durations of steady relationships.
         nodes_to_remove = [node for node in graph if np.random.binomial(1, mu)]
-        durations = [step - data["created_at"] for *_, data in
-                     graph.edges(nodes_to_remove, data=True) if not data["is_casual"]]
-        statistics.setdefault("durations", []).extend(durations)
-        num_steady_edges -= len(durations)
+        num_steady_removed = 0
+        for *edge, data in graph.edges(nodes_to_remove, data=True):
+            if data["is_casual"]:
+                graph.add_nodes_from(edge, has_casual=False)
+            else:
+                duration = step - data["created_at"]
+                statistics.setdefault("durations", []).append(duration)
+                num_steady_edges -= 1
+                graph.add_nodes_from(edge, is_single=True)
+                num_steady_removed += 1
         graph.remove_nodes_from(nodes_to_remove)
 
         LOGGER.info("removed %d nodes with %d steady edges (total steady=%d)", len(nodes_to_remove),
-                    len(durations), num_steady_edges)
-        assert num_steady_edges == evaluate_num_edges(graph, False)
+                    num_steady_removed, num_steady_edges)
+        _maybe_verify_state(verify, graph, num_steady_edges)
 
         # Delete all casual edges and remove steady edges with probability sigma.
         edges_to_remove = []
@@ -115,6 +143,7 @@ def simulate(n: float, mu: float, sigma: float, rho: float, w0: float, w1: float
         LOGGER.info("removed %d edges of which %d were steady (total steady=%d)",
                     len(edges_to_remove), len(durations), num_steady_edges)
         assert num_steady_edges == evaluate_num_edges(graph, False)
+        _maybe_verify_state(verify, graph, num_steady_edges)
 
         # Add new nodes.
         num_new_nodes = np.random.poisson(n * mu)
@@ -132,7 +161,7 @@ def simulate(n: float, mu: float, sigma: float, rho: float, w0: float, w1: float
         num_steady_edges += len(singles) // 2
 
         LOGGER.info("added %d steady edges (total steady=%d)", len(singles) // 2, num_steady_edges)
-        assert num_steady_edges == evaluate_num_edges(graph, False)
+        _maybe_verify_state(verify, graph, num_steady_edges)
 
         # Add casual relationships.
         candidates = [node for node, data in graph.nodes(data=True) if
@@ -143,7 +172,7 @@ def simulate(n: float, mu: float, sigma: float, rho: float, w0: float, w1: float
         num_casual_edges = len(candidates) // 2
 
         LOGGER.info("added %d casual edges", num_casual_edges)
-        assert num_steady_edges == evaluate_num_edges(graph, False)
+        _maybe_verify_state(verify, graph, num_steady_edges)
 
         # Report statistics.
         statistics.setdefault("num_steady_edges", []).append(num_steady_edges)

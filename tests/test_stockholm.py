@@ -12,7 +12,7 @@ LOGGER = logging.getLogger(__name__)
     {"n": 50, "w0": 0.2, "w1": 0.1, "mu": 0.3, "rho": 0.4, "sigma": 0.5},
 ])
 def params(request: pytest.FixtureRequest) -> dict[str, float]:
-    return request.param
+    return request.param | {"verify": True}
 
 
 def test_add_nodes_from_update() -> None:
@@ -55,4 +55,14 @@ def test_multi_step(params: dict[str, float]) -> None:
 
 
 def test_many_steps(params: dict[str, float]) -> None:
-    stockholm.simulate(**params, num_steps=1000)
+    graph, _ = stockholm.simulate(**params, num_steps=1000)
+    for node, data in graph.nodes(data=True):
+        edges = graph.edges(node, data=True)
+        if data["is_single"]:
+            assert not edges or all(edge_data["is_casual"] for *_, edge_data in edges)
+        else:
+            assert edges and sum(1 for *_, edge_data in edges if not edge_data["is_casual"]) == 1
+        if data["has_casual"]:
+            assert edges and sum(1 for *_, edge_data in edges if edge_data["is_casual"]) == 1
+        else:
+            assert not edges or not any (edge_data["is_casual"] for *_, edge_data in edges)
