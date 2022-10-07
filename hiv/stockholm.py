@@ -36,7 +36,8 @@ def evaluate_num_nodes(graph: nx.Graph, single: bool) -> int:
 
 def add_edges_from_candidates(graph: nx.Graph, candidates: np.ndarray, **kwargs) -> np.ndarray:
     """
-    Add random edges from a list of candidate nodes by pairing them.
+    Add random edges from a list of candidate nodes by pairing them. Existing edges are left
+    unchanged (important for not accidentally turning steady relationships into casual ones).
 
     Args:
         graph: Graph to add edges to.
@@ -50,6 +51,8 @@ def add_edges_from_candidates(graph: nx.Graph, candidates: np.ndarray, **kwargs)
     num_edges = candidates.size // 2
     candidates = candidates[:2 * num_edges]
     edges = candidates.reshape((num_edges, 2))
+    # Filter to edges that do not already exist.
+    edges = np.asarray([edge for edge in edges if not graph.has_edge(*edge)])
     graph.add_edges_from(edges, **kwargs)
     return edges
 
@@ -100,6 +103,7 @@ def simulate(n: float, mu: float, sigma: float, rho: float, w0: float, w1: float
         for *edge, data in graph.edges(data=True):
             if data["is_casual"]:
                 edges_to_remove.append(edge)
+                graph.add_nodes_from(edge, has_casual=False)
             elif np.random.binomial(1, sigma):
                 edges_to_remove.append(edge)
                 durations.append(step - data["created_at"])
@@ -114,7 +118,8 @@ def simulate(n: float, mu: float, sigma: float, rho: float, w0: float, w1: float
 
         # Add new nodes.
         num_new_nodes = np.random.poisson(n * mu)
-        graph.add_nodes_from(label_offset + np.arange(num_new_nodes), is_single=True)
+        graph.add_nodes_from(label_offset + np.arange(num_new_nodes), is_single=True,
+                             has_casual=False)
         label_offset += num_new_nodes
 
         LOGGER.info("added %d nodes (total=%d)", num_new_nodes, graph.number_of_nodes())
@@ -127,15 +132,18 @@ def simulate(n: float, mu: float, sigma: float, rho: float, w0: float, w1: float
         num_steady_edges += len(singles) // 2
 
         LOGGER.info("added %d steady edges (total steady=%d)", len(singles) // 2, num_steady_edges)
+        assert num_steady_edges == evaluate_num_edges(graph, False)
 
         # Add casual relationships.
         candidates = [node for node, data in graph.nodes(data=True) if
                       (data["is_single"] and np.random.binomial(1, w0)) or
                       (not data["is_single"] and np.random.binomial(1, w1))]
-        add_edges_from_candidates(graph, candidates, is_casual=True)
+        new_casual = add_edges_from_candidates(graph, candidates, is_casual=True)
+        graph.add_nodes_from(new_casual.ravel(), has_casual=True)
         num_casual_edges = len(candidates) // 2
 
         LOGGER.info("added %d casual edges", num_casual_edges)
+        assert num_steady_edges == evaluate_num_edges(graph, False)
 
         # Report statistics.
         statistics.setdefault("num_steady_edges", []).append(num_steady_edges)

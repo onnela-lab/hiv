@@ -52,3 +52,7 @@ def test_multi_step(params: dict[str, float]) -> None:
             f"number of casual relationships is wrong for {key}"
         assert stockholm.evaluate_num_edges(graph, False) == statistics["num_steady_edges"][-1], \
             f"number of steady relationships is wrong for {key}"
+
+
+def test_many_steps(params: dict[str, float]) -> None:
+    stockholm.simulate(**params, num_steps=1000)
