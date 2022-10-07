@@ -2,7 +2,7 @@ import logging
 import networkx as nx
 import numpy as np
 import pytest
-import stockholm
+from hiv import stockholm
 
 
 LOGGER = logging.getLogger(__name__)
