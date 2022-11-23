@@ -134,3 +134,4 @@ dmypy.json
 playground/
 workspace/
 .doit.db*
+*.ipynb

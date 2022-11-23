@@ -2,6 +2,7 @@
 doit-interface
 flake8
 jupyter
+jupytext[myst]
 line_profiler
 matplotlib
 networkx
