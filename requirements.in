@@ -1,11 +1,13 @@
 -e file:.
 doit-interface
+flake8
 jupyter
 line_profiler
 matplotlib
 networkx
 numpy
 pytest
+pytest-cov
 scipy
 snakeviz
 tqdm

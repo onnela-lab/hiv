@@ -8,6 +8,11 @@ manager(basename="requirements", name="txt", targets=["requirements.txt"],
         file_dep=["requirements.in"], actions=["pip-compile"])
 manager(basename="requirements", name="sync", file_dep=["requirements.txt"], actions=["pip-sync"])
 
+# Tests and linting.
+manager(basename="tests",
+        actions=["pytest -v --cov=hiv --cov-report=term-missing --cov-fail-under=100"])
+manager(basename="lint", actions=["flake8"])
+
 # Generate different sample sizes with optional custom parameters.
 split_sizes = {
     "debug": (100, None),
