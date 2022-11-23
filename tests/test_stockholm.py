@@ -66,4 +66,4 @@ def test_many_steps(params: dict[str, float]) -> None:
         if data["has_casual"]:
             assert edges and sum(1 for *_, edge_data in edges if edge_data["is_casual"]) == 1
         else:
-            assert not edges or not any (edge_data["is_casual"] for *_, edge_data in edges)
+            assert not edges or not any(edge_data["is_casual"] for *_, edge_data in edges)

@@ -1,6 +1,5 @@
 import argparse
 import networkx as nx
-import numpy as np
 import pickle
 from scipy import stats
 from .. import stockholm
@@ -34,7 +33,7 @@ def evaluate_summaries(graph0: nx.Graph, graph1: nx.Graph) -> dict[str, float]:
     return {
         "frac_retained_nodes": len(set(graph0) & set(graph1)) / graph0.number_of_nodes(),
         "frac_retained_steady_edges": len(steady_edges0 & steady_edges1)
-            / max(len(steady_edges0), 1),
+            / max(len(steady_edges0), 1),  # noqa: E131
         "frac_single_with_casual": num_nodes_with_casual[True] / max(num_nodes[True], 1),
         "frac_paired_with_casual": num_nodes_with_casual[False] / max(num_nodes[False], 1),
         "frac_paired": num_nodes[False] / (graph0.number_of_nodes() + graph1.number_of_nodes()),
