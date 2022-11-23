@@ -1,37 +1,39 @@
 import logging
 import networkx as nx
 import numpy as np
-import typing
+from .util import to_np_dict
 
 
 LOGGER = logging.getLogger(__name__)
+Edge = tuple[int, int]
 
 
-def assert_graphs_equal(actual: nx.Graph, expected: nx.Graph) -> None:
+def get_edges(graph: nx.Graph, casual: bool) -> list[Edge]:
     """
-    Assert that two graphs have the same nodes, edges, and attributes.
+    Get casual or steady edges.
     """
-    assert dict(actual.nodes(data=True)) == dict(expected.nodes(data=True))
-    assert {tuple(edge): data for *edge, data in actual.edges(data=True)} \
-        == {tuple(edge): data for *edge, data in expected.edges(data=True)}
-
-
-def to_np_dict(x: dict[typing.Hashable, typing.Iterable]) -> dict[typing.Hashable, np.ndarray]:
-    return {key: np.asarray(value) for key, value in x.items()}
+    return [(u, v) for u, v, data in graph.edges(data=True) if data["is_casual"] == casual]
 
 
 def evaluate_num_edges(graph: nx.Graph, casual: bool) -> int:
     """
     Evaluate the number of casual or steady edges.
     """
-    return sum(1 for *_, data in graph.edges(data=True) if data["is_casual"] == casual)
+    return len(get_edges(graph, casual))
+
+
+def get_nodes(graph: nx.Graph, single: bool) -> int:
+    """
+    Get single or paired nodes.
+    """
+    return [node for node, data in graph.nodes(data=True) if data["is_single"] == single]
 
 
 def evaluate_num_nodes(graph: nx.Graph, single: bool) -> int:
     """
     Evaluate the number of single or partnered nodes.
     """
-    return sum(1 for _, data in graph.nodes(data=True) if data["is_single"] == single)
+    return len(get_nodes(graph, single))
 
 
 def add_edges_from_candidates(graph: nx.Graph, candidates: np.ndarray, **kwargs) -> np.ndarray:
@@ -142,7 +144,6 @@ def simulate(n: float, mu: float, sigma: float, rho: float, w0: float, w1: float
 
         LOGGER.info("removed %d edges of which %d were steady (total steady=%d)",
                     len(edges_to_remove), len(durations), num_steady_edges)
-        assert num_steady_edges == evaluate_num_edges(graph, False)
         _maybe_verify_state(verify, graph, num_steady_edges)
 
         # Add new nodes.

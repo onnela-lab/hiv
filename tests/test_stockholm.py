@@ -3,6 +3,7 @@ import networkx as nx
 import numpy as np
 import pytest
 from hiv import stockholm
+from hiv.util import assert_graphs_equal
 
 
 LOGGER = logging.getLogger(__name__)
@@ -41,7 +42,7 @@ def test_multi_step(params: dict[str, float]) -> None:
         _, statistics2 = stockholm.simulate(**params, num_steps=1, step=step, graph=graph2)
 
     # Verify we have the same graph and statistics.
-    stockholm.assert_graphs_equal(graph1, graph2)
+    assert_graphs_equal(graph1, graph2)
     assert set(statistics1) == set(statistics2)
     for key in statistics1:
         np.testing.assert_allclose(statistics1[key][-1], statistics2[key][-1])
