@@ -135,3 +135,4 @@ playground/
 workspace/
 .doit.db*
 *.ipynb
+*.pdf
