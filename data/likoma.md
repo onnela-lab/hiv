@@ -12,12 +12,14 @@ kernelspec:
 ---
 
 ```{code-cell} ipython3
+import itertools as it
+import json
 from matplotlib import pyplot as plt
 import matplotlib as mpl
+import networkx as nx
 import numpy as np
 from xml.etree import ElementTree
-import networkx as nx
-import json
+
 mpl.rcParams["figure.dpi"] = 144
 ```
 
@@ -133,10 +135,10 @@ len(nodes), len(edges)
 # edges. We thus consider all axis-aligned edges and divide them into "reviewed_edges" that aren't a
 # problem and "problem_edges" that need to be split up.
 reviewed_edges = [
-    533, 747, 761, 763, 563, 372, 641, 860, 431, 432, 302, 301, 387, 270, 84, 678, 497, 346, 287,
+    761, 763, 563, 372, 641, 860, 431, 432, 302, 301, 387, 270, 84, 678, 497, 346, 287,
     286, 1209, 778, 734, 543, 740, 400, 399, 137, 309, 841,
 ]
-problem_edges = [254, 843, 579, 752, 721,]
+problem_edges = [254, 843, 579, 752, 721, 533, 747]
 # These are the edges we still need to review.
 to_review = aligned & (~np.in1d(np.arange(len(edges)), reviewed_edges + problem_edges))
 
@@ -148,7 +150,8 @@ ax.set_aspect("equal")
 lines = mpl.collections.LineCollection(edges, alpha=0.5, color="k")
 ax.add_collection(lines)
 # Add all axis-aligned edges that still require review and corresponding vertices.
-lines = mpl.collections.LineCollection(edges[to_review], color="magenta", zorder=99, alpha=0.5, lw=3)
+lines = mpl.collections.LineCollection(edges[to_review], color="magenta", zorder=99, alpha=0.5,
+                                       lw=3)
 ax.add_collection(lines)
 ax.scatter(*edges[to_review].reshape((-1, 2)).T, marker="x", color="green", zorder=999, alpha=0.5)
 
@@ -157,7 +160,8 @@ for i in np.nonzero(to_review)[0]:
     ax.text(*edges[i].mean(axis=0), str(i), fontsize="x-small", zorder=9999)
 
 # Show all problem edges we have identified.
-lines = mpl.collections.LineCollection(edges[problem_edges], color="red", zorder=99, alpha=0.5, lw=3)
+lines = mpl.collections.LineCollection(edges[problem_edges], color="red", zorder=99, alpha=0.5,
+                                       lw=3)
 ax.add_collection(lines)
 
 # Plot all the nodes.
@@ -228,6 +232,30 @@ for i, (pos_u, pos_v) in enumerate(filtered_edges):
         graph.add_node(v, observed=False, pos=tuple(map(float, pos_v)))
     graph.add_edge(u, v)
 
+
+# Post-process the graph by removing unobserved nodes that are sitting right on top of each other.
+# They were probably not meant to be there in the first place and should instead connect a group of
+# nodes.
+unobserved_nodes = [node for node, data in graph.nodes(data=True) if not data["observed"]]
+grouped_graph = nx.Graph()
+for u, v in it.combinations(unobserved_nodes, 2):
+    d = np.square(np.asarray(graph.nodes[u]["pos"]) - graph.nodes[v]["pos"]).sum(axis=-1)
+    if d < threshold:
+        grouped_graph.add_edge(u, v)
+
+# Join all pairs of neighbors of each group.
+for group in nx.connected_components(grouped_graph):
+    neighbors = set()
+    for node in group:
+        neighbors.update(graph.neighbors(node))
+    # Connect all pairs of neighbors.
+    graph.add_edges_from(it.combinations(neighbors, 2))
+
+# Drop the nodes from the graph.
+graph.remove_nodes_from(grouped_graph)
+```
+
+```{code-cell} ipython3
 # Visualize the graph.
 pos = {node: data["pos"] for node, data in graph.nodes(data=True)}
 fig, ax = plt.subplots()
@@ -242,6 +270,26 @@ nx.draw_networkx_nodes(
 )
 nx.draw_networkx_edges(graph, pos, edge_color="gray")
 ax.set_axis_off()
+```
+
+```{code-cell} ipython3
+# Show connected components in different colors.
+fig, ax = plt.subplots()
+nx.draw_networkx_edges(graph, pos, edge_color="gray")
+connected_components = list(nx.connected_components(graph))
+print(f"found {len(connected_components)} connected components")
+for component, (c, m) in zip(connected_components, it.product(range(10), '*svo.')):
+    c = f"C{c}"
+    nx.draw_networkx_nodes(graph, pos, component, node_color=c, node_shape=m,
+                           node_size=10, alpha=0.5)
+
+# Little crosses for unobserved nodes.
+unobserved = [node for node, data in graph.nodes(data=True) if not data["observed"]]
+nx.draw_networkx_nodes(graph, pos, unobserved,
+                       node_shape="x", node_size=10, node_color="k")
+ax.set_axis_off()
+fig.tight_layout()
+fig.savefig("connected_components.pdf")
 ```
 
 ```{code-cell} ipython3
