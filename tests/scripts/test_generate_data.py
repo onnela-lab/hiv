@@ -29,11 +29,15 @@ def test_generate_data(save_graphs: bool) -> None:
             num_paired0 = evaluate_num_nodes(graph_sequence[0], False)
             num0 = graph_sequence[0].number_of_nodes()
             for j, graph in enumerate(graph_sequence):
-                assert graph.number_of_nodes() \
-                    == evaluate_num_nodes(graph, True) + evaluate_num_nodes(graph, False)
-                frac_paired = (evaluate_num_nodes(graph, False) + num_paired0) \
-                    / (graph.number_of_nodes() + num0)
-                np.testing.assert_allclose(result["summaries"]["frac_paired"][i, j], frac_paired)
+                assert graph.number_of_nodes() == evaluate_num_nodes(
+                    graph, True
+                ) + evaluate_num_nodes(graph, False)
+                frac_paired = (evaluate_num_nodes(graph, False) + num_paired0) / (
+                    graph.number_of_nodes() + num0
+                )
+                np.testing.assert_allclose(
+                    result["summaries"]["frac_paired"][i, j], frac_paired
+                )
     else:
         assert "graph_sequences" not in result
 

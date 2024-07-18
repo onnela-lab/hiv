@@ -4,14 +4,26 @@ import doit_interface as di
 manager = di.Manager.get_instance()
 
 # Manage python requirements.
-manager(basename="requirements", name="txt", targets=["requirements.txt"],
-        file_dep=["requirements.in"], actions=["pip-compile"])
-manager(basename="requirements", name="sync", file_dep=["requirements.txt"], actions=["pip-sync"])
+manager(
+    basename="requirements",
+    name="txt",
+    targets=["requirements.txt"],
+    file_dep=["requirements.in"],
+    actions=["pip-compile"],
+)
+manager(
+    basename="requirements",
+    name="sync",
+    file_dep=["requirements.txt"],
+    actions=["pip-sync"],
+)
 
 # Tests and linting.
-manager(basename="tests",
-        actions=["pytest -v --cov=hiv --cov-report=term-missing --cov-fail-under=100"])
-manager(basename="lint", actions=["flake8"])
+manager(
+    basename="tests",
+    actions=["pytest -v --cov=hiv --cov-report=term-missing --cov-fail-under=100"],
+)
+manager(basename="lint", actions=["flake8", "black --check ."])
 
 # Generate different sample sizes with optional custom parameters.
 split_sizes = {
@@ -22,8 +34,8 @@ split_sizes = {
 }
 n = 200
 
-# Different prior parameterizations. The smaller the parameters, the longer the time scale over
-# which the graphs evolve.
+# Different prior parameterizations. The smaller the parameters, the longer the time
+# scale over which the graphs evolve.
 priors = {
     "medium": {
         "mu": (2, 2),
@@ -55,7 +67,17 @@ for name, prior in priors.items():
         if split.startswith("debug"):
             action.append("--save_graphs")
         kwargs = kwargs or {}
-        kwargs.update({f"{key}_prior": ",".join(map(str, params)) for key, params in prior.items()})
+        kwargs.update(
+            {
+                f"{key}_prior": ",".join(map(str, params))
+                for key, params in prior.items()
+            }
+        )
         action.extend(di.dict2args(kwargs))
-        manager(basename=f"simulations-{name}", name=split, targets=[target], actions=[action],
-                uptodate=[True])
+        manager(
+            basename=f"simulations-{name}",
+            name=split,
+            targets=[target],
+            actions=[action],
+            uptodate=[True],
+        )
