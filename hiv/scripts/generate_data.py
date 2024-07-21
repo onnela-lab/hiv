@@ -8,43 +8,6 @@ from tqdm import tqdm
 import typing
 
 
-def evaluate_summaries(graph0: nx.Graph, graph1: nx.Graph) -> dict[str, float]:
-    """
-    Evaluate summary statistics.
-
-    Args:
-        graph0: First graph observation.
-        graph1: Second graph observation.
-
-    Returns:
-        summaries: Mapping of summary statistics.
-    """
-    steady_edges0 = set(stockholm.get_edges(graph0, casual=False))
-    steady_edges1 = set(stockholm.get_edges(graph1, casual=False))
-
-    # Evaluate number of nodes and nodes with casual relationships by relationship
-    # status.
-    num_nodes = {False: 0, True: 0}
-    num_nodes_with_casual = {False: 0, True: 0}
-    for graph in [graph0, graph1]:
-        for _, data in graph.nodes(data=True):
-            num_nodes[data["is_single"]] += 1
-            num_nodes_with_casual[data["is_single"]] += data["has_casual"]
-
-    return {
-        "frac_retained_nodes": len(set(graph0) & set(graph1))
-        / graph0.number_of_nodes(),
-        "frac_retained_steady_edges": len(steady_edges0 & steady_edges1)
-        / max(len(steady_edges0), 1),  # noqa: E131
-        "frac_single_with_casual": num_nodes_with_casual[True]
-        / max(num_nodes[True], 1),
-        "frac_paired_with_casual": num_nodes_with_casual[False]
-        / max(num_nodes[False], 1),
-        "frac_paired": num_nodes[False]
-        / (graph0.number_of_nodes() + graph1.number_of_nodes()),
-    }
-
-
 def dict_append(container: dict, values: dict) -> None:
     for key, value in values.items():
         container.setdefault(key, []).append(value)
@@ -101,7 +64,9 @@ def __main__(args: typing.Optional[typing.Iterable[str]] = None) -> None:
             result.setdefault("params", {}).setdefault(key, []).append(param)
 
         # Run the burnin to get the first sample.
-        graph0, _ = stockholm.simulate(n=args.n, num_steps=burnin, **params)
+        graph0 = nx.empty_graph()
+        for _ in range(burnin):
+            graph0 = stockholm.step(graph0, n=args.n, **params)
         graph1 = graph0.copy()
 
         # Initialize graph sequences.
@@ -117,13 +82,11 @@ def __main__(args: typing.Optional[typing.Iterable[str]] = None) -> None:
         for step in range(args.num_lags):
             if args.save_graphs:
                 graph_sequence.append(graph1.copy())
-            dict_append(summaries, evaluate_summaries(graph0, graph1))
+            dict_append(summaries, stockholm.evaluate_summaries(graph0, graph1))
             # Skip simulation for the last step.
             if step == args.num_lags - 1:
                 continue
-            stockholm.simulate(
-                n=args.n, num_steps=1, step=burnin + step, graph=graph1, **params
-            )
+            stockholm.step(graph1, n=args.n, **params)
 
         # Add summaries to the sequence.
         for key, values in summaries.items():
