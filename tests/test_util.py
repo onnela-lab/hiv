@@ -1,0 +1,12 @@
+from hiv import util
+import networkx as nx
+import pytest
+
+
+def test_assert_graph_equal() -> None:
+    graph1 = nx.erdos_renyi_graph(100, 0.1)
+    util.assert_graphs_equal(graph1, graph1)
+    graph2 = graph1.copy()
+    graph2.remove_node(0)
+    with pytest.raises(AssertionError):
+        util.assert_graphs_equal(graph1, graph2)
