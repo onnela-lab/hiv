@@ -106,7 +106,7 @@ def simulate(
 ) -> tuple[nx.Graph, dict]:
     """
     Simulate the Stockholm model, a discrete time version of the model defined in
-    https://doi.org/10.1007/s41109-024-00616-4.
+    https://doi.org/10.1016/j.epidem.2019.02.001.
 
     Args:
         n: Expected number of nodes.
