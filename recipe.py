@@ -44,7 +44,27 @@ configs = {
             "w0": "beta:2,48",
             "w1": "beta:2,48",
         },
-    }
+    },
+    "km": {
+        "medium": {
+            "n": 200,
+            "rho": "beta:2,2",
+            "sigma": "beta:2,2",
+            "xi": "beta:2,2",
+        },
+        "small": {
+            "n": 200,
+            "rho": "beta:2,18",
+            "sigma": "beta:2,18",
+            "xi": "beta:2,18",
+        },
+        "x-small": {
+            "n": 200,
+            "rho": "beta:2,48",
+            "sigma": "beta:2,48",
+            "xi": "beta:2,48",
+        },
+    },
 }
 # Models run at weekly scales. We consider up to five year lags.
 num_lags = 5 if CI else 5 * 52
