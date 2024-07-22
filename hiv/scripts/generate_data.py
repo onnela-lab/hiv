@@ -131,9 +131,8 @@ def __main__(argv=None) -> None:
                 continue
             simulator.step(graph1)
 
-        # Add summaries to the sequence.
-        for key, values in summaries.items():
-            result.setdefault("summaries", {}).setdefault(key, []).append(values)
+        # Add summaries and parameters to the sequence.
+        collectiontools.append_values(result.setdefault("summaries", {}), summaries)
         collectiontools.append_values(result.setdefault("params", {}), params)
 
     result["params"] = to_np_dict(result["params"])
