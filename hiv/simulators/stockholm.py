@@ -185,16 +185,6 @@ class Stockholm(Simulator):
     def evaluate_summaries(
         self, graph0: nx.Graph, graph1: nx.Graph
     ) -> dict[str, float]:
-        """
-        Evaluate summary statistics.
-
-        Args:
-            graph0: First graph observation.
-            graph1: Second graph observation.
-
-        Returns:
-            summaries: Mapping of summary statistics.
-        """
         steady_edges0 = set(get_edges(graph0, casual=False))
         steady_edges1 = set(get_edges(graph1, casual=False))
 

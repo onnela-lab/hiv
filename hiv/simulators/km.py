@@ -51,3 +51,11 @@ class KretzschmarMorris(Simulator):
             graph.remove_edge(*edge)
 
         return graph
+
+    def evaluate_summaries(
+        self, graph0: nx.Graph, graph1: nx.Graph
+    ) -> dict[str, float]:
+        return {
+            "frac_paired": (graph0.number_of_edges() + graph1.number_of_edges())
+            / graph0.number_of_nodes()
+        }

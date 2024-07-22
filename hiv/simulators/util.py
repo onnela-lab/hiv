@@ -20,6 +20,15 @@ class Interval(Constraint):
             and (self.type is None or isinstance(value, self.type))
         )
 
+    def __repr__(self) -> str:
+        args = [
+            f"low={self.low}",
+            f"high={self.high}",
+        ]
+        if self.type is not None:
+            args.append(f"type={self.type}")
+        return f"{self.__class__.__name__}({', '.join(args)})"
+
 
 class UnitInterval(Interval):
     def __init__(self) -> None:
@@ -46,3 +55,18 @@ class Simulator:
                 raise ValueError(
                     f"Argument `{arg}` does not satisfy constraint `{constraint}`."
                 )
+
+    def evaluate_summaries(
+        self, graph0: nx.Graph, graph1: nx.Graph
+    ) -> dict[str, float]:
+        """
+        Evaluate summary statistics.
+
+        Args:
+            graph0: First graph observation.
+            graph1: Second graph observation.
+
+        Returns:
+            Mapping of summary statistics.
+        """
+        raise NotImplementedError

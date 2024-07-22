@@ -87,8 +87,10 @@ def __main__(argv=None) -> None:
         if ":" in spec:
             cls_name, hyperparams = spec.split(":")
             priors[arg] = prior_clss[cls_name](*map(float, hyperparams.split(",")))
-        else:
+        elif "." in spec:
             priors[arg] = float(spec)
+        else:
+            priors[arg] = int(spec)
 
     result = {
         "args": vars(args),
