@@ -75,8 +75,8 @@ for model, priors in configs.items():
     for name, prior in priors.items():
         # Iterate over different splits.
         for split, size in split_sizes.items():
-            name = f"{model}/{name}/{split}"
-            target = (workspace / name).with_suffix(".pkl")
+            task_name = f"{model}/{name}/{split}"
+            target = (workspace / task_name).with_suffix(".pkl")
             action = [
                 "python",
                 "-m",
@@ -86,8 +86,16 @@ for model, priors in configs.items():
                 num_lags,
                 target,
             ]
-            if split == "debug":
-                action.append("--save_graphs")
             for arg, spec in prior.items():
                 action.append(f"--param={arg}={spec}")
-            create_task(name, action=action, targets=[target])
+
+            if split == "debug":
+                action.append("--save_graphs")
+                action = [
+                    "python",
+                    "-m",
+                    "cProfile",
+                    "-o",
+                    target.with_suffix(".prof"),
+                ] + action[1:]
+            create_task(task_name, action=action, targets=[target])
