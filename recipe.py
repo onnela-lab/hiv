@@ -1,6 +1,9 @@
 from cook import create_task
+import os
 from pathlib import Path
 
+
+CI = "CI" in os.environ
 
 workspace = Path("workspace")
 
@@ -44,7 +47,7 @@ configs = {
     }
 }
 # Models run at weekly scales. We consider up to five year lags.
-num_lags = 5 * 52
+num_lags = 5 if CI else 5 * 52
 
 # Iterate over different models.
 for model, priors in configs.items():
