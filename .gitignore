@@ -129,6 +129,7 @@ dmypy.json
 .pyre/
 
 # Custom excludes
+.cook
 .DS_Store
 .vscode
 playground/

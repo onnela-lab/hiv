@@ -21,6 +21,8 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
       - name: Run the tests
-        run: doit tests
+        run: cook exec tests
       - name: Lint the code
-        run: doit lint
+        run: cook exec lint
+      - name: Run debug simulations
+        run: cook exec "*/debug"
