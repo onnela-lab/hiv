@@ -1,72 +1,113 @@
 import argparse
-import networkx as nx
+import collectiontools
+import numbers
+from pathlib import Path
 import pickle
 from scipy import stats
-from .. import stockholm
+from ..simulators import KretzschmarMorris, Simulator, Stockholm
 from ..util import to_np_dict
 from tqdm import tqdm
-import typing
+from typing import Type
 
 
-def dict_append(container: dict, values: dict) -> None:
-    for key, value in values.items():
-        container.setdefault(key, []).append(value)
+prior_clss = {"beta": stats.beta}
+simulators_clss: dict[str, Type[Simulator]] = {
+    "stockholm": Stockholm,
+    "km": KretzschmarMorris,
+}
+# See the `priors.ipynb` notebook for a more principled approach to choosing priors.
+# Here, we simply use beta(2, 2) priors to push parameters away from the boundary.
+default_priors = {
+    "stockholm": {
+        "mu": stats.beta(2, 2),
+        "sigma": stats.beta(2, 2),
+        "rho": stats.beta(2, 2),
+        "w0": stats.beta(2, 2),
+        "w1": stats.beta(2, 2),
+        "n": 200,
+    },
+    "km": {
+        "sigma": stats.beta(2, 2),
+        "rho": stats.beta(2, 2),
+        "xi": stats.beta(2, 2),
+        "n": 200,
+    },
+}
 
 
-def __main__(args: typing.Optional[typing.Iterable[str]] = None) -> None:
-    # See the `priors.ipynb` notebook for a more principled approach to choosing priors.
-    # Here, we simply use beta(2, 2) priors to push parameters away from the boundary.
-    default_prior_args = {
-        "mu": (2, 2),
-        "sigma": (2, 2),
-        "rho": (2, 2),
-        "w0": (2, 2),
-        "w1": (2, 2),
-    }
+class Args:
+    simulator: str
+    num_samples: int
+    num_lags: int
+    output: Path
+    burnin: int
+    store_graphs: bool
+    param: list[str]
+    save_graphs: bool
 
+
+def __main__(argv=None) -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("num_samples", help="number of samples", type=int)
-    parser.add_argument("n", help="expected number of nodes", type=int)
-    parser.add_argument("num_lags", help="number of lags to consider", type=int)
-    parser.add_argument("output", help="output path for the samples")
     parser.add_argument(
-        "--burnin", help="number of burn in steps (defaults to `10 * n`)", type=int
+        "--burnin",
+        help="number of burn in steps (defaults to `simulator.timescale`)",
+        type=int,
     )
     parser.add_argument(
         "--save_graphs",
         action="store_true",
         help="store graph sequences in addition to summaries (memory intensive)",
     )
-    for param, prior_args in default_prior_args.items():
-        parser.add_argument(
-            f"--{param}_prior",
-            type=lambda x: [float(x) for x in x.split(",")],
-            help=f"concentration parameters `(a, b)` for the beta prior of {param}",
-            default=prior_args,
+    parser.add_argument(
+        "--param",
+        "-p",
+        help="parameter value as [name]=[value] or prior as [name]=[prior_cls]:[*args]",
+        action="append",
+    )
+    parser.add_argument("simulator", help="simulator to use", choices=simulators_clss)
+    parser.add_argument("num_samples", help="number of samples", type=int)
+    parser.add_argument("num_lags", help="number of lags to consider", type=int)
+    parser.add_argument("output", help="output path for the samples", type=Path)
+    args: Args = parser.parse_args(argv)
+
+    simulator_cls = simulators_clss[args.simulator]
+    priors = default_priors[args.simulator].copy()
+
+    for param in args.param or []:
+        parts = param.split("=")
+        assert (
+            len(parts) == 2
+        ), f"Parameter specification `{param}` does not have format `[name]=[spec]`."
+        arg, spec = parts
+        assert arg in simulator_cls.arg_constraints, (
+            f"Parameter `{arg}` is not allowed for {args.simulator}. Must be one of "
+            f"{', '.join(simulator_cls.arg_constraints)}."
         )
-        parser.add_argument(f"--{param}", type=float, help=f"value of {param}")
-    args: argparse.Namespace = parser.parse_args(args)
 
-    # Construct the priors and normalize parameters.
-    priors = {
-        param: stats.beta(*getattr(args, f"{param}_prior"))
-        for param in default_prior_args
+        if ":" in spec:
+            cls_name, hyperparams = spec.split(":")
+            priors[arg] = prior_clss[cls_name](*map(float, hyperparams.split(",")))
+        elif "." in spec:
+            priors[arg] = float(spec)
+        else:
+            priors[arg] = int(spec)
+
+    result = {
+        "args": vars(args),
+        "priors": priors,
     }
-    burnin = args.burnin or 10 * args.n
-
-    result = {"args": vars(args)}
     for _ in tqdm(range(args.num_samples)):
         # Sample and use fixed values if provided.
-        params = {key: prior.rvs() for key, prior in priors.items()} | {
-            key: value for key in priors if (value := getattr(args, key)) is not None
+        params = {
+            arg: prior if isinstance(prior, numbers.Number) else prior.rvs()
+            for arg, prior in priors.items()
         }
-        for key, param in params.items():
-            result.setdefault("params", {}).setdefault(key, []).append(param)
+        simulator = simulator_cls(**params)
 
         # Run the burnin to get the first sample.
-        graph0 = nx.empty_graph()
-        for _ in range(burnin):
-            graph0 = stockholm.step(graph0, n=args.n, **params)
+        graph0 = simulator.init()
+        burnin = 100
+        graph0 = simulator.run(graph0, burnin)
         graph1 = graph0.copy()
 
         # Initialize graph sequences.
@@ -82,15 +123,17 @@ def __main__(args: typing.Optional[typing.Iterable[str]] = None) -> None:
         for step in range(args.num_lags):
             if args.save_graphs:
                 graph_sequence.append(graph1.copy())
-            dict_append(summaries, stockholm.evaluate_summaries(graph0, graph1))
+            collectiontools.append_values(
+                summaries, simulator.evaluate_summaries(graph0, graph1)
+            )
             # Skip simulation for the last step.
             if step == args.num_lags - 1:
                 continue
-            stockholm.step(graph1, n=args.n, **params)
+            simulator.step(graph1)
 
-        # Add summaries to the sequence.
-        for key, values in summaries.items():
-            result.setdefault("summaries", {}).setdefault(key, []).append(values)
+        # Add summaries and parameters to the sequence.
+        collectiontools.append_values(result.setdefault("summaries", {}), summaries)
+        collectiontools.append_values(result.setdefault("params", {}), params)
 
     result["params"] = to_np_dict(result["params"])
     result["summaries"] = to_np_dict(result["summaries"])

@@ -41,6 +41,8 @@ click==8.1.7
     # via black
 cloudpickle==2.2.1
     # via doit
+collectiontools==0.1.0
+    # via -r requirements.in
 colorama==0.4.6
     # via doit-interface
 comm==0.1.2
