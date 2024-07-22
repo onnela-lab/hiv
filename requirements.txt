@@ -39,16 +39,16 @@ cffi==1.15.1
     # via argon2-cffi-bindings
 click==8.1.7
     # via black
-cloudpickle==2.2.1
-    # via doit
 collectiontools==0.1.0
     # via -r requirements.in
 colorama==0.4.6
-    # via doit-interface
+    # via cook-build
 comm==0.1.2
     # via ipykernel
 contourpy==1.0.7
     # via matplotlib
+cook-build==0.5.1
+    # via -r requirements.in
 coverage[toml]==7.1.0
     # via pytest-cov
 cycler==0.11.0
@@ -59,10 +59,6 @@ decorator==5.1.1
     # via ipython
 defusedxml==0.7.1
     # via nbconvert
-doit==0.36.0
-    # via doit-interface
-doit-interface==0.1.10
-    # via -r requirements.in
 exceptiongroup==1.1.0
     # via pytest
 executing==1.2.0
@@ -79,8 +75,6 @@ idna==3.4
     # via
     #   anyio
     #   jsonschema
-importlib-metadata==6.0.0
-    # via doit
 iniconfig==2.0.0
     # via pytest
 ipykernel==6.21.2
@@ -210,7 +204,9 @@ nest-asyncio==1.5.6
     #   nbclassic
     #   notebook
 networkx==3.0
-    # via -r requirements.in
+    # via
+    #   -r requirements.in
+    #   cook-build
 notebook==6.5.2
     # via jupyter
 notebook-shim==0.2.2
@@ -399,5 +395,3 @@ websocket-client==1.5.1
     # via jupyter-server
 widgetsnbextension==4.0.5
     # via ipywidgets
-zipp==3.13.0
-    # via importlib-metadata
