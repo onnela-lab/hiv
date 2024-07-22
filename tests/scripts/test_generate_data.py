@@ -1,5 +1,5 @@
 from hiv.scripts import generate_data
-from hiv.stockholm import evaluate_num_nodes
+from hiv.simulators.stockholm import evaluate_num_nodes
 import networkx as nx
 import numpy as np
 import pytest
@@ -9,9 +9,15 @@ from unittest.mock import patch
 @pytest.mark.parametrize("save_graphs", [False, True])
 def test_generate_data(save_graphs: bool) -> None:
     num_samples = 7
-    n = 23
     num_lags = 5
-    args = [num_samples, n, num_lags, "/not/a/file"]
+    args = [
+        "--param=n=23",
+        "--param=w0=beta:2,2",
+        "stockholm",
+        num_samples,
+        num_lags,
+        "/not/a/file",
+    ]
     if save_graphs:
         args.append("--save_graphs")
     with patch("builtins.open"), patch("pickle.dump") as dump:
