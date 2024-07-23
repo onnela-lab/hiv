@@ -13,8 +13,7 @@ class KretzschmarMorris(Simulator):
         rho: Probability for two nodes to connect.
         sigma: Probability for a relation to dissolve.
         xi: Probability to reject a relationship if already in a relationship, i.e.,
-            serial monogamy for :math:`\xi = 1` and random mixing for
-            :math:`\xi = 0`.
+            serial monogamy for :math:`\xi = 1` and random mixing for :math:`\xi = 0`.
     """
 
     arg_constraints = {
@@ -35,20 +34,23 @@ class KretzschmarMorris(Simulator):
         return nx.empty_graph(self.n)
 
     def step(self, graph: nx.Graph) -> nx.Graph:
-        # Iterate until a relation is formed.
-        if np.random.uniform() < self.rho:
-            while True:
-                i, j = np.random.choice(graph.number_of_nodes(), size=2, replace=False)
-                proba = 1 if max(graph.degree((i, j))) == 0 else 1 - self.xi
-                if np.random.uniform() < proba:
-                    graph.add_edge(i, j)
-                    break
+        # Get candidates and their corresponding degrees. Make sure they are even.
+        candidates_degrees = np.asarray(
+            [item for item in graph.degree if np.random.binomial(1, self.rho)]
+        )
+        if len(candidates_degrees) % 2:
+            candidates_degrees = candidates_degrees[1:]
+        np.random.shuffle(candidates_degrees)
+        edges, degrees = candidates_degrees.T.reshape(
+            (2, len(candidates_degrees) // 2, 2)
+        )
+        proba = np.where(degrees.any(axis=-1), 1 - self.xi, 1)
+        graph.add_edges_from(edges[np.random.uniform(size=proba.shape) < proba])
 
-        # Pick an edge and possibly dissolve it.
-        if graph.number_of_edges() and np.random.uniform() < self.sigma:
-            edges = list(graph.edges)
-            edge = edges[np.random.choice(len(edges))]
-            graph.remove_edge(*edge)
+        # Dissolve existing edges.
+        graph.remove_edges_from(
+            edge for edge in graph.edges if np.random.binomial(1, self.sigma)
+        )
 
         return graph
 
