@@ -1,5 +1,5 @@
 from hiv.scripts import generate_data
-from hiv.simulators.stockholm import evaluate_num_nodes
+from hiv.simulators.util import number_of_nodes
 import networkx as nx
 import numpy as np
 import pathlib
@@ -35,15 +35,15 @@ def test_generate_data(argv: list, save_graphs: bool, tmp_path: pathlib.Path) ->
             assert len(graph_sequence) == num_lags
             # Check that summaries are consistent with the graph.
             if simulator == "stockholm":
-                num_paired0 = evaluate_num_nodes(graph_sequence[0], False)
+                num_paired0 = number_of_nodes(graph_sequence[0], is_single=False)
                 num0 = graph_sequence[0].number_of_nodes()
                 for j, graph in enumerate(graph_sequence):
-                    assert graph.number_of_nodes() == evaluate_num_nodes(
-                        graph, True
-                    ) + evaluate_num_nodes(graph, False)
-                    frac_paired = (evaluate_num_nodes(graph, False) + num_paired0) / (
-                        graph.number_of_nodes() + num0
-                    )
+                    assert graph.number_of_nodes() == number_of_nodes(
+                        graph, is_single=True
+                    ) + number_of_nodes(graph, is_single=False)
+                    frac_paired = (
+                        number_of_nodes(graph, is_single=False) + num_paired0
+                    ) / (graph.number_of_nodes() + num0)
                     np.testing.assert_allclose(
                         result["summaries"]["frac_paired"][i, j], frac_paired
                     )

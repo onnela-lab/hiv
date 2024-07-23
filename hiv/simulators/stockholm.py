@@ -1,72 +1,22 @@
-import logging
 import networkx as nx
 import numpy as np
-from .util import Interval, Simulator, UnitInterval
-
-
-LOGGER = logging.getLogger(__name__)
-Edge = tuple[int, int]
-
-
-def get_edges(graph: nx.Graph, casual: bool) -> list[Edge]:
-    """
-    Get casual or steady edges.
-    """
-    return [
-        (u, v) for u, v, data in graph.edges(data=True) if data["is_casual"] == casual
-    ]
-
-
-def evaluate_num_edges(graph: nx.Graph, casual: bool) -> int:
-    """
-    Evaluate the number of casual or steady edges.
-    """
-    return len(get_edges(graph, casual))
-
-
-def get_nodes(graph: nx.Graph, single: bool) -> int:
-    """
-    Get single or paired nodes.
-    """
-    return [
-        node for node, data in graph.nodes(data=True) if data["is_single"] == single
-    ]
-
-
-def evaluate_num_nodes(graph: nx.Graph, single: bool) -> int:
-    """
-    Evaluate the number of single or partnered nodes.
-    """
-    return len(get_nodes(graph, single))
-
-
-def add_edges_from_candidates(
-    graph: nx.Graph, candidates: np.ndarray, **kwargs
-) -> np.ndarray:
-    """
-    Add random edges from a list of candidate nodes by pairing them. Existing edges are
-    left unchanged (important for not accidentally turning steady relationships into
-    casual ones).
-
-    Args:
-        graph: Graph to add edges to.
-        candidates: Set of candidates to pair up.
-        **kwargs: Common properties for all edges.
-
-    Returns:
-        edges: List of edges.
-    """
-    candidates = np.random.permutation(candidates)
-    num_edges = candidates.size // 2
-    candidates = candidates[: 2 * num_edges]
-    edges = candidates.reshape((num_edges, 2))
-    # Filter to edges that do not already exist.
-    edges = np.asarray([edge for edge in edges if not graph.has_edge(*edge)])
-    graph.add_edges_from(edges, **kwargs)
-    return edges
+from .util import add_edges_from_candidates, Interval, Simulator, UnitInterval
 
 
 class Stockholm(Simulator):
+    """
+    Simulate the Stockholm model, a discrete time version of the model defined in
+    https://doi.org/10.1016/j.epidem.2019.02.001.
+
+    Args:
+        n: Expected number of nodes.
+        mu: Probability for a node to emigrate and immigration rate `n * mu`.
+        sigma: Probability for a steady relationship to dissolve.
+        rho: Probability for a steady relationship to form between singles.
+        w0: Probability for a casual relationship to form between singles.
+        w1: Probability for a casual relationship to form between non-singles.
+    """
+
     arg_constraints = {
         "n": Interval(0, None),
         "mu": UnitInterval(),
@@ -90,103 +40,81 @@ class Stockholm(Simulator):
     def init(self) -> nx.Graph:
         return nx.empty_graph()
 
-    def step(self, graph: nx.Graph, verify: bool = False) -> nx.Graph:
-        """
-        Simulate the Stockholm model, a discrete time version of the model defined in
-        https://doi.org/10.1016/j.epidem.2019.02.001.
-
-        Args:
-            graph: Graph to evolve in-place.
-            verify: Verify the structure of the graph.
-
-        Returns:
-            Evolved graph.
-        """
-        step = graph.graph.setdefault("step", 0)
+    def step(self, graph: nx.Graph) -> nx.Graph:
         label_offset = max(graph, default=-1) + 1
-        num_steady_edges = evaluate_num_edges(graph, casual=False)
 
-        # Identify nodes to be removed and evaluate the durations of steady
-        # relationships.
-        nodes_to_remove = [node for node in graph if np.random.binomial(1, self.mu)]
-        num_steady_removed = 0
-        for *edge, data in graph.edges(nodes_to_remove, data=True):
-            if data["is_casual"]:
-                graph.add_nodes_from(edge, has_casual=False)
-            else:
-                num_steady_edges -= 1
-                graph.add_nodes_from(edge, is_single=True)
-                num_steady_removed += 1
+        # Remove nodes with the given migration probability. This may result in
+        # `is_single` changing for nodes that are still in the graph. We update the
+        # `is_single` flag below after removing steady relationships and adding new
+        # ones.
+        nodes_to_remove = [
+            node
+            for node, remove in zip(
+                graph, np.random.binomial(1, self.mu, graph.number_of_nodes())
+            )
+            if remove
+        ]
         graph.remove_nodes_from(nodes_to_remove)
 
-        LOGGER.info(
-            "removed %d nodes with %d steady edges (total steady=%d)",
-            len(nodes_to_remove),
-            num_steady_removed,
-            num_steady_edges,
-        )
+        # Add new nodes that have migrated in.
+        num_new_nodes = np.random.poisson(self.n * self.mu)
+        graph.add_nodes_from(label_offset + np.arange(num_new_nodes))
 
-        # Delete all casual edges and remove steady edges with probability sigma.
-        edges_to_remove = []
-        for *edge, data in graph.edges(data=True):
-            if data["is_casual"]:
-                edges_to_remove.append(edge)
-                graph.add_nodes_from(edge, has_casual=False)
-            elif np.random.binomial(1, self.sigma):
-                edges_to_remove.append(edge)
-                num_steady_edges -= 1
-                graph.add_nodes_from(edge, is_single=True)
+        # Remove steady relationships with probability sigma and all casual
+        # relationships.
+        edges_to_remove = [
+            edge
+            for *edge, data in graph.edges(data=True)
+            if data["is_casual"] or np.random.binomial(1, self.sigma)
+        ]
         graph.remove_edges_from(edges_to_remove)
 
-        # Add new nodes.
-        num_new_nodes = np.random.poisson(self.n * self.mu)
-        graph.add_nodes_from(
-            label_offset + np.arange(num_new_nodes), is_single=True, has_casual=False
+        # Add steady relationships and update the `is_single` status. Because we have
+        # removed all casual relations above, we can simply use the degree as an
+        # indicator of nodes being single.
+        add_edges_from_candidates(
+            graph,
+            [
+                node
+                for node, degree in graph.degree
+                if degree == 0 and np.random.binomial(1, self.rho)
+            ],
+            is_casual=False,
         )
-        label_offset += num_new_nodes
-
-        LOGGER.info("added %d nodes (total=%d)", num_new_nodes, graph.number_of_nodes())
-
-        # Add steady relationships.
-        singles = [
-            node
-            for node, data in graph.nodes(data=True)
-            if data["is_single"] and np.random.binomial(1, self.rho)
-        ]
-        new_steady = add_edges_from_candidates(
-            graph, singles, created_at=step, is_casual=False
-        )
-        graph.add_nodes_from(new_steady.ravel(), is_single=False)
-        num_steady_edges += len(singles) // 2
-
-        LOGGER.info(
-            "added %d steady edges (total steady=%d)",
-            len(singles) // 2,
-            num_steady_edges,
+        graph._node.update(
+            {
+                node: {"is_single": degree == 0, "has_casual": False}
+                for node, degree in graph.degree
+            }
         )
 
-        # Add casual relationships.
+        # Add casual relationships. Because we have already removed all casual
+        # relationships from the previous iteration, any edge is a steady relationship,
+        # and the vertices of any edge are partnered up.
         candidates = [
             node
             for node, data in graph.nodes(data=True)
-            if (data["is_single"] and np.random.binomial(1, self.w0))
-            or (not data["is_single"] and np.random.binomial(1, self.w1))
+            if np.random.binomial(1, self.w0 if data["is_single"] else self.w1)
         ]
-        new_casual = add_edges_from_candidates(graph, candidates, is_casual=True)
-        graph.add_nodes_from(new_casual.ravel(), has_casual=True)
-        num_casual_edges = len(candidates) // 2
-
-        LOGGER.info("added %d casual edges", num_casual_edges)
-
-        graph.graph["step"] = step + 1
+        edges = add_edges_from_candidates(graph, candidates, is_casual=True)
+        for node in edges.ravel():
+            graph._node[node]["has_casual"] = True
 
         return graph
 
     def evaluate_summaries(
         self, graph0: nx.Graph, graph1: nx.Graph
     ) -> dict[str, float]:
-        steady_edges0 = set(get_edges(graph0, casual=False))
-        steady_edges1 = set(get_edges(graph1, casual=False))
+        steady_edges0 = {
+            tuple(edge)
+            for *edge, data in graph0.edges(data=True)
+            if not data["is_casual"]
+        }
+        steady_edges1 = {
+            tuple(edge)
+            for *edge, data in graph1.edges(data=True)
+            if not data["is_casual"]
+        }
 
         # Evaluate number of nodes and nodes with casual relationships by relationship
         # status.

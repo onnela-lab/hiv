@@ -50,7 +50,7 @@ def __main__(argv=None) -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--burnin",
-        help="number of burn in steps (defaults to `simulator.timescale`)",
+        help="number of burn in steps (defaults to `10 * n`)",
         type=int,
     )
     parser.add_argument(
@@ -105,8 +105,8 @@ def __main__(argv=None) -> None:
         simulator = simulator_cls(**params)
 
         # Run the burnin to get the first sample.
+        burnin = args.burnin or int(10 * params["n"])
         graph0 = simulator.init()
-        burnin = 100
         graph0 = simulator.run(graph0, burnin)
         graph1 = graph0.copy()
 
