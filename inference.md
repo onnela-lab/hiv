@@ -5,7 +5,7 @@ jupytext:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.14.1
+    jupytext_version: 1.14.4
 kernelspec:
   display_name: Python 3 (ipykernel)
   language: python
@@ -20,6 +20,7 @@ import matplotlib as mpl
 from scipy import stats
 from scipy.spatial import KDTree
 from typing import Hashable
+from hiv.scripts.generate_data import parse_priors
 ```
 
 ```{code-cell} ipython3
@@ -35,7 +36,7 @@ SPLITS = ["train", "test"]
 PRIORS = ["medium", "small", "x-small"]
 
 
-def load(prior: str) -> tuple[dict, dict]:
+def load(prior: str, model: str) -> tuple[dict, dict]:
     """
     Load summaries and parameters keyed by different splits.
     """
@@ -43,7 +44,7 @@ def load(prior: str) -> tuple[dict, dict]:
     params_by_split = {}
 
     for split in SPLITS:
-        with open(f"workspace/{prior}/{split}.pkl", "rb") as fp:
+        with open(f"workspace/{model}/{prior}/{split}.pkl", "rb") as fp:
             result = pickle.load(fp)
         summaries_by_split[split] = flatten_dict(result["summaries"])
         params_by_split[split] = flatten_dict(result["params"])
@@ -51,7 +52,7 @@ def load(prior: str) -> tuple[dict, dict]:
     return summaries_by_split, params_by_split, result["args"]
 
 
-results_by_prior = {prior: load(prior) for prior in PRIORS}
+results_by_prior = {prior: load(prior, "stockholm") for prior in PRIORS}
 ```
 
 ```{code-cell} ipython3
@@ -110,10 +111,10 @@ show_prior_mse = False
 for ax, (prior, (summaries_by_split, params_by_split, args)) \
         in zip(axes[1:], results_by_prior.items()):
     # Show the prior distribution.
-    a, b = args["mu_prior"]
-    dist = stats.beta(a, b)
+    priors = parse_priors(args["param"])
+    dist = priors["mu"]
     x = np.linspace(0, 1, 200)
-    line, = axes[0].plot(x, dist.pdf(x), label=f"Beta({int(a)}, {int(b)})")
+    line, = axes[0].plot(x, dist.pdf(x), label=f"Beta({int(dist.args[0])}, {int(dist.args[1])})")
     color = line.get_color()
 
     # Show the mean-squared errors as a function of lag.
@@ -140,7 +141,7 @@ for ax, (prior, (summaries_by_split, params_by_split, args)) \
                    color=line.get_color(), alpha=.2)
 
     # Add a "guess" of where we'd expect the best lag to be.
-    proba = (1 - a / (a + b)) ** x
+    proba = (1 - dist.mean()) ** x
     guess = np.argmin(np.abs(proba - 0.5))
     ax.axvline(guess, color="k", ls=":", zorder=0)
 

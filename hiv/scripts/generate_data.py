@@ -35,6 +35,33 @@ default_priors = {
 }
 
 
+def parse_prior(param):
+    """
+    Parse a prior specification.
+    """
+    parts = param.split("=")
+    assert (
+        len(parts) == 2
+    ), f"Parameter specification `{param}` does not have format `[name]=[spec]`."
+    arg, spec = parts
+
+    if ":" in spec:
+        cls_name, hyperparams = spec.split(":")
+        prior = prior_clss[cls_name](*map(float, hyperparams.split(",")))
+    elif "." in spec:
+        prior = float(spec)
+    else:
+        prior = int(spec)
+    return arg, prior
+
+
+def parse_priors(params):
+    """
+    Parse priors into a dictionary.
+    """
+    return dict(map(parse_prior, params))
+
+
 class Args:
     simulator: str
     num_samples: int
@@ -72,25 +99,12 @@ def __main__(argv=None) -> None:
 
     simulator_cls = simulators_clss[args.simulator]
     priors = default_priors[args.simulator].copy()
-
-    for param in args.param or []:
-        parts = param.split("=")
-        assert (
-            len(parts) == 2
-        ), f"Parameter specification `{param}` does not have format `[name]=[spec]`."
-        arg, spec = parts
-        assert arg in simulator_cls.arg_constraints, (
-            f"Parameter `{arg}` is not allowed for {args.simulator}. Must be one of "
-            f"{', '.join(simulator_cls.arg_constraints)}."
-        )
-
-        if ":" in spec:
-            cls_name, hyperparams = spec.split(":")
-            priors[arg] = prior_clss[cls_name](*map(float, hyperparams.split(",")))
-        elif "." in spec:
-            priors[arg] = float(spec)
-        else:
-            priors[arg] = int(spec)
+    priors.update(parse_priors(args.param))
+    extra = set(priors) - set(simulator_cls.arg_constraints)
+    assert not extra, (
+        f"Parameters {extra} are not allowed for {args.simulator}. Allowed parameters "
+        f"are {args.simulator.arg_constraints}."
+    )
 
     result = {
         "args": vars(args),
