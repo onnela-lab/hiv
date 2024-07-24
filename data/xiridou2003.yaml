@@ -1,0 +1,52 @@
+doi: 10.1097/01.aids.0000050879.72891.1d
+title: >
+  The contribution of steady and casual partnerships to the incidence of HIV infection
+  among homosexual men in Amsterdam
+description: >
+  Data were collected as part of the Amsterdam Cohort Study (ACS) among young MSM under
+  30 years of age. Data are collected every six months, and questions pertain to sexual
+  activity in the past six months.
+statistics:
+- description: rate at which singles acquire casual partners per year (estimated)
+  reference: table 1
+  value: 22
+- description: >
+    lower bound of "prior" on rate at which singles acquire casual partners per year
+  reference: section "uncertainty analysis" on page 1032
+  value: 16
+- description: >
+    upper bound of "prior" on rate at which singles acquire casual partners per year
+  reference: section "uncertainty analysis" on page 1032
+  value: 16
+- description: rate at which non-singles acquire casual partners per year (estimated)
+  reference: table 1
+  value: 8
+- description: >
+    lower bound of "prior" on rate at which non-singles acquire casual partners per year
+  reference: section "uncertainty analysis" on page 1032
+  value: 6
+- description: >
+    upper bound of "prior" on rate at which non-singles acquire casual partners per year
+  reference: section "uncertainty analysis" on page 1032
+  value: 10
+- description: rate of acquiring steady partners per year (estimated)
+  reference: table 1
+  value: 0.73
+- description: duration of steady partnerships in years (estimated)
+  reference: table 1
+  value: 1.5
+- description: lower bound of "prior" on duration of steady partnerships in years
+  reference: section "uncertainty analysis" on page 1032
+  value: 0.75
+- description: lower bound of "prior" on duration of steady partnerships in years
+  reference: section "uncertainty analysis" on page 1032
+  value: 2.25
+- description: initial population size (estimated)
+  reference: table 1
+  value: 20_000
+- description: length of sexual activity in years (estimated)
+  reference: table 1
+  value: 30
+- description: approximate fraction of respondents with steady partner (approximate)
+  reference: second paragraph on page 1032
+  value: 0.5
