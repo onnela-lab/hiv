@@ -1,0 +1,66 @@
+doi: 10.1016/j.epidem.2019.02.001
+title: >
+  A dynamic network model to disentangle the roles of steady and casual partners for HIV
+  transmission among MSM
+description: >
+  Dynamic network model with six parameters, generalizing the Kretzschmar-Morris model.
+  They collect data from MSM in Stockholm in 2015. Steady partners are defined as being
+  self-identified by the respondent or having more than ten sexual encounters in the
+  past 12 months. Otherwise, partners are casual sexual partners.
+statistics:
+- description: number of respondents
+  reference: section 2.4.1
+  value: 403
+- description: mean number of total sexual partners per year
+  reference: section 2.4.1
+  value: 14.9
+- description: 25th percentile of number of total sexual partners per year
+  reference: section 2.4.1
+  value: 4
+- description: 75th percentile of number of total sexual partners per year
+  reference: section 2.4.1
+  value: 18
+- description: maximum number of total sexual partners per year
+  reference: section 2.4.1
+  value: 250
+- description: mean duration of steady partnerships in days (estimated)
+  reference: table 2
+  value: 292
+- description: mean duration of steady partnerships in days (truncated to 12 months)
+  reference: section 2.4.2
+  value: 203.2
+- description: mean time being single in days (estimated)
+  reference: table 2
+  value: 163
+- description: mean time being single in days (truncated to 12 months)
+  reference: table 2
+  value: 95
+- description: mean time until casual sex while single in days (estimated)
+  reference: table 2
+  value: 23.1
+- description: mean time until casual sex while not single in days (estimated)
+  reference: table 2
+  value: 36.3
+- description: mean time until new casual partner while single in days
+  reference: section 2.4.2
+  value: 62.6
+- description: mean time until new casual partner while not single in days
+  reference: section 2.4.2
+  value: 101.9
+- description: number of casual sex partners
+  reference: section 2.4.1
+  value: 1563
+- description: number of steady sex partners
+  reference: section 2.4.1
+  value: 549
+- description: >
+    mean degree for data from the detailed questionnaire (limited to the ten most recent
+    sexual partners in the past year)
+  reference: section 2.4.1
+  value: 5.2
+- description: mean number of encounters with a casual sex partner pear year
+  reference: section 2.4.1
+  value: 1.35
+- description: mean number of sex acts during each encounter with a casual partner
+  reference: section 2.4.1
+  value: 1.13
