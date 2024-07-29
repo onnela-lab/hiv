@@ -4,32 +4,64 @@ import numbers
 from pathlib import Path
 import pickle
 from scipy import stats
-from ..simulators import KretzschmarMorris, Simulator, Stockholm
+from ..simulator import UniversalSimulator
 from ..util import to_np_dict
 from tqdm import tqdm
-from typing import Type
 
 
 prior_clss = {"beta": stats.beta}
-simulators_clss: dict[str, Type[Simulator]] = {
-    "stockholm": Stockholm,
-    "km": KretzschmarMorris,
-}
+
 # See the `priors.ipynb` notebook for a more principled approach to choosing priors.
 # Here, we simply use beta(2, 2) priors to push parameters away from the boundary.
-default_priors = {
-    "stockholm": {
+prior_presets = {
+    # Discrete-time stochastic simulator based on the continuous-time stochastic
+    # simulator of Hansson et al. (2019) and the continous-time deterministic simulator
+    # of Xiridou et al. (2003) obtained by setting :math:`\xi = 1`, i.e., serial
+    # monogamy.
+    "hansson2019": {
         "mu": stats.beta(2, 2),
         "sigma": stats.beta(2, 2),
         "rho": stats.beta(2, 2),
         "w0": stats.beta(2, 2),
         "w1": stats.beta(2, 2),
+        "xi": 0,
         "n": 200,
     },
-    "km": {
+    # Discrete-time stochastic simulator based on the stochastic discrete-time simulator
+    # of Kretzschmar et al. (1996) obtained by setting :math:`\mu = 0` and
+    # :math:`w_0 = w_1 = 0`, i.e., a closed population without casual contacts.
+    "kretzschmar1996": {
         "sigma": stats.beta(2, 2),
         "rho": stats.beta(2, 2),
         "xi": stats.beta(2, 2),
+        "w0": 0,
+        "w1": 0,
+        "mu": 0,
+        "n": 200,
+    },
+    # Discrete-time stochastic simulator based on the deterministic continuous-time
+    # simulator of Leng et al. (2018) obtained by setting :math:`\mu = 0` and
+    # :math:`\xi = 1`, i.e., a closed population and serial monogamy.
+    "leng2018": {
+        "sigma": stats.beta(2, 2),
+        "rho": stats.beta(2, 2),
+        "xi": 0,
+        "w0": stats.beta(2, 2),
+        "w1": stats.beta(2, 2),
+        "mu": 0,
+        "n": 200,
+    },
+    # Discrete-time stochastic simulator based on Kretzschmar et al. (1998) obtained by
+    # setting :math:`w_0 = w_1 = 0`, i.e., no casual sexual partners. They use a
+    # different parameterization of the immigration rate :math:\nu = n / \mu` instead of
+    # expected population size like we do here.
+    "kretzschmar1998": {
+        "sigma": stats.beta(2, 2),
+        "rho": stats.beta(2, 2),
+        "xi": stats.beta(2, 2),
+        "w0": 0,
+        "w1": 0,
+        "mu": stats.beta(2, 2),
         "n": 200,
     },
 }
@@ -63,12 +95,11 @@ def parse_priors(params):
 
 
 class Args:
-    simulator: str
+    preset: str
     num_samples: int
     num_lags: int
     output: Path
     burnin: int
-    store_graphs: bool
     param: list[str]
     save_graphs: bool
 
@@ -91,19 +122,18 @@ def __main__(argv=None) -> None:
         help="parameter value as [name]=[value] or prior as [name]=[prior_cls]:[*args]",
         action="append",
     )
-    parser.add_argument("simulator", help="simulator to use", choices=simulators_clss)
+    parser.add_argument("--preset", help="prior preset to use", choices=prior_presets)
     parser.add_argument("num_samples", help="number of samples", type=int)
     parser.add_argument("num_lags", help="number of lags to consider", type=int)
     parser.add_argument("output", help="output path for the samples", type=Path)
     args: Args = parser.parse_args(argv)
 
-    simulator_cls = simulators_clss[args.simulator]
-    priors = default_priors[args.simulator].copy()
+    priors = prior_presets[args.preset].copy()
     priors.update(parse_priors(args.param))
-    extra = set(priors) - set(simulator_cls.arg_constraints)
+    extra = set(priors) - set(UniversalSimulator.arg_constraints)
     assert not extra, (
-        f"Parameters {extra} are not allowed for {args.simulator}. Allowed parameters "
-        f"are {args.simulator.arg_constraints}."
+        f"Parameters {extra} are not allowed; allowed parameters are "
+        f"{UniversalSimulator.arg_constraints}."
     )
 
     result = {
@@ -116,7 +146,7 @@ def __main__(argv=None) -> None:
             arg: prior if isinstance(prior, numbers.Number) else prior.rvs()
             for arg, prior in priors.items()
         }
-        simulator = simulator_cls(**params)
+        simulator = UniversalSimulator(**params)
 
         # Run the burnin to get the first sample.
         burnin = args.burnin or int(10 * params["n"])

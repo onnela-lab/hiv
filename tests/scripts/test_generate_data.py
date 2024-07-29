@@ -1,5 +1,5 @@
 from hiv.scripts import generate_data
-from hiv.simulators.util import number_of_nodes
+from hiv.simulator import number_of_nodes
 import networkx as nx
 import numpy as np
 import pathlib
@@ -10,8 +10,10 @@ import pytest
 @pytest.mark.parametrize(
     "argv",
     [
-        ["--param=n=23.", "--param=w0=beta:2,2", "stockholm"],
-        ["--param=n=17", "--param=rho=beta:2,2", "km"],
+        ["--param=n=23.", "--param=w0=beta:2,2", "--preset=hansson2019"],
+        ["--param=n=17", "--param=rho=beta:2,2", "--preset=kretzschmar1996"],
+        ["--param=n=17", "--param=rho=beta:2,2", "--preset=kretzschmar1998"],
+        ["--param=n=17", "--param=rho=beta:2,2", "--preset=leng2018"],
     ],
 )
 @pytest.mark.parametrize("save_graphs", [False, True])
