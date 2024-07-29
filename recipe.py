@@ -19,7 +19,7 @@ split_sizes = {
     "train": 10_000,
 }
 configs = {
-    "stockholm": {
+    "hansson2019": {
         "medium": {
             "n": 200,
             "mu": "beta:2,2",
@@ -45,7 +45,7 @@ configs = {
             "w1": "beta:2,48",
         },
     },
-    "km": {
+    "kretzschmar1998": {
         "medium": {
             "n": 200,
             "rho": "beta:2,2",
@@ -70,18 +70,18 @@ configs = {
 num_lags = 5 if CI else 5 * 52
 
 # Iterate over different models.
-for model, priors in configs.items():
+for preset, priors in configs.items():
     # Iterate over different prior configurations for this model.
     for name, prior in priors.items():
         # Iterate over different splits.
         for split, size in split_sizes.items():
-            task_name = f"{model}/{name}/{split}"
+            task_name = f"{preset}/{name}/{split}"
             target = (workspace / task_name).with_suffix(".pkl")
             action = [
                 "python",
                 "-m",
                 "hiv.scripts.generate_data",
-                model,
+                f"--preset={preset}",
                 size,
                 num_lags,
                 target,
