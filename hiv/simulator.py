@@ -89,8 +89,8 @@ class UniversalSimulator:
         sigma: Probability for a steady relationship to dissolve.
         rho: Propensity for a steady relationship to form.
         xi: Propensity for monogamy.
-        w0: Probability for a casual relationship to form between singles.
-        w1: Probability for a casual relationship to form between non-singles.
+        omega0: Probability for a casual relationship to form between singles.
+        omega1: Probability for a casual relationship to form between non-singles.
     """
 
     arg_constraints = {
@@ -98,8 +98,8 @@ class UniversalSimulator:
         "mu": UnitInterval(),
         "sigma": UnitInterval(),
         "rho": UnitInterval(),
-        "w0": UnitInterval(),
-        "w1": UnitInterval(),
+        "omega0": UnitInterval(),
+        "omega1": UnitInterval(),
         "xi": UnitInterval(),
     }
 
@@ -111,15 +111,15 @@ class UniversalSimulator:
         sigma: float,
         rho: float,
         xi: float,
-        w0: float,
-        w1: float,
+        omega0: float,
+        omega1: float,
     ) -> None:
         self.n = n
         self.mu = mu
         self.sigma = sigma
         self.rho = rho
-        self.w0 = w0
-        self.w1 = w1
+        self.omega0 = omega0
+        self.omega1 = omega1
         self.xi = xi
         self.validate_args()
 
@@ -192,7 +192,7 @@ class UniversalSimulator:
         nodes, num_partners = np.transpose(deg)
         candidates = nodes[
             np.random.uniform(size=nodes.shape)
-            < np.where(num_partners, self.w1, self.w0)
+            < np.where(num_partners, self.omega1, self.omega0)
         ]
         edges = add_edges_from_candidates(graph, candidates, is_casual=True)
         for node in edges.ravel():
@@ -234,4 +234,9 @@ class UniversalSimulator:
             / max(num_nodes[False], 1),
             "frac_paired": num_nodes[False]
             / (graph0.number_of_nodes() + graph1.number_of_nodes()),
+            "num_steady_edges": len(steady_edges1),
+            "num_casual_edges": sum(
+                data["is_casual"] for *_, data in graph.edges(data=True)
+            ),
+            "num_nodes": graph.number_of_nodes(),
         }

@@ -6,8 +6,12 @@ import pytest
 @pytest.mark.parametrize(
     "simulator",
     [
-        UniversalSimulator(n=50, rho=0.3, sigma=0.5, xi=0.9, w0=0.4, w1=0.2, mu=0.1),
-        UniversalSimulator(n=1, rho=0.3, sigma=0.5, xi=0.9, w0=0.4, w1=0.2, mu=0.1),
+        UniversalSimulator(
+            n=50, rho=0.3, sigma=0.5, xi=0.9, omega0=0.4, omega1=0.2, mu=0.1
+        ),
+        UniversalSimulator(
+            n=1, rho=0.3, sigma=0.5, xi=0.9, omega0=0.4, omega1=0.2, mu=0.1
+        ),
     ],
 )
 def test_simulator(simulator: UniversalSimulator) -> None:
@@ -17,7 +21,9 @@ def test_simulator(simulator: UniversalSimulator) -> None:
 
 def test_invalid_param() -> None:
     with pytest.raises(ValueError, match="`n` does not satisfy constraint"):
-        UniversalSimulator(n=-1, rho=0.3, sigma=0.5, xi=0.9, w0=0.4, w1=0.2, mu=0.1)
+        UniversalSimulator(
+            n=-1, rho=0.3, sigma=0.5, xi=0.9, omega0=0.4, omega1=0.2, mu=0.1
+        )
 
 
 def test_invalid_type() -> None:

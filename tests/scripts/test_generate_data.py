@@ -10,7 +10,7 @@ import pytest
 @pytest.mark.parametrize(
     "argv",
     [
-        ["--param=n=23.", "--param=w0=beta:2,2", "--preset=hansson2019"],
+        ["--param=n=23.", "--param=omega0=beta:2,2", "--preset=hansson2019"],
         ["--param=n=17", "--param=rho=beta:2,2", "--preset=kretzschmar1996"],
         ["--param=n=17", "--param=rho=beta:2,2", "--preset=kretzschmar1998"],
         ["--param=n=17", "--param=rho=beta:2,2", "--preset=leng2018"],
