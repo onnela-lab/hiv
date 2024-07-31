@@ -69,11 +69,15 @@ for preset, prior in configs.items():
 
         if split == "debug":
             action.append("--save_graphs")
-            action = [
-                "python",
-                "-m",
-                "cProfile",
-                "-o",
-                target.with_suffix(".prof"),
-            ] + action[1:]
+            action = (
+                [
+                    "python",
+                    "-m",
+                    "cProfile",
+                    "-o",
+                    target.with_suffix(".prof"),
+                ]
+                + action[1:]
+                + ["--param=n=100"]
+            )
         create_task(task_name, action=action, targets=[target])

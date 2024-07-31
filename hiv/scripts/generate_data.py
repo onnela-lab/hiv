@@ -131,7 +131,7 @@ def __main__(argv=None) -> None:
         simulator = UniversalSimulator(**params)
 
         # Run the burnin to get the first sample.
-        burnin = args.burnin or int(10 * params["n"])
+        burnin = int(params["n"]) if args.burnin is None else args.burnin
         graph0 = simulator.init()
         graph0 = simulator.run(graph0, burnin)
         graph1 = graph0.copy()
