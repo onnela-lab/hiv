@@ -58,3 +58,42 @@ def unpack_edge(uv: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     u = (uv & mask) >> 32
     v = uv & ~mask
     return u, v
+
+
+class NumpyGraph:
+    """
+    Graph represented as numpy arrays.
+
+    Args:
+        nodes: Set of nodes.
+        edges: Mapping from edge types to sets of edges.
+    """
+
+    def __init__(
+        self, nodes: np.ndarray = None, edges: dict[str, np.ndarray] = None
+    ) -> None:
+        self.nodes = nodes
+        self.edges = edges
+
+    def to_networkx(self) -> nx.Graph:
+        """
+        Convert the graph to a networkx graph.
+        """
+        graph = nx.Graph()
+        graph.add_nodes_from(self.nodes)
+        for key, edges in self.edges.items():
+            graph.add_edges_from(edges, type=key)
+        return graph
+
+    @classmethod
+    def from_networkx(cls, graph: nx.Graph):
+        """
+        Create a graph from a networkx graph.
+        """
+        nodes = np.asarray(list(graph.nodes))
+        assert np.issubdtype(nodes.dtype, int)
+        edges = {}
+        for *edge, data in graph.edges(data=True):
+            edges.setdefault(data["type"], []).append(edge)
+        edges = {key: np.asarray(value) for key, value in edges.items()}
+        return cls(nodes, edges)

@@ -43,3 +43,13 @@ def test_pack_unpack_edge() -> None:
     i, j = util.unpack_edge(ab)
     np.testing.assert_array_equal(a, i)
     np.testing.assert_array_equal(b, j)
+
+
+def test_to_from_numpy_graph() -> None:
+    nxgraph = nx.barabasi_albert_graph(1000, 4)
+    for *_, data in nxgraph.edges(data=True):
+        data["type"] = "default"
+
+    npgraph = util.NumpyGraph.from_networkx(nxgraph)
+    nxgraph2 = npgraph.to_networkx()
+    util.assert_graphs_equal(nxgraph, nxgraph2)
