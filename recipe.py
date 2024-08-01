@@ -78,6 +78,6 @@ for preset, prior in configs.items():
                     target.with_suffix(".prof"),
                 ]
                 + action[1:]
-                + ["--param=n=100"]
+                + ["--param=n=1000", "--burnin=10"]
             )
         create_task(task_name, action=action, targets=[target])
