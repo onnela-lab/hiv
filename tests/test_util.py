@@ -1,5 +1,6 @@
 from hiv import util
 import networkx as nx
+import numpy as np
 import pytest
 
 
@@ -23,3 +24,22 @@ def test_add_nodes_from_update() -> None:
         assert graph.nodes[node]["a"] == "a"
 
     assert graph.number_of_nodes() == 6
+
+
+def test_pack_unpack_edge() -> None:
+    # Pack and unpack, although the order of nodes may change because we sort node
+    # labels before packing.
+    u, v = np.random.randint(10000, size=(2, 100))
+    uv = util.pack_edge(u, v)
+    a, b = util.unpack_edge(uv)
+    np.testing.assert_array_equal(a, np.minimum(u, v))
+    np.testing.assert_array_equal(b, np.maximum(u, v))
+
+    # Re-packing must yield the same result.
+    ab = util.pack_edge(a, b)
+    np.testing.assert_array_equal(uv, ab)
+
+    # Unpacking again yields the same because the inputs were already sorted.
+    i, j = util.unpack_edge(ab)
+    np.testing.assert_array_equal(a, i)
+    np.testing.assert_array_equal(b, j)

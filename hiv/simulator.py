@@ -1,22 +1,6 @@
-import contextlib
 import networkx as nx
 import numpy as np
-from time import time
-
-
-class Timer:
-    """
-    Timer as a context manager with different keys.
-    """
-
-    def __init__(self):
-        self.times = {}
-
-    @contextlib.contextmanager
-    def __call__(self, key):
-        start = time()
-        yield
-        self.times[key] = time() - start
+from .util import Timer
 
 
 def add_edges_from_candidates(
