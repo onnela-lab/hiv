@@ -1,5 +1,22 @@
+import contextlib
 import networkx as nx
 import numpy as np
+from time import time
+
+
+class Timer:
+    """
+    Timer as a context manager with different keys.
+    """
+
+    def __init__(self):
+        self.times = {}
+
+    @contextlib.contextmanager
+    def __call__(self, key):
+        start = time()
+        yield
+        self.times[key] = time() - start
 
 
 def add_edges_from_candidates(
@@ -138,19 +155,22 @@ class UniversalSimulator:
     def init(self) -> nx.Graph:
         return nx.empty_graph(round(self.n))
 
-    def step(self, graph: nx.Graph) -> nx.Graph:
+    def step(self, graph: nx.Graph, return_times: bool = False) -> nx.Graph:
         label_offset = max(graph, default=-1) + 1
+        timer = Timer()
 
         # Remove nodes with probability mu.
-        nodes = np.asarray(list(graph))
-        nodes_to_remove = nodes[
-            np.random.binomial(1, self.mu, nodes.shape).astype(bool)
-        ]
-        graph.remove_nodes_from(nodes_to_remove)
+        with timer("remove_nodes"):
+            nodes = np.asarray(list(graph))
+            nodes_to_remove = nodes[
+                np.random.binomial(1, self.mu, nodes.shape).astype(bool)
+            ]
+            graph.remove_nodes_from(nodes_to_remove)
 
         # Add new nodes that have migrated in.
-        num_new_nodes = np.random.poisson(self.n * self.mu)
-        graph.add_nodes_from(label_offset + np.arange(num_new_nodes))
+        with timer("add_nodes"):
+            num_new_nodes = np.random.poisson(self.n * self.mu)
+            graph.add_nodes_from(label_offset + np.arange(num_new_nodes))
 
         # If there are no nodes, there's nothing else to be done.
         if not graph.number_of_nodes():
@@ -158,47 +178,53 @@ class UniversalSimulator:
 
         # Remove steady relationships with probability sigma and all casual
         # relationships.
-        edges = np.asarray(
-            [(*edge, data["is_casual"]) for *edge, data in graph.edges(data=True)]
-        )
+        with timer("edges_to_array"):
+            edges = np.asarray(
+                [(*edge, data["is_casual"]) for *edge, data in graph.edges(data=True)]
+            )
         if edges.size:
-            edges_to_remove = edges[
-                np.random.binomial(1, self.sigma, edges.shape[0]).astype(bool)
-                | edges[:, -1].astype(bool),
-                :2,
-            ]
-            graph.remove_edges_from(edges_to_remove)
+            with timer("remove_edges"):
+                edges_to_remove = edges[
+                    np.random.binomial(1, self.sigma, edges.shape[0]).astype(bool)
+                    | edges[:, -1].astype(bool),
+                    :2,
+                ]
+                graph.remove_edges_from(edges_to_remove)
 
         # Add steady relationships and update the `is_single` status. Because we have
         # removed all casual relations above, we can simply use the degree as an
         # indicator of nodes being single.
-        nodes, num_partners = np.transpose(list(degree(graph)))
-        candidates = nodes[
-            np.random.uniform(size=nodes.shape)
-            < np.where(num_partners, self.rho * (1 - self.xi), self.rho)
-        ]
-        add_edges_from_candidates(graph, candidates, is_casual=False)
-        deg = list(degree(graph))
-        graph._node.update(
-            {
-                node: {"is_single": degree == 0, "has_casual": False}
-                for node, degree in deg
-            }
-        )
+        with timer("add_steady_edges"):
+            nodes, num_partners = np.transpose(list(degree(graph)))
+            candidates = nodes[
+                np.random.uniform(size=nodes.shape)
+                < np.where(num_partners, self.rho * (1 - self.xi), self.rho)
+            ]
+            add_edges_from_candidates(graph, candidates, is_casual=False)
+        with timer("update_steady_node_status"):
+            deg = list(degree(graph))
+            graph._node.update(
+                {
+                    node: {"is_single": degree == 0, "has_casual": False}
+                    for node, degree in deg
+                }
+            )
 
         # Add casual relationships. Because we have already removed all casual
         # relationships from the previous iteration, any edge is a steady relationship,
         # and the vertices of any edge are partnered up.
-        nodes, num_partners = np.transpose(deg)
-        candidates = nodes[
-            np.random.uniform(size=nodes.shape)
-            < np.where(num_partners, self.omega1, self.omega0)
-        ]
-        edges = add_edges_from_candidates(graph, candidates, is_casual=True)
-        for node in edges.ravel():
-            graph._node[node]["has_casual"] = True
+        with timer("add_casual_edges"):
+            nodes, num_partners = np.transpose(deg)
+            candidates = nodes[
+                np.random.uniform(size=nodes.shape)
+                < np.where(num_partners, self.omega1, self.omega0)
+            ]
+            edges = add_edges_from_candidates(graph, candidates, is_casual=True)
+        with timer("update_casual_node_status"):
+            for node in edges.ravel():
+                graph._node[node]["has_casual"] = True
 
-        return graph
+        return (graph, timer.times) if return_times else graph
 
     def evaluate_summaries(
         self, graph0: nx.Graph, graph1: nx.Graph
