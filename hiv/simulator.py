@@ -164,7 +164,10 @@ class UniversalSimulator:
         # relationships.
         with timer("edges_to_array"):
             edges = np.asarray(
-                [(*edge, data["is_casual"]) for *edge, data in graph.edges(data=True)]
+                [
+                    (*edge, data["type"] == "casual")
+                    for *edge, data in graph.edges(data=True)
+                ]
             )
         if edges.size:
             with timer("remove_edges"):
@@ -184,7 +187,7 @@ class UniversalSimulator:
                 np.random.uniform(size=nodes.shape)
                 < np.where(num_partners, self.rho * (1 - self.xi), self.rho)
             ]
-            add_edges_from_candidates(graph, candidates, is_casual=False)
+            add_edges_from_candidates(graph, candidates, type="steady")
         with timer("update_steady_node_status"):
             deg = list(degree(graph))
             graph._node.update(
@@ -203,7 +206,7 @@ class UniversalSimulator:
                 np.random.uniform(size=nodes.shape)
                 < np.where(num_partners, self.omega1, self.omega0)
             ]
-            edges = add_edges_from_candidates(graph, candidates, is_casual=True)
+            edges = add_edges_from_candidates(graph, candidates, type="casual")
         with timer("update_casual_node_status"):
             for node in edges.ravel():
                 graph._node[node]["has_casual"] = True
@@ -216,12 +219,12 @@ class UniversalSimulator:
         steady_edges0 = {
             tuple(edge)
             for *edge, data in graph0.edges(data=True)
-            if not data["is_casual"]
+            if data["type"] == "steady"
         }
         steady_edges1 = {
             tuple(edge)
             for *edge, data in graph1.edges(data=True)
-            if not data["is_casual"]
+            if data["type"] == "steady"
         }
 
         # Evaluate number of nodes and nodes with casual relationships by relationship
@@ -246,7 +249,7 @@ class UniversalSimulator:
             / (graph0.number_of_nodes() + graph1.number_of_nodes()),
             "num_steady_edges": len(steady_edges1),
             "num_casual_edges": sum(
-                data["is_casual"] for *_, data in graph.edges(data=True)
+                data["type"] == "casual" for *_, data in graph.edges(data=True)
             ),
             "num_nodes": graph.number_of_nodes(),
         }
