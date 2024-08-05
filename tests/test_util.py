@@ -50,3 +50,12 @@ def test_to_from_numpy_graph() -> None:
     npgraph = util.NumpyGraph.from_networkx(nxgraph)
     nxgraph2 = npgraph.to_networkx()
     util.assert_graphs_equal(nxgraph, nxgraph2)
+
+
+def test_degree() -> None:
+    nxgraph = nx.erdos_renyi_graph(10, 0.1)
+    npgraph = util.NumpyGraph.from_networkx(nxgraph)
+    np.testing.assert_array_equal(
+        npgraph.degrees()["default"],
+        [degree for _, degree in sorted(nxgraph.degree)],
+    )

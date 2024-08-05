@@ -88,6 +88,15 @@ class NumpyGraph:
         """
         return self.__class__(self.nodes, self.edges.copy())
 
+    def degrees(self, key=None) -> np.ndarray:
+        if key is None:
+            return {key: self.degrees(key) for key in self.edges}
+        edges = decompress_edges(self.edges[key])
+        connected_nodes, connected_degrees = np.unique(edges, return_counts=True)
+        degrees = np.zeros_like(self.nodes)
+        degrees[np.searchsorted(self.nodes, connected_nodes)] = connected_degrees
+        return degrees
+
     def to_networkx(self) -> nx.Graph:
         """
         Convert the graph to a networkx graph.
