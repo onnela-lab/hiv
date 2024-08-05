@@ -3,6 +3,11 @@ import numpy as np
 from .util import candidates_to_edges, NumpyGraph, Timer, decompress_edges
 
 
+def add_padded(a: np.ndarray, b: np.ndarray) -> np.ndarray:
+    n = max(a.size, b.size)
+    return np.pad(a, (0, n - a.size)) + np.pad(b, (0, n - b.size))
+
+
 def number_of_nodes(graph: nx.Graph, predicate=None, **kwargs) -> int:
     """
     Evaluate the number of nodes satisfying the predicate or matching the keyword
@@ -207,34 +212,51 @@ class UniversalSimulator:
 
         # Evaluate number of nodes and nodes with casual relationships by relationship
         # status.
-        num_nodes = {"single": 0, "partnered": 0}
-        num_nodes_with_casual = {"single": 0, "partnered": 0}
+        num_nodes_by_degree = np.zeros(())
+        num_nodes_with_casual_by_degree = np.zeros(())
         for graph in [graph0, graph1]:
-            is_partnered = np.in1d(graph.nodes, decompress_edges(graph.edges["steady"]))
-            num_partnered = is_partnered.sum()
-            num_nodes["partnered"] += num_partnered
-            num_nodes["single"] += graph.nodes.size - num_partnered.sum()
+            degrees = graph.degrees("steady")
+            num_nodes_by_degree = add_padded(num_nodes_by_degree, np.bincount(degrees))
 
             has_casual = np.in1d(graph.nodes, decompress_edges(graph.edges["casual"]))
-            num_nodes_with_casual["partnered"] = is_partnered @ has_casual
-            num_nodes_with_casual["single"] = (~is_partnered) @ has_casual
+            num_nodes_with_casual_by_degree = add_padded(
+                num_nodes_by_degree, np.bincount(degrees[has_casual])
+            )
 
         return {
+            # Fraction of nodes retained which is monotonically decreasing. We expect
+            # this statistics to change slowly because the migration probability `mu`
+            # tends to be small.
             "frac_retained_nodes": np.intersect1d(
                 graph0.nodes, graph1.nodes, assume_unique=True
             ).size
             / graph0.nodes.size,
+            # Fraction of retained steady edges. This is generally decreasing but there
+            # may be increasing "blips" because a relationship could re-form, and we
+            # don't ask "did you break up and make up again" in the survey. This
+            # statistic is indicative of the break up probability `sigma`.
             "frac_retained_steady_edges": np.intersect1d(
                 steady_edges0, steady_edges1, assume_unique=True
             ).size
-            / max(len(steady_edges0), 1),  # noqa: E131
-            "frac_single_with_casual": num_nodes_with_casual["single"]
-            / max(num_nodes["single"], 1),
-            "frac_paired_with_casual": num_nodes_with_casual["partnered"]
-            / max(num_nodes["partnered"], 1),
-            "frac_paired": num_nodes["partnered"]
+            / max(steady_edges0.size, 1),
+            # Fraction of singles with a casual contact. This statistics is informative
+            # of `omega0`.
+            "frac_single_with_casual": num_nodes_with_casual_by_degree[0]
+            / max(num_nodes_by_degree[0], 1),
+            # Fraction of individuals in steady relationships with a casual contact.
+            # This statistics is indicative of `omega1`.
+            "frac_paired_with_casual": num_nodes_with_casual_by_degree[1:].sum()
+            / max(num_nodes_by_degree[1:].sum(), 1),
+            # Fraction of nodes that have one or more steady relations. This statistics
+            # informs `rho`, the tendency to form connections.
+            "frac_paired": num_nodes_by_degree[1:].sum()
             / (graph0.nodes.size + graph1.nodes.size),
-            "num_steady_edges": len(steady_edges1),
-            "num_casual_edges": graph1.edges["casual"].size,
-            "num_nodes": graph1.nodes.size,
+            # Fraction of nodes in a steady relationship who have more than one steady
+            # relationship. This is indicative of the monogamy parameter `xi`.
+            "frac_concurrent": num_nodes_by_degree[2:].sum()
+            / max(num_nodes_by_degree[1:].sum(), 1),
+            # Debug statistics, not used for inference.
+            "_num_steady_edges": len(steady_edges1),
+            "_num_casual_edges": graph1.edges["casual"].size,
+            "_num_nodes": graph1.nodes.size,
         }
