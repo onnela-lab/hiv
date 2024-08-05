@@ -80,4 +80,7 @@ for preset, prior in configs.items():
                 + action[1:]
                 + ["--param=n=1000", "--burnin=10"]
             )
+        else:
+            # Burn in for thirty years.
+            action.append(f"--burnin={52 * 30}")
         create_task(task_name, action=action, targets=[target])
