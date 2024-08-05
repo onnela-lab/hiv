@@ -131,7 +131,7 @@ class UniversalSimulator:
                 # We can't use assume_unique here because node indices may appear
                 # repeatedly in the edge list.
                 graph.edges["steady"] = compressed_steady[
-                    np.isin(steady, graph.nodes).any(axis=-1)
+                    np.isin(steady, graph.nodes).all(axis=-1)
                 ]
 
         # Add new nodes that have migrated in.
