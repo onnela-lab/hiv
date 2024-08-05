@@ -16,6 +16,7 @@ create_task("lint", action="black --check .")
 split_sizes = {
     "debug": 10,
     "test": 1_000,
+    "validation": 100,
     "train": 10_000,
 }
 configs = {
