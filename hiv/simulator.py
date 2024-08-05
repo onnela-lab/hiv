@@ -159,6 +159,7 @@ class UniversalSimulator:
                 )
                 proba = np.where(is_partnered, self.rho * (1 - self.xi), self.rho)
             else:
+                is_partnered = None
                 proba = self.rho
             candidates = graph.nodes[np.random.uniform(size=graph.nodes.size) < proba]
 
@@ -177,7 +178,11 @@ class UniversalSimulator:
         with timer("add_casual_edges"):
             # Seek casual edges with probability depending on being single. We don't
             # need to check if there are steady edges because we just created them.
-            is_partnered = np.isin(graph.nodes, decompress_edges(graph.edges["steady"]))
+            newly_partnered = np.isin(graph.nodes, decompress_edges(new_steady_edges))
+            if is_partnered is None:
+                is_partnered = newly_partnered
+            else:
+                is_partnered |= newly_partnered
             proba = np.where(is_partnered, self.omega1, self.omega0)
             candidates = graph.nodes[np.random.uniform(size=graph.nodes.size) < proba]
 
