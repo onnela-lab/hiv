@@ -1,6 +1,7 @@
 import argparse
 import collectiontools
 import numbers
+import numpy as np
 from pathlib import Path
 import pickle
 from scipy import stats
@@ -82,10 +83,12 @@ class Args:
     burnin: int
     param: list[str]
     save_graphs: bool
+    seed: int
 
 
 def __main__(argv=None) -> None:
     parser = argparse.ArgumentParser()
+    parser.add_argument("--seed", "-s", type=int, help="random number generator seed")
     parser.add_argument(
         "--burnin",
         help="number of burn in steps (defaults to `10 * n`)",
@@ -117,6 +120,9 @@ def __main__(argv=None) -> None:
         f"Parameters {extra} are not allowed; allowed parameters are "
         f"{UniversalSimulator.arg_constraints}."
     )
+
+    if args.seed is not None:
+        np.random.seed(args.seed)
 
     result = {
         "args": vars(args),

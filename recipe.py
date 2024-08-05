@@ -1,4 +1,5 @@
 from cook import create_task
+import hashlib
 import os
 from pathlib import Path
 
@@ -56,10 +57,15 @@ for preset, prior in configs.items():
     for split, size in split_sizes.items():
         task_name = f"{preset}/{split}"
         target = (workspace / task_name).with_suffix(".pkl")
+        # Get a 32-bit seed based on the hash of the target. This will ensure distinct
+        # seeds across all runs (with high probability).
+        seed_bytes = hashlib.sha256(str(target).encode()).digest()
+        seed = int.from_bytes(seed_bytes[:4], "little")
         action = [
             "python",
             "-m",
             "hiv.scripts.generate_data",
+            f"--seed={seed}",
             f"--preset={'default' if prior else preset}",
             size,
             num_lags,
