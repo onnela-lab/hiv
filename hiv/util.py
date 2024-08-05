@@ -36,44 +36,57 @@ def to_np_dict(
     return {key: np.asarray(value) for key, value in x.items()}
 
 
-def pack_edge(u: np.ndarray, v: np.ndarray) -> np.ndarray:
+def compress_edges(uv: np.ndarray) -> np.ndarray:
     """
-    Pack node indices `u` and `v` into a single edge identifier obtained by
-    concatenating the numbers.
+    Pack an edge list with shape `(num_edges, 2)` to a compressed edge with shape
+    `(num_edges,)`.
     """
-    uvmax = 0xFFFFFFFF
-    assert u.max() <= uvmax and v.max() <= uvmax
-    u, v = np.minimum(u, v).astype(np.uint64), np.maximum(u, v).astype(np.uint64)
-    uv = (u << 32) + v
+    assert uv.size == 0 or uv.max() < 0xFFFFFFFF
+    uv.sort(axis=-1)
+    u, v = uv.T
+    uv = (u.astype(np.uint64) << 32) + v.astype(np.uint64)
     assert uv.dtype == np.uint64
     return uv
 
 
-def unpack_edge(uv: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+def decompress_edges(uv: np.ndarray) -> np.ndarray:
     """
-    Unpack a compressed edge.
+    Unpack a compressed edge with shape `(num_edges,)` to an edge list with shape
+    `(num_edges, 2)`.
     """
     assert uv.dtype == np.uint64
-    mask = 0xFFFFFFFF00000000
-    u = (uv & mask) >> 32
-    v = uv & ~mask
-    return u, v
+    return np.transpose([(uv & 0xFFFFFFFF00000000) >> 32, uv & 0x00000000FFFFFFFF])
+
+
+def candidates_to_edges(candidates: np.ndarray) -> np.ndarray:
+    candidates = np.random.permutation(candidates)
+    if candidates.size % 2:
+        candidates = candidates[1:]
+    edges = candidates.reshape((-1, 2))
+    return compress_edges(edges)
 
 
 class NumpyGraph:
     """
-    Graph represented as numpy arrays.
+    Graph represented by numpy arrays. This implementation is fast for batch updates of
+    nodes or edges and slow for iterative updates.
 
     Args:
         nodes: Set of nodes.
-        edges: Mapping from edge types to sets of edges.
+        compressed: Mapping from edge types to compressed edge sets.
     """
 
     def __init__(
         self, nodes: np.ndarray = None, edges: dict[str, np.ndarray] = None
     ) -> None:
         self.nodes = nodes
-        self.edges = edges
+        self.edges = edges or {}
+
+    def copy(self) -> "NumpyGraph":
+        """
+        Shallow copy of the graph.
+        """
+        return self.__class__(self.nodes, self.edges.copy())
 
     def to_networkx(self) -> nx.Graph:
         """
@@ -82,7 +95,7 @@ class NumpyGraph:
         graph = nx.Graph()
         graph.add_nodes_from(self.nodes)
         for key, edges in self.edges.items():
-            graph.add_edges_from(edges, type=key)
+            graph.add_edges_from(decompress_edges(edges), type=key)
         return graph
 
     @classmethod
@@ -95,5 +108,5 @@ class NumpyGraph:
         edges = {}
         for *edge, data in graph.edges(data=True):
             edges.setdefault(data["type"], []).append(edge)
-        edges = {key: np.asarray(value) for key, value in edges.items()}
+        edges = {key: compress_edges(np.asarray(value)) for key, value in edges.items()}
         return cls(nodes, edges)

@@ -1,31 +1,6 @@
 import networkx as nx
 import numpy as np
-from .util import Timer
-
-
-def add_edges_from_candidates(
-    graph: nx.Graph, candidates, shuffle: bool = True, **kwargs
-) -> np.ndarray:
-    """
-    Add edges from an iterable of candidates to be paired up akin to a configuration
-    model. Edges are only added if they do not already exist.
-
-    Args:
-        graph: Graph to add edges to.
-        candidates: Array-like candidates to pair up.
-        shuffle: Shuffle candidates before pairing.
-        **kwargs: Attributes for each edge.
-
-    Returns:
-        Edges added to the graph as an edge list with shape `(num_candidates // 2, 2)`.
-    """
-    if shuffle:
-        candidates = np.random.permutation(candidates)
-    if len(candidates) % 2:
-        candidates = candidates[1:]
-    edges = np.reshape(candidates, (-1, 2))
-    graph.add_edges_from((*edge, kwargs) for edge in edges if not graph.has_edge(*edge))
-    return edges
+from .util import candidates_to_edges, NumpyGraph, Timer, decompress_edges
 
 
 def number_of_nodes(graph: nx.Graph, predicate=None, **kwargs) -> int:
@@ -74,11 +49,6 @@ class UnitInterval(Interval):
         super().__init__(0, 1)
 
 
-def degree(graph: nx.Graph):
-    for node, neighbors in graph._adj.items():
-        yield node, len(neighbors)
-
-
 class UniversalSimulator:
     r"""
     Universal discrete-time simulator for sexual contact networks, reducing to different
@@ -124,7 +94,7 @@ class UniversalSimulator:
         self.xi = xi
         self.validate_args()
 
-    def run(self, graph: nx.Graph, num_steps: int) -> nx.Graph:
+    def run(self, graph: NumpyGraph, num_steps: int) -> NumpyGraph:
         for _ in range(num_steps):
             graph = self.step(graph)
         return graph
@@ -136,120 +106,122 @@ class UniversalSimulator:
                     f"Argument `{arg}` does not satisfy constraint `{constraint}`."
                 )
 
-    def init(self) -> nx.Graph:
-        return nx.empty_graph(round(self.n))
+    def init(self) -> NumpyGraph:
+        return NumpyGraph(np.arange(round(self.n)))
 
-    def step(self, graph: nx.Graph, return_times: bool = False) -> nx.Graph:
-        label_offset = max(graph, default=-1) + 1
+    def step(self, graph: NumpyGraph, return_times: bool = False) -> NumpyGraph:
+        label_offset = graph.nodes.max() + 1 if graph.nodes.size else 0
         timer = Timer()
 
         # Remove nodes with probability mu.
         with timer("remove_nodes"):
-            nodes = np.asarray(list(graph))
-            nodes_to_remove = nodes[
-                np.random.binomial(1, self.mu, nodes.shape).astype(bool)
-            ]
-            graph.remove_nodes_from(nodes_to_remove)
+            num_keep = np.random.binomial(graph.nodes.size, 1 - self.mu)
+            graph.nodes = np.random.choice(graph.nodes, num_keep, replace=False)
+
+        # Remove edges incident on a removed node.
+        if "steady" in graph.edges:
+            with timer("remove_lingering_edges"):
+                compressed_steady = graph.edges["steady"]
+                steady = decompress_edges(compressed_steady)
+                graph.edges["steady"] = compressed_steady[
+                    np.isin(steady, graph.nodes).any(axis=-1)
+                ]
 
         # Add new nodes that have migrated in.
         with timer("add_nodes"):
             num_new_nodes = np.random.poisson(self.n * self.mu)
-            graph.add_nodes_from(label_offset + np.arange(num_new_nodes))
+            graph.nodes = np.concatenate(
+                [graph.nodes, label_offset + np.arange(num_new_nodes)]
+            )
 
         # If there are no nodes, there's nothing else to be done.
-        if not graph.number_of_nodes():
+        if not graph.nodes.size:
             return graph
 
-        # Remove steady relationships with probability sigma and all casual
-        # relationships.
-        with timer("edges_to_array"):
-            edges = np.asarray(
-                [
-                    (*edge, data["type"] == "casual")
-                    for *edge, data in graph.edges(data=True)
-                ]
-            )
-        if edges.size:
-            with timer("remove_edges"):
-                edges_to_remove = edges[
-                    np.random.binomial(1, self.sigma, edges.shape[0]).astype(bool)
-                    | edges[:, -1].astype(bool),
-                    :2,
-                ]
-                graph.remove_edges_from(edges_to_remove)
+        # Remove steady relationships with probability sigma.
+        if "steady" in graph.edges:
+            with timer("remove_steady_edges"):
+                num_edges = graph.edges["steady"].shape[0]
+                num_keep = np.random.binomial(num_edges, 1 - self.sigma)
+                graph.edges["steady"] = np.random.choice(
+                    graph.edges["steady"], size=num_keep, replace=False
+                )
 
-        # Add steady relationships and update the `is_single` status. Because we have
-        # removed all casual relations above, we can simply use the degree as an
-        # indicator of nodes being single.
         with timer("add_steady_edges"):
-            nodes, num_partners = np.transpose(list(degree(graph)))
-            candidates = nodes[
-                np.random.uniform(size=nodes.shape)
-                < np.where(num_partners, self.rho * (1 - self.xi), self.rho)
+            # Seek steady edges with probability depending on being single.
+            if "steady" in graph.edges:
+                is_partnered = np.isin(
+                    graph.nodes, decompress_edges(graph.edges["steady"])
+                )
+                proba = np.where(is_partnered, self.rho * (1 - self.xi), self.rho)
+            else:
+                proba = self.rho
+            candidates = graph.nodes[
+                np.random.binomial(1, proba, size=graph.nodes.size).astype(bool)
             ]
-            add_edges_from_candidates(graph, candidates, type="steady")
-        with timer("update_steady_node_status"):
-            deg = list(degree(graph))
-            graph._node.update(
-                {
-                    node: {"is_single": degree == 0, "has_casual": False}
-                    for node, degree in deg
-                }
-            )
+
+            # Add new edges and deduplicate if already in a relationship.
+            new_steady_edges = candidates_to_edges(candidates)
+            if "steady" in graph.edges:
+                graph.edges["steady"] = np.union1d(
+                    graph.edges["steady"], new_steady_edges
+                )
+            else:
+                graph.edges["steady"] = new_steady_edges
 
         # Add casual relationships. Because we have already removed all casual
         # relationships from the previous iteration, any edge is a steady relationship,
         # and the vertices of any edge are partnered up.
         with timer("add_casual_edges"):
-            nodes, num_partners = np.transpose(deg)
-            candidates = nodes[
-                np.random.uniform(size=nodes.shape)
-                < np.where(num_partners, self.omega1, self.omega0)
+            # Seek casual edges with probability depending on being single. We don't
+            # need to check if there are steady edges because we just created them.
+            is_partnered = np.isin(graph.nodes, decompress_edges(graph.edges["steady"]))
+            proba = np.where(is_partnered, self.omega1, self.omega0)
+            candidates = graph.nodes[
+                np.random.binomial(1, proba, size=graph.nodes.size).astype(bool)
             ]
-            edges = add_edges_from_candidates(graph, candidates, type="casual")
-        with timer("update_casual_node_status"):
-            for node in edges.ravel():
-                graph._node[node]["has_casual"] = True
+
+            # Add new edges and exclude edges that already exist in the steady edge set.
+            # We need to first compress the edges to allow the set operations.
+            casual_edges = candidates_to_edges(candidates)
+            graph.edges["casual"] = np.setdiff1d(casual_edges, graph.edges["steady"])
 
         return (graph, timer.times) if return_times else graph
 
     def evaluate_summaries(
-        self, graph0: nx.Graph, graph1: nx.Graph
+        self, graph0: NumpyGraph, graph1: NumpyGraph
     ) -> dict[str, float]:
-        steady_edges0 = {
-            tuple(edge)
-            for *edge, data in graph0.edges(data=True)
-            if data["type"] == "steady"
-        }
-        steady_edges1 = {
-            tuple(edge)
-            for *edge, data in graph1.edges(data=True)
-            if data["type"] == "steady"
-        }
+        steady_edges0 = graph0.edges["steady"]
+        steady_edges1 = graph1.edges["steady"]
 
         # Evaluate number of nodes and nodes with casual relationships by relationship
         # status.
-        num_nodes = {False: 0, True: 0}
-        num_nodes_with_casual = {False: 0, True: 0}
+        num_nodes = {"single": 0, "partnered": 0}
+        num_nodes_with_casual = {"single": 0, "partnered": 0}
         for graph in [graph0, graph1]:
-            for _, data in graph.nodes(data=True):
-                num_nodes[data["is_single"]] += 1
-                num_nodes_with_casual[data["is_single"]] += data["has_casual"]
+            is_partnered = np.in1d(graph.nodes, decompress_edges(graph.edges["steady"]))
+            num_partnered = is_partnered.sum()
+            num_nodes["partnered"] += num_partnered
+            num_nodes["single"] += graph.nodes.size - num_partnered.sum()
+
+            has_casual = np.in1d(graph.nodes, decompress_edges(graph.edges["casual"]))
+            num_nodes_with_casual["partnered"] = is_partnered @ has_casual
+            num_nodes_with_casual["single"] = (~is_partnered) @ has_casual
 
         return {
-            "frac_retained_nodes": len(set(graph0) & set(graph1))
-            / graph0.number_of_nodes(),
-            "frac_retained_steady_edges": len(steady_edges0 & steady_edges1)
+            "frac_retained_nodes": np.intersect1d(graph0.nodes, graph1.nodes).size
+            / graph0.nodes.size,
+            "frac_retained_steady_edges": np.intersect1d(
+                steady_edges0, steady_edges1
+            ).size
             / max(len(steady_edges0), 1),  # noqa: E131
-            "frac_single_with_casual": num_nodes_with_casual[True]
-            / max(num_nodes[True], 1),
-            "frac_paired_with_casual": num_nodes_with_casual[False]
-            / max(num_nodes[False], 1),
-            "frac_paired": num_nodes[False]
-            / (graph0.number_of_nodes() + graph1.number_of_nodes()),
+            "frac_single_with_casual": num_nodes_with_casual["single"]
+            / max(num_nodes["single"], 1),
+            "frac_paired_with_casual": num_nodes_with_casual["partnered"]
+            / max(num_nodes["partnered"], 1),
+            "frac_paired": num_nodes["partnered"]
+            / (graph0.nodes.size + graph1.nodes.size),
             "num_steady_edges": len(steady_edges1),
-            "num_casual_edges": sum(
-                data["type"] == "casual" for *_, data in graph.edges(data=True)
-            ),
-            "num_nodes": graph.number_of_nodes(),
+            "num_casual_edges": graph1.edges["casual"].size,
+            "num_nodes": graph1.nodes.size,
         }
