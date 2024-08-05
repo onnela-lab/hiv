@@ -160,9 +160,7 @@ class UniversalSimulator:
                 proba = np.where(is_partnered, self.rho * (1 - self.xi), self.rho)
             else:
                 proba = self.rho
-            candidates = graph.nodes[
-                np.random.binomial(1, proba, size=graph.nodes.size).astype(bool)
-            ]
+            candidates = graph.nodes[np.random.uniform(size=graph.nodes.size) < proba]
 
             # Add new edges and deduplicate if already in a relationship.
             new_steady_edges = candidates_to_edges(candidates)
@@ -181,9 +179,7 @@ class UniversalSimulator:
             # need to check if there are steady edges because we just created them.
             is_partnered = np.isin(graph.nodes, decompress_edges(graph.edges["steady"]))
             proba = np.where(is_partnered, self.omega1, self.omega0)
-            candidates = graph.nodes[
-                np.random.binomial(1, proba, size=graph.nodes.size).astype(bool)
-            ]
+            candidates = graph.nodes[np.random.uniform(size=graph.nodes.size) < proba]
 
             # Add new edges and exclude edges that already exist in the steady edge set.
             # We need to first compress the edges to allow the set operations.
