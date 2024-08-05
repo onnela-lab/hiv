@@ -119,7 +119,7 @@ class NumpyGraph:
             assert has_nodes.all(), f"Edges with type {key} have missing nodes."
 
     @classmethod
-    def from_networkx(cls, graph: nx.Graph):
+    def from_networkx(cls, graph: nx.Graph) -> "NumpyGraph":
         """
         Create a graph from a networkx graph.
         """
@@ -127,6 +127,6 @@ class NumpyGraph:
         assert np.issubdtype(nodes.dtype, int)
         edges = {}
         for *edge, data in graph.edges(data=True):
-            edges.setdefault(data["type"], []).append(edge)
+            edges.setdefault(data.get("type", "default"), []).append(edge)
         edges = {key: compress_edges(np.asarray(value)) for key, value in edges.items()}
         return cls(nodes, edges)
