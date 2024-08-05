@@ -110,7 +110,7 @@ class UniversalSimulator:
         return NumpyGraph(np.arange(round(self.n)))
 
     def step(self, graph: NumpyGraph, return_times: bool = False) -> NumpyGraph:
-        label_offset = graph.nodes.max() + 1 if graph.nodes.size else 0
+        label_offset = (graph.nodes.max() + 1) if graph.nodes.size else 0
         timer = Timer()
 
         # Remove nodes with probability mu.
@@ -123,6 +123,8 @@ class UniversalSimulator:
             with timer("remove_lingering_edges"):
                 compressed_steady = graph.edges["steady"]
                 steady = decompress_edges(compressed_steady)
+                # We can't use assume_unique here because node indices may appear
+                # repeatedly in the edge list.
                 graph.edges["steady"] = compressed_steady[
                     np.isin(steady, graph.nodes).any(axis=-1)
                 ]
@@ -150,6 +152,8 @@ class UniversalSimulator:
         with timer("add_steady_edges"):
             # Seek steady edges with probability depending on being single.
             if "steady" in graph.edges:
+                # We can't use assume_unique here because node indices may appear
+                # repeatedly in the edge list.
                 is_partnered = np.isin(
                     graph.nodes, decompress_edges(graph.edges["steady"])
                 )
@@ -184,7 +188,9 @@ class UniversalSimulator:
             # Add new edges and exclude edges that already exist in the steady edge set.
             # We need to first compress the edges to allow the set operations.
             casual_edges = candidates_to_edges(candidates)
-            graph.edges["casual"] = np.setdiff1d(casual_edges, graph.edges["steady"])
+            graph.edges["casual"] = np.setdiff1d(
+                casual_edges, graph.edges["steady"], assume_unique=True
+            )
 
         return (graph, timer.times) if return_times else graph
 
@@ -209,10 +215,12 @@ class UniversalSimulator:
             num_nodes_with_casual["single"] = (~is_partnered) @ has_casual
 
         return {
-            "frac_retained_nodes": np.intersect1d(graph0.nodes, graph1.nodes).size
+            "frac_retained_nodes": np.intersect1d(
+                graph0.nodes, graph1.nodes, assume_unique=True
+            ).size
             / graph0.nodes.size,
             "frac_retained_steady_edges": np.intersect1d(
-                steady_edges0, steady_edges1
+                steady_edges0, steady_edges1, assume_unique=True
             ).size
             / max(len(steady_edges0), 1),  # noqa: E131
             "frac_single_with_casual": num_nodes_with_casual["single"]
