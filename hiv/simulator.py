@@ -113,10 +113,11 @@ class UniversalSimulator:
         label_offset = (graph.nodes.max() + 1) if graph.nodes.size else 0
         timer = Timer()
 
-        # Remove nodes with probability mu.
+        # Keep nodes with probability 1 - mu.
         with timer("remove_nodes"):
-            num_keep = np.random.binomial(graph.nodes.size, 1 - self.mu)
-            graph.nodes = np.random.choice(graph.nodes, num_keep, replace=False)
+            graph.nodes = graph.nodes[
+                np.random.uniform(size=graph.nodes.size) > self.mu
+            ]
 
         # Remove edges incident on a removed node.
         if "steady" in graph.edges:
@@ -140,14 +141,13 @@ class UniversalSimulator:
         if not graph.nodes.size:
             return graph
 
-        # Remove steady relationships with probability sigma.
+        # Keep steady relationships with probability 1 - sigma.
         if "steady" in graph.edges:
             with timer("remove_steady_edges"):
-                num_edges = graph.edges["steady"].shape[0]
-                num_keep = np.random.binomial(num_edges, 1 - self.sigma)
-                graph.edges["steady"] = np.random.choice(
-                    graph.edges["steady"], size=num_keep, replace=False
-                )
+                steady = graph.edges["steady"]
+                graph.edges["steady"] = steady[
+                    np.random.uniform(size=steady.size) > self.sigma
+                ]
 
         with timer("add_steady_edges"):
             # Seek steady edges with probability depending on being single.
