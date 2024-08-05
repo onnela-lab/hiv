@@ -107,6 +107,17 @@ class NumpyGraph:
             graph.add_edges_from(decompress_edges(edges), type=key)
         return graph
 
+    def validate(self) -> nx.Graph:
+        # Check nodes are sorted.
+        np.testing.assert_array_less(
+            0, np.diff(self.nodes), err_msg="Node labels must be sorted."
+        )
+        # Check there are no edges that do not have corresponding nodes.
+        for key, edges in self.edges.items():
+            edges = decompress_edges(edges)
+            has_nodes = np.isin(edges, self.nodes).all(axis=-1)
+            assert has_nodes.all(), f"Edges with type {key} have missing nodes."
+
     @classmethod
     def from_networkx(cls, graph: nx.Graph):
         """

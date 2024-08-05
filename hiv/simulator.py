@@ -94,9 +94,13 @@ class UniversalSimulator:
         self.xi = xi
         self.validate_args()
 
-    def run(self, graph: NumpyGraph, num_steps: int) -> NumpyGraph:
+    def run(
+        self, graph: NumpyGraph, num_steps: int, validate: bool = False
+    ) -> NumpyGraph:
         for _ in range(num_steps):
             graph = self.step(graph)
+            if validate:
+                graph.validate()
         return graph
 
     def validate_args(self) -> None:
