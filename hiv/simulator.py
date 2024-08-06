@@ -248,7 +248,10 @@ class UniversalSimulator:
             "frac_paired_with_casual": num_nodes_with_casual_by_degree[1:].sum()
             / max(num_nodes_by_degree[1:].sum(), 1),
             # Fraction of nodes that have one or more steady relations. This statistics
-            # informs `rho`, the tendency to form connections.
+            # informs `rho`, the tendency to form connections. In contrast to other
+            # statistics, such as the fraction of retained nodes, this statistic is
+            # also affected by parameters like the dissolution rate `sigma` and
+            # emigration rate `mu`.
             "frac_paired": num_nodes_by_degree[1:].sum()
             / (graph0.nodes.size + graph1.nodes.size),
             # Fraction of nodes in a steady relationship who have more than one steady
