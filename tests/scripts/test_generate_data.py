@@ -13,7 +13,7 @@ import pytest
         ["--param=n=23.", "--param=omega0=beta:2,2", "--preset=hansson2019"],
         ["--param=n=17", "--param=rho=beta:2,2", "--preset=kretzschmar1996"],
         ["--param=n=17", "--param=rho=beta:2,2", "--preset=kretzschmar1998"],
-        ["--param=n=17", "--param=rho=beta:2,2", "--preset=leng2018"],
+        ["--param=n=17", "--param=rho=beta:2,2", "--preset=leng2018", "--seed=3"],
     ],
 )
 @pytest.mark.parametrize("save_graphs", [False, True])
