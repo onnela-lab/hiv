@@ -220,7 +220,7 @@ class UniversalSimulator:
 
             has_casual = np.in1d(graph.nodes, decompress_edges(graph.edges["casual"]))
             num_nodes_with_casual_by_degree = add_padded(
-                num_nodes_by_degree, np.bincount(degrees[has_casual])
+                num_nodes_with_casual_by_degree, np.bincount(degrees[has_casual])
             )
 
         return {

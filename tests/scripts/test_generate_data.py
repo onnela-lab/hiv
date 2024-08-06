@@ -55,5 +55,8 @@ def test_generate_data(argv: list, save_graphs: bool, tmp_path: pathlib.Path) ->
     for values in result["params"].values():
         assert values.shape == (num_samples,)
 
-    for values in result["summaries"].values():
+    for key, values in result["summaries"].items():
         assert values.shape == (num_samples, num_lags)
+        if key.startswith("frac"):
+            assert (values >= 0).all(), "probability is negative"
+            assert (values <= 1).all(), "probability is larger than one"
