@@ -75,7 +75,7 @@ for preset, prior in configs.items():
             action.append(f"--param={arg}={spec}")
 
         if split == "debug":
-            action.append("--save_graphs")
+            action.append("--save-graphs")
             action = (
                 [
                     "python",

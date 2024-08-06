@@ -24,7 +24,7 @@ def test_generate_data(argv: list, save_graphs: bool, tmp_path: pathlib.Path) ->
     simulator = argv[-1]
     argv = argv + [num_samples, num_lags, output]
     if save_graphs:
-        argv.append("--save_graphs")
+        argv.append("--save-graphs")
     generate_data.__main__(list(map(str, argv)))
 
     with open(output, "rb") as fp:

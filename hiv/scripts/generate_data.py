@@ -95,7 +95,7 @@ def __main__(argv=None) -> None:
         type=int,
     )
     parser.add_argument(
-        "--save_graphs",
+        "--save-graphs",
         action="store_true",
         help="store graph sequences in addition to summaries (memory intensive)",
     )
