@@ -64,7 +64,7 @@ class UniversalSimulator:
         mu: Probability for a node to emigrate and immigration rate `n * mu`.
         sigma: Probability for a steady relationship to dissolve.
         rho: Propensity for a steady relationship to form.
-        xi: Propensity for monogamy.
+        xi: Propensity for concurrency.
         omega0: Probability for a casual relationship to form between singles.
         omega1: Probability for a casual relationship to form between non-singles.
     """
@@ -166,7 +166,7 @@ class UniversalSimulator:
                 is_partnered = np.isin(
                     graph.nodes, decompress_edges(graph.edges["steady"])
                 )
-                proba = np.where(is_partnered, self.rho * (1 - self.xi), self.rho)
+                proba = np.where(is_partnered, self.rho * self.xi, self.rho)
             else:
                 is_partnered = None
                 proba = self.rho
