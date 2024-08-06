@@ -15,8 +15,15 @@ import pytest
     ],
 )
 def test_simulator(simulator: UniversalSimulator) -> None:
-    graph = simulator.init()
-    simulator.run(graph, 100, validate=True)
+    graph0 = simulator.init()
+    simulator.step(graph0)
+
+    graph1 = graph0.copy()
+    simulator.step(graph1)
+    simulator.evaluate_summaries(graph0, graph1)
+
+    simulator.run(graph1, 100, validate=True)
+    simulator.evaluate_summaries(graph0, graph1)
 
 
 def test_invalid_param() -> None:
