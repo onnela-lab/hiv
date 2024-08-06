@@ -91,7 +91,7 @@ def __main__(argv=None) -> None:
     parser.add_argument("--seed", "-s", type=int, help="random number generator seed")
     parser.add_argument(
         "--burnin",
-        help="number of burn in steps (defaults to `10 * n`)",
+        help="number of burn in steps (defaults to the expected population size `n`)",
         type=int,
     )
     parser.add_argument(
