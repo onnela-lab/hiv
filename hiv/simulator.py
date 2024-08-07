@@ -163,10 +163,10 @@ class UniversalSimulator:
             if "steady" in graph.edges:
                 # We can't use assume_unique here because node indices may appear
                 # repeatedly in the edge list.
-                is_partnered = np.isin(
-                    graph.nodes, decompress_edges(graph.edges["steady"])
-                )
-                proba = np.where(is_partnered, self.rho * self.xi, self.rho)
+                degrees = graph.degrees("steady")
+                is_partnered = degrees > 0
+                # proba = np.where(is_partnered, self.rho * self.xi, self.rho)
+                proba = self.rho * self.xi**degrees
             else:
                 is_partnered = None
                 proba = self.rho
