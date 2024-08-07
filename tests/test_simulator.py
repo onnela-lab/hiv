@@ -1,5 +1,10 @@
 import networkx as nx
-from hiv.simulator import Interval, number_of_nodes, UniversalSimulator
+from hiv.simulator import (
+    estimate_paired_fraction,
+    Interval,
+    number_of_nodes,
+    UniversalSimulator,
+)
 import pytest
 
 
@@ -49,3 +54,8 @@ def test_number_of_nodes() -> None:
     assert number_of_nodes(graph) == 3
     assert number_of_nodes(graph, foo="bazz") == 2
     assert number_of_nodes(graph, lambda x: x["foo"] == "bar") == 1
+
+
+def test_estimate_paired_fraction() -> None:
+    assert estimate_paired_fraction(0.2, 0, 0) == 1
+    assert estimate_paired_fraction(0, 0.5, 0.7) == 0

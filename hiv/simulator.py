@@ -265,3 +265,11 @@ class UniversalSimulator:
             "_num_casual_edges": graph1.edges["casual"].size,
             "_num_nodes": graph1.nodes.size,
         }
+
+
+def estimate_paired_fraction(rho, mu, sigma):
+    """
+    Estimate the fraction of paired nodes based on inline text about 3/4 of the way
+    down page 369 of 10.1016/j.idm.2017.07.002.
+    """
+    return rho / (rho + sigma + 2 * mu)
