@@ -17,6 +17,7 @@ from matplotlib import pyplot as plt
 import numbers
 import numpy as np
 from scipy import optimize, stats
+from hiv.simulator import estimate_paired_fraction
 ```
 
 ```{code-cell} ipython3
@@ -62,10 +63,10 @@ raw = {
     # Extracted from table 1.
     "xiridou2003": {
         "n": (20000, Unit.UNITLESS),
-        "omega0": ([16, 22, 28], Unit.YEARLY),
-        "omega1": ([6, 8, 10], Unit.YEARLY),
+        "omega0": (22, Unit.YEARLY),  # They consider [16, 22, 28].
+        "omega1": (8, Unit.YEARLY),  # They consider [6, 8, 10].
         "rho": (0.73, Unit.YEARLY),
-        "sigma": ([0.75, 1.5, 2.5], Unit.YEARS),
+        "sigma": (1.5, Unit.YEARS),  # They consider [0.75, 1.5, 2.5].
         "mu": (30, Unit.YEARS),
         "xi": None,
     },
@@ -75,11 +76,15 @@ raw = {
         "mu": None,
         "rho": (3, Unit.YEARLY),
         "sigma": (1.5, Unit.YEARLY),
-        "omega1": (0.335, Unit.YEARLY),
-        "omega0": (2 * 0.335, Unit.YEARLY),
+        "omega0": None,
+        "omega1": None,
+        # Ignore Leng et al. (2018) for now because they use concurrency in Add Health
+        # as a measure of casual relationships which is not what we're looking for here.
+        # "omega1": (0.335, Unit.YEARLY),
+        # "omega0": (2 * 0.335, Unit.YEARLY),
         "xi": None,
     },
-
+    #
     "hansson2019": {
         "n": (5000, Unit.UNITLESS),
         "mu": (60, Unit.YEARS),
@@ -175,13 +180,11 @@ def qq2hyperparams(x1, q1, x2, q2):
 
 
 hyperparams = {
-    # "mu": ms2hyperparams(25 * weeks_per_year, 15 * weeks_per_year),
-    "mu": qq2hyperparams(5 * weeks_per_year, 0.05, 60 * weeks_per_year, 0.95),
-    # "rho": ms2hyperparams(15, 20),
-    "rho": qq2hyperparams(2, 0.05, 2 * weeks_per_year, 0.95),
-    "sigma": qq2hyperparams(10, 0.05, 10 * weeks_per_year, 0.95),
-    "omega0": qq2hyperparams(.5, 0.05, 8, 0.95),
-    "omega1": qq2hyperparams(2, 0.05, 20, 0.95),
+    "mu": qq2hyperparams(7 * weeks_per_year, 0.05, 60 * weeks_per_year, 0.95),
+    "rho": qq2hyperparams(5, 0.05, 1.5 * weeks_per_year, 0.95),
+    "sigma": qq2hyperparams(20, 0.05, 5 * weeks_per_year, 0.95),
+    "omega0": qq2hyperparams(.5, 0.05, 5, 0.95),
+    "omega1": qq2hyperparams(2, 0.05, 15, 0.95),
     "xi": (2, 2),
 }
 colors = {
@@ -198,8 +201,9 @@ gs = fig.add_gridspec(3, 3, height_ratios=[.01, 1, 1])
 lax = fig.add_subplot(gs[0, :])
 
 axes = [fig.add_subplot(gs[i, j]) for i in range(1, 3) for j in range(3)]
-for ax in axes[1:-1]:
-    ax.sharex(axes[0])
+if use_log_scale:
+    for ax in axes[1:-1]:
+        ax.sharex(axes[0])
 
 # Transpose and plot the parameters.
 for model_key, transformed_params in transformed.items():
@@ -220,7 +224,6 @@ for model_key, transformed_params in transformed.items():
             # This is the expected number of weeks with "failures" (i.e. no event happening)
             # before the first success (i.e. an event happening, such as breaking a relationship).
             value = (1 - value) / value
-            # TODO: fix labels here.
             param_label = f"$\\frac{{1 - \\{key}}}{{\\{key}}}$ (weeks)"
             dist = stats.betaprime(*hyperparams[key])
             x = np.linspace(*dist.ppf([0.01, 0.99]), 1000)
@@ -230,32 +233,34 @@ for model_key, transformed_params in transformed.items():
                 ax.set_xscale("log")
                 pdf *= x
 
-            lines = {
-                "1 week": 1,
-                "1 month": weeks_per_year / 12,
-                "1 year": weeks_per_year,
-                "5 years": 5 * weeks_per_year,
-                "30 years": 30 * weeks_per_year,
-            }
-            for line_label, line_value in lines.items():
-                ax.axvline(line_value, ls=":", color="silver", zorder=0)
-                if not plotted:
-                    ax.text(
-                        line_value, pdf.max(), line_label,
-                        rotation=90, color="silver", fontsize="small", ha="center", va="top",
-                        backgroundcolor="w", zorder=1
-                    )
+                lines = {
+                    "1 week": 1,
+                    "1 month": weeks_per_year / 12,
+                    "1 year": weeks_per_year,
+                    "5 years": 5 * weeks_per_year,
+                    "30 years": 30 * weeks_per_year,
+                }
+                for line_label, line_value in lines.items():
+                    ax.axvline(line_value, ls=":", color="silver", zorder=0)
+                    if not plotted:
+                        ax.text(
+                            line_value, pdf.max(), line_label,
+                            rotation=90, color="silver", fontsize="small", ha="center", va="top",
+                            backgroundcolor="w", zorder=1
+                        )
 
         if not plotted:
             # White line to separate the year, month labels from the prior line.
             ax.plot(x, pdf, color="w", lw=5)
             ax.plot(x, pdf, color="k", label="prior")
+
         ax.scatter(
             value,
-            pdf.max() * 0.02 * np.random.uniform(-1, 1, np.shape(value)),
+            pdf.max() * 0.02 * np.random.uniform(-1, 0, np.shape(value)),
             label=model_key,
             marker="|",
             color=colors[model_key],
+            zorder=9,
         )
         ax.set_xlabel(param_label)
         ax.yaxis.major.formatter.set_useMathText(True)
@@ -269,7 +274,6 @@ handles, labels = zip(*((handle, label) for label, handle in labels_handles.item
 lax.legend(handles, labels, fontsize="small", ncol=4)
 lax.set_axis_off()
 
-
 # Note that Leng consider heterosexual relationships in schools, i.e. the add health data to
 # inform their parameters. These can be quite different from what we're interested in. Specifically,
 # they use the fraction of reported concurrency to inform the omega's, but that statistic is likely
@@ -279,9 +283,45 @@ fig.tight_layout()
 ```
 
 ```{code-cell} ipython3
-{key: tuple(map(lambda x: round(x, 4), value[::-1])) for key, value in hyperparams.items()}
+priors = {
+    key: stats.beta(*value[::-1])
+    for key, value in hyperparams.items()
+}
+print(
+    "prior parameters",
+    {key: value.args for key, value in priors.items()},
+)
+print(
+    "prior means",
+    {key: value.mean() for key, value in priors.items()},
+)
 ```
 
 ```{code-cell} ipython3
-{key: stats.beta(*value[::-1]).mean() for key, value in hyperparams.items()}
+samples = {key: value.rvs(10000) for key, value in priors.items()}
+frac_paired = samples["rho"] / (
+    samples["rho"] + samples["sigma"] + 2 * samples["mu"]
+)
+
+fig, axes = plt.subplots(2, 2)
+axes = axes.ravel()
+
+ax = axes[0]
+ax.hist(frac_paired, density=True, bins=20, color="silver")
+for model, params in transformed.items():
+    rho = params["rho"]
+    sigma = params["sigma"]
+    fs = np.atleast_1d(
+        estimate_paired_fraction(rho, params["mu"] or 0, sigma)
+    )
+    for f in fs:
+        ax.axvline(f, c=colors[model])
+ax.set_xlabel("frac_paired")
+
+for ax, (key, x) in zip(axes[1:], samples.items()):
+    ax.scatter(x[:100], frac_paired[:100], marker=".")
+    ax.set_xlabel(key)
+    ax.set_ylabel("frac_paired")
+
+fig.tight_layout()
 ```

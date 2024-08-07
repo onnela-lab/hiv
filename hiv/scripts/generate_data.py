@@ -16,12 +16,12 @@ prior_clss = {"beta": stats.beta}
 # parameter-normalization and prior notebooks for details.
 default_preset = {
     "n": 5_000,
-    "mu": stats.beta(2.1465, 1301.0494),
-    "rho": stats.beta(1.125, 7.9159),
-    "sigma": stats.beta(1.0593, 32.5972),
-    "omega0": stats.beta(2.579, 4.471),
-    "omega1": stats.beta(2.8184, 13.9943),
-    "xi": stats.beta(2, 2),
+    "mu": stats.beta(2.7471745380604844, 2162.302624350188),
+    "rho": stats.beta(1.898530545859645, 24.62575083539298),
+    "sigma": stats.beta(2.0596220554513454, 98.67884889543724),
+    "omega0": stats.beta(3.82125145332353, 5.622913762790063),
+    "omega1": stats.beta(9.308666573257643, 47.55873620969334),
+    "xi": stats.beta(2.0, 2.0),
 }
 
 prior_presets = {
