@@ -13,7 +13,7 @@ import pytest
         ["--param=n=23.", "--param=omega0=beta:2,2", "--preset=hansson2019"],
         ["--param=n=17", "--param=rho=beta:2,2", "--preset=kretzschmar1996"],
         ["--param=n=17", "--param=rho=beta:2,2", "--preset=kretzschmar1998"],
-        ["--param=n=17", "--param=rho=beta:2,2", "--preset=leng2018"],
+        ["--param=n=17", "--param=rho=beta:2,2", "--preset=leng2018", "--seed=3"],
     ],
 )
 @pytest.mark.parametrize("save_graphs", [False, True])
@@ -24,7 +24,7 @@ def test_generate_data(argv: list, save_graphs: bool, tmp_path: pathlib.Path) ->
     simulator = argv[-1]
     argv = argv + [num_samples, num_lags, output]
     if save_graphs:
-        argv.append("--save_graphs")
+        argv.append("--save-graphs")
     generate_data.__main__(list(map(str, argv)))
 
     with open(output, "rb") as fp:
@@ -55,5 +55,8 @@ def test_generate_data(argv: list, save_graphs: bool, tmp_path: pathlib.Path) ->
     for values in result["params"].values():
         assert values.shape == (num_samples,)
 
-    for values in result["summaries"].values():
+    for key, values in result["summaries"].items():
         assert values.shape == (num_samples, num_lags)
+        if key.startswith("frac"):
+            assert (values >= 0).all(), "probability is negative"
+            assert (values <= 1).all(), "probability is larger than one"

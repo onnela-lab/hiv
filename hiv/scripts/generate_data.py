@@ -1,6 +1,7 @@
 import argparse
 import collectiontools
 import numbers
+import numpy as np
 from pathlib import Path
 import pickle
 from scipy import stats
@@ -15,12 +16,12 @@ prior_clss = {"beta": stats.beta}
 # parameter-normalization and prior notebooks for details.
 default_preset = {
     "n": 5_000,
-    "mu": stats.beta(2.1465, 1301.0494),
-    "rho": stats.beta(1.125, 7.9159),
-    "sigma": stats.beta(1.0593, 32.5972),
-    "omega0": stats.beta(2.579, 4.471),
-    "omega1": stats.beta(2.8184, 13.9943),
-    "xi": stats.beta(2, 2),
+    "mu": stats.beta(2.7471745380604844, 2162.302624350188),
+    "rho": stats.beta(1.898530545859645, 24.62575083539298),
+    "sigma": stats.beta(2.0596220554513454, 98.67884889543724),
+    "omega0": stats.beta(3.82125145332353, 5.622913762790063),
+    "omega1": stats.beta(9.308666573257643, 47.55873620969334),
+    "xi": stats.beta(2.0, 2.0),
 }
 
 prior_presets = {
@@ -82,17 +83,19 @@ class Args:
     burnin: int
     param: list[str]
     save_graphs: bool
+    seed: int
 
 
 def __main__(argv=None) -> None:
     parser = argparse.ArgumentParser()
+    parser.add_argument("--seed", "-s", type=int, help="random number generator seed")
     parser.add_argument(
         "--burnin",
-        help="number of burn in steps (defaults to `10 * n`)",
+        help="number of burn in steps (defaults to the expected population size `n`)",
         type=int,
     )
     parser.add_argument(
-        "--save_graphs",
+        "--save-graphs",
         action="store_true",
         help="store graph sequences in addition to summaries (memory intensive)",
     )
@@ -118,6 +121,9 @@ def __main__(argv=None) -> None:
         f"{UniversalSimulator.arg_constraints}."
     )
 
+    if args.seed is not None:
+        np.random.seed(args.seed)
+
     result = {
         "args": vars(args),
         "priors": priors,
@@ -130,10 +136,11 @@ def __main__(argv=None) -> None:
         }
         simulator = UniversalSimulator(**params)
 
-        # Run the burnin to get the first sample.
+        # Run the burnin to get the first sample and validate the graph.
         burnin = int(params["n"]) if args.burnin is None else args.burnin
         graph0 = simulator.init()
         graph0 = simulator.run(graph0, burnin)
+        graph0.validate()
         graph1 = graph0.copy()
 
         # Initialize graph sequences.
@@ -156,6 +163,9 @@ def __main__(argv=None) -> None:
             if step == args.num_lags - 1:
                 continue
             simulator.step(graph1)
+
+        # Validate that the final graph is still valid.
+        graph1.validate()
 
         # Add summaries and parameters to the sequence.
         collectiontools.append_values(result.setdefault("summaries", {}), summaries)

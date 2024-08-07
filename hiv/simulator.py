@@ -3,6 +3,11 @@ import numpy as np
 from .util import candidates_to_edges, NumpyGraph, Timer, decompress_edges
 
 
+def add_padded(a: np.ndarray, b: np.ndarray) -> np.ndarray:
+    n = max(a.size, b.size)
+    return np.pad(a, (0, n - a.size)) + np.pad(b, (0, n - b.size))
+
+
 def number_of_nodes(graph: nx.Graph, predicate=None, **kwargs) -> int:
     """
     Evaluate the number of nodes satisfying the predicate or matching the keyword
@@ -59,7 +64,7 @@ class UniversalSimulator:
         mu: Probability for a node to emigrate and immigration rate `n * mu`.
         sigma: Probability for a steady relationship to dissolve.
         rho: Propensity for a steady relationship to form.
-        xi: Propensity for monogamy.
+        xi: Propensity for concurrency.
         omega0: Probability for a casual relationship to form between singles.
         omega1: Probability for a casual relationship to form between non-singles.
     """
@@ -94,9 +99,13 @@ class UniversalSimulator:
         self.xi = xi
         self.validate_args()
 
-    def run(self, graph: NumpyGraph, num_steps: int) -> NumpyGraph:
+    def run(
+        self, graph: NumpyGraph, num_steps: int, validate: bool = False
+    ) -> NumpyGraph:
         for _ in range(num_steps):
             graph = self.step(graph)
+            if validate:
+                graph.validate()
         return graph
 
     def validate_args(self) -> None:
@@ -127,7 +136,7 @@ class UniversalSimulator:
                 # We can't use assume_unique here because node indices may appear
                 # repeatedly in the edge list.
                 graph.edges["steady"] = compressed_steady[
-                    np.isin(steady, graph.nodes).any(axis=-1)
+                    np.isin(steady, graph.nodes).all(axis=-1)
                 ]
 
         # Add new nodes that have migrated in.
@@ -154,14 +163,15 @@ class UniversalSimulator:
             if "steady" in graph.edges:
                 # We can't use assume_unique here because node indices may appear
                 # repeatedly in the edge list.
-                is_partnered = np.isin(
-                    graph.nodes, decompress_edges(graph.edges["steady"])
-                )
-                proba = np.where(is_partnered, self.rho * (1 - self.xi), self.rho)
+                degrees = graph.degrees("steady")
+                is_partnered = degrees > 0
+                # proba = np.where(is_partnered, self.rho * self.xi, self.rho)
+                proba = self.rho * self.xi**degrees
             else:
                 is_partnered = None
                 proba = self.rho
-            candidates = graph.nodes[np.random.uniform(size=graph.nodes.size) < proba]
+            fltr = np.random.uniform(size=graph.nodes.size) < proba
+            candidates = graph.nodes[fltr]
 
             # Add new edges and deduplicate if already in a relationship.
             new_steady_edges = candidates_to_edges(candidates)
@@ -184,7 +194,8 @@ class UniversalSimulator:
             else:
                 is_partnered |= newly_partnered
             proba = np.where(is_partnered, self.omega1, self.omega0)
-            candidates = graph.nodes[np.random.uniform(size=graph.nodes.size) < proba]
+            fltr = np.random.uniform(size=graph.nodes.size) < proba
+            candidates = graph.nodes[fltr]
 
             # Add new edges and exclude edges that already exist in the steady edge set.
             # We need to first compress the edges to allow the set operations.
@@ -203,34 +214,62 @@ class UniversalSimulator:
 
         # Evaluate number of nodes and nodes with casual relationships by relationship
         # status.
-        num_nodes = {"single": 0, "partnered": 0}
-        num_nodes_with_casual = {"single": 0, "partnered": 0}
+        num_nodes_by_degree = np.zeros(())
+        num_nodes_with_casual_by_degree = np.zeros(())
         for graph in [graph0, graph1]:
-            is_partnered = np.in1d(graph.nodes, decompress_edges(graph.edges["steady"]))
-            num_partnered = is_partnered.sum()
-            num_nodes["partnered"] += num_partnered
-            num_nodes["single"] += graph.nodes.size - num_partnered.sum()
+            degrees = graph.degrees("steady")
+            num_nodes_by_degree = add_padded(num_nodes_by_degree, np.bincount(degrees))
 
             has_casual = np.in1d(graph.nodes, decompress_edges(graph.edges["casual"]))
-            num_nodes_with_casual["partnered"] = is_partnered @ has_casual
-            num_nodes_with_casual["single"] = (~is_partnered) @ has_casual
+            num_nodes_with_casual_by_degree = add_padded(
+                num_nodes_with_casual_by_degree, np.bincount(degrees[has_casual])
+            )
 
         return {
+            # Fraction of nodes retained which is monotonically decreasing. We expect
+            # this statistics to change slowly because the migration probability `mu`
+            # tends to be small.
             "frac_retained_nodes": np.intersect1d(
                 graph0.nodes, graph1.nodes, assume_unique=True
             ).size
             / graph0.nodes.size,
+            # Fraction of retained steady edges. This is generally decreasing but there
+            # may be increasing "blips" because a relationship could re-form, and we
+            # don't ask "did you break up and make up again" in the survey. This
+            # statistic is indicative of the break up probability `sigma`.
             "frac_retained_steady_edges": np.intersect1d(
                 steady_edges0, steady_edges1, assume_unique=True
             ).size
-            / max(len(steady_edges0), 1),  # noqa: E131
-            "frac_single_with_casual": num_nodes_with_casual["single"]
-            / max(num_nodes["single"], 1),
-            "frac_paired_with_casual": num_nodes_with_casual["partnered"]
-            / max(num_nodes["partnered"], 1),
-            "frac_paired": num_nodes["partnered"]
+            / max(steady_edges0.size, 1),
+            # Fraction of singles with a casual contact. This statistics is informative
+            # of `omega0`.
+            "frac_single_with_casual": num_nodes_with_casual_by_degree[0]
+            / max(num_nodes_by_degree[0], 1),
+            # Fraction of individuals in steady relationships with a casual contact.
+            # This statistics is indicative of `omega1`.
+            "frac_paired_with_casual": num_nodes_with_casual_by_degree[1:].sum()
+            / max(num_nodes_by_degree[1:].sum(), 1),
+            # Fraction of nodes that have one or more steady relations. This statistics
+            # informs `rho`, the tendency to form connections. In contrast to other
+            # statistics, such as the fraction of retained nodes, this statistic is
+            # also affected by parameters like the dissolution rate `sigma` and
+            # emigration rate `mu`.
+            "frac_paired": num_nodes_by_degree[1:].sum()
             / (graph0.nodes.size + graph1.nodes.size),
-            "num_steady_edges": len(steady_edges1),
-            "num_casual_edges": graph1.edges["casual"].size,
-            "num_nodes": graph1.nodes.size,
+            # Fraction of nodes in a steady relationship who have more than one steady
+            # relationship. This is indicative of the monogamy parameter `xi`.
+            "frac_concurrent": num_nodes_by_degree[2:].sum()
+            / max(num_nodes_by_degree[1:].sum(), 1),
+            # Debug statistics, not used for inference.
+            "_num_steady_edges": len(steady_edges1),
+            "_num_casual_edges": graph1.edges["casual"].size,
+            "_num_nodes": graph1.nodes.size,
         }
+
+
+def estimate_paired_fraction(rho, mu, sigma):
+    """
+    Estimate the fraction of paired nodes based on inline text about 3/4 of the way
+    down page 369 of 10.1016/j.idm.2017.07.002.
+    """
+    return rho / (rho + sigma + 2 * mu)

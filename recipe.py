@@ -1,4 +1,5 @@
 from cook import create_task
+import hashlib
 import os
 from pathlib import Path
 
@@ -16,6 +17,7 @@ create_task("lint", action="black --check .")
 split_sizes = {
     "debug": 10,
     "test": 1_000,
+    "validation": 100,
     "train": 10_000,
 }
 configs = {
@@ -55,10 +57,15 @@ for preset, prior in configs.items():
     for split, size in split_sizes.items():
         task_name = f"{preset}/{split}"
         target = (workspace / task_name).with_suffix(".pkl")
+        # Get a 32-bit seed based on the hash of the target. This will ensure distinct
+        # seeds across all runs (with high probability).
+        seed_bytes = hashlib.sha256(str(target).encode()).digest()
+        seed = int.from_bytes(seed_bytes[:4], "little")
         action = [
             "python",
             "-m",
             "hiv.scripts.generate_data",
+            f"--seed={seed}",
             f"--preset={'default' if prior else preset}",
             size,
             num_lags,
@@ -68,7 +75,7 @@ for preset, prior in configs.items():
             action.append(f"--param={arg}={spec}")
 
         if split == "debug":
-            action.append("--save_graphs")
+            action.append("--save-graphs")
             action = (
                 [
                     "python",

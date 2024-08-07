@@ -88,6 +88,15 @@ class NumpyGraph:
         """
         return self.__class__(self.nodes, self.edges.copy())
 
+    def degrees(self, key=None) -> np.ndarray:
+        if key is None:
+            return {key: self.degrees(key) for key in self.edges}
+        edges = decompress_edges(self.edges[key])
+        connected_nodes, connected_degrees = np.unique(edges, return_counts=True)
+        degrees = np.zeros_like(self.nodes)
+        degrees[np.searchsorted(self.nodes, connected_nodes)] = connected_degrees
+        return degrees
+
     def to_networkx(self) -> nx.Graph:
         """
         Convert the graph to a networkx graph.
@@ -98,8 +107,25 @@ class NumpyGraph:
             graph.add_edges_from(decompress_edges(edges), type=key)
         return graph
 
+    def validate(self) -> nx.Graph:
+        # Check nodes are sorted.
+        np.testing.assert_array_less(
+            0, np.diff(self.nodes), err_msg="Node labels must be sorted."
+        )
+
+        # Check there are no edges that do not have corresponding nodes.
+        for key, compressed in self.edges.items():
+            decompressed = decompress_edges(compressed)
+            has_nodes = np.isin(decompressed, self.nodes).all(axis=-1)
+            assert has_nodes.all(), f"Edges with type {key} have missing nodes."
+
+        # Check that edges are unique.
+        concatenated = np.concatenate(list(self.edges.values()))
+        nunique = np.unique(concatenated).size
+        assert concatenated.size == nunique, "Edges are not unique."
+
     @classmethod
-    def from_networkx(cls, graph: nx.Graph):
+    def from_networkx(cls, graph: nx.Graph) -> "NumpyGraph":
         """
         Create a graph from a networkx graph.
         """
@@ -107,6 +133,6 @@ class NumpyGraph:
         assert np.issubdtype(nodes.dtype, int)
         edges = {}
         for *edge, data in graph.edges(data=True):
-            edges.setdefault(data["type"], []).append(edge)
+            edges.setdefault(data.get("type", "default"), []).append(edge)
         edges = {key: compress_edges(np.asarray(value)) for key, value in edges.items()}
         return cls(nodes, edges)
