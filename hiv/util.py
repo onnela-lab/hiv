@@ -112,11 +112,17 @@ class NumpyGraph:
         np.testing.assert_array_less(
             0, np.diff(self.nodes), err_msg="Node labels must be sorted."
         )
+
         # Check there are no edges that do not have corresponding nodes.
-        for key, edges in self.edges.items():
-            edges = decompress_edges(edges)
-            has_nodes = np.isin(edges, self.nodes).all(axis=-1)
+        for key, compressed in self.edges.items():
+            decompressed = decompress_edges(compressed)
+            has_nodes = np.isin(decompressed, self.nodes).all(axis=-1)
             assert has_nodes.all(), f"Edges with type {key} have missing nodes."
+
+        # Check that edges are unique.
+        concatenated = np.concatenate(list(self.edges.values()))
+        nunique = np.unique(concatenated).size
+        assert concatenated.size == nunique, "Edges are not unique."
 
     @classmethod
     def from_networkx(cls, graph: nx.Graph) -> "NumpyGraph":

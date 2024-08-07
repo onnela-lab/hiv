@@ -136,10 +136,11 @@ def __main__(argv=None) -> None:
         }
         simulator = UniversalSimulator(**params)
 
-        # Run the burnin to get the first sample.
+        # Run the burnin to get the first sample and validate the graph.
         burnin = int(params["n"]) if args.burnin is None else args.burnin
         graph0 = simulator.init()
         graph0 = simulator.run(graph0, burnin)
+        graph0.validate()
         graph1 = graph0.copy()
 
         # Initialize graph sequences.
@@ -162,6 +163,9 @@ def __main__(argv=None) -> None:
             if step == args.num_lags - 1:
                 continue
             simulator.step(graph1)
+
+        # Validate that the final graph is still valid.
+        graph1.validate()
 
         # Add summaries and parameters to the sequence.
         collectiontools.append_values(result.setdefault("summaries", {}), summaries)
