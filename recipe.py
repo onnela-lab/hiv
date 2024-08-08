@@ -14,11 +14,12 @@ create_task(
 )
 create_task("lint", action="black --check .")
 
+# Tuple of (num_batches, batch_size) for more efficient generation of training data.
 split_sizes = {
-    "debug": 10,
-    "test": 1_000,
-    "validation": 100,
-    "train": 10_000,
+    "debug": (1, 10),
+    "test": (10, 100),
+    "validation": (1, 100),
+    "train": (10, 1000),
 }
 configs = {
     "default": {},
@@ -54,40 +55,39 @@ num_lags = 5 if CI else 5 * 52
 # Iterate over different models.
 for preset, prior in configs.items():
     # Iterate over different splits.
-    for split, size in split_sizes.items():
-        task_name = f"{preset}/{split}"
-        target = (workspace / task_name).with_suffix(".pkl")
-        # Get a 32-bit seed based on the hash of the target. This will ensure distinct
-        # seeds across all runs (with high probability).
-        seed_bytes = hashlib.sha256(str(target).encode()).digest()
-        seed = int.from_bytes(seed_bytes[:4], "little")
-        action = [
-            "python",
-            "-m",
-            "hiv.scripts.generate_data",
-            f"--seed={seed}",
-            f"--preset={'default' if prior else preset}",
-            size,
-            num_lags,
-            target,
-        ]
-        for arg, spec in prior.items():
-            action.append(f"--param={arg}={spec}")
+    for split, (num_batches, batch_size) in split_sizes.items():
+        for batch in range(num_batches):
+            task_name = f"{preset}/{split}/{batch}"
+            target = (workspace / task_name).with_suffix(".pkl")
+            # Get a 32-bit seed based on the hash of the target. This will ensure
+            # distinct seeds across all runs (with high probability).
+            seed_bytes = hashlib.sha256(str(target).encode()).digest()
+            seed = int.from_bytes(seed_bytes[:4], "little")
+            action = [
+                "python",
+                "-m",
+                "hiv.scripts.generate_data",
+                f"--seed={seed}",
+                f"--preset={'default' if prior else preset}",
+                # Burn in for thirty years.
+                f"--burnin={52 * 30}",
+                batch_size,
+                num_lags,
+                target,
+            ]
+            for arg, spec in prior.items():
+                action.append(f"--param={arg}={spec}")
 
-        if split == "debug":
-            action.append("--save-graphs")
-            action = (
-                [
-                    "python",
-                    "-m",
-                    "cProfile",
-                    "-o",
-                    target.with_suffix(".prof"),
-                ]
-                + action[1:]
-                + ["--param=n=1000", "--burnin=10"]
-            )
-        else:
-            # Burn in for thirty years.
-            action.append(f"--burnin={52 * 30}")
-        create_task(task_name, action=action, targets=[target])
+            if split == "debug":
+                action.append("--save-graphs")
+                action = (
+                    [
+                        "python",
+                        "-m",
+                        "cProfile",
+                        "-o",
+                        target.with_suffix(".prof"),
+                    ]
+                    + action[1:]
+                )
+            create_task(task_name, action=action, targets=[target])
