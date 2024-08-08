@@ -52,8 +52,9 @@ def test_to_from_numpy_graph() -> None:
     util.assert_graphs_equal(nxgraph, nxgraph2)
 
 
-def test_degree() -> None:
-    nxgraph = nx.erdos_renyi_graph(10, 0.1)
+@pytest.mark.parametrize("density", [0.1, 0.5])
+def test_degree(density: float) -> None:
+    nxgraph = nx.erdos_renyi_graph(10, density)
     npgraph = util.NumpyGraph.from_networkx(nxgraph)
     np.testing.assert_array_equal(
         npgraph.degrees()["default"],
