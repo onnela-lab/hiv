@@ -1,5 +1,6 @@
 import argparse
 import collectiontools
+from datetime import datetime
 import numbers
 import numpy as np
 from pathlib import Path
@@ -127,6 +128,7 @@ def __main__(argv=None) -> None:
     result = {
         "args": vars(args),
         "priors": priors,
+        "start": datetime.now(),
     }
     for _ in tqdm(range(args.num_samples)):
         # Sample and use fixed values if provided.
@@ -171,8 +173,14 @@ def __main__(argv=None) -> None:
         collectiontools.append_values(result.setdefault("summaries", {}), summaries)
         collectiontools.append_values(result.setdefault("params", {}), params)
 
-    result["params"] = to_np_dict(result["params"])
-    result["summaries"] = to_np_dict(result["summaries"])
+    end = datetime.now()
+    result.update({
+        "params": to_np_dict(result["params"]),
+        "summaries": to_np_dict(result["summaries"]),
+        "end": end,
+        "duration": (end - result["start"]).total_seconds()
+    })
+
     with open(args.output, "wb") as fp:
         pickle.dump(result, fp)
 
