@@ -25,4 +25,4 @@ jobs:
       - name: Lint the code
         run: cook exec lint
       - name: Run debug simulations
-        run: cook exec "*/debug"
+        run: cook exec "*/debug*"
