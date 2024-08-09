@@ -33,6 +33,8 @@ configs = {
         "sigma": "beta:2,2",
         "omega0": "beta:2,2",
         "omega1": "beta:2,2",
+        "xi": "0",
+        "n": "200",
     },
     "small": {
         "mu": "beta:2,18",
@@ -40,6 +42,8 @@ configs = {
         "sigma": "beta:2,18",
         "omega0": "beta:2,18",
         "omega1": "beta:2,18",
+        "xi": "0",
+        "n": "200",
     },
     "x-small": {
         "mu": "beta:2,48",
@@ -47,8 +51,11 @@ configs = {
         "sigma": "beta:2,48",
         "omega0": "beta:2,48",
         "omega1": "beta:2,48",
+        "xi": "0",
+        "n": "200",
     },
 }
+small_burnin_presets = {"medium", "small", "x-small"}
 # Models run at weekly scales. We consider up to five year lags.
 num_lags = 5 if CI else 5 * 52
 
@@ -70,7 +77,7 @@ for preset, prior in configs.items():
                 f"--seed={seed}",
                 f"--preset={'default' if prior else preset}",
                 # Burn in for thirty years.
-                f"--burnin={52 * 30}",
+                f"--burnin={5 * 52 if preset in small_burnin_presets else 52 * 30}",
                 batch_size,
                 num_lags,
                 target,
@@ -80,14 +87,11 @@ for preset, prior in configs.items():
 
             if split == "debug":
                 action.append("--save-graphs")
-                action = (
-                    [
-                        "python",
-                        "-m",
-                        "cProfile",
-                        "-o",
-                        target.with_suffix(".prof"),
-                    ]
-                    + action[1:]
-                )
+                action = [
+                    "python",
+                    "-m",
+                    "cProfile",
+                    "-o",
+                    target.with_suffix(".prof"),
+                ] + action[1:]
             create_task(task_name, action=action, targets=[target])
