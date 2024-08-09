@@ -93,8 +93,10 @@ class NumpyGraph:
             return {key: self.degrees(key) for key in self.edges}
         edges = decompress_edges(self.edges[key])
         connected_nodes, connected_degrees = np.unique(edges, return_counts=True)
+        assert connected_nodes.size <= self.nodes.size
         degrees = np.zeros_like(self.nodes)
-        degrees[np.searchsorted(self.nodes, connected_nodes)] = connected_degrees
+        idx = np.isin(self.nodes, connected_nodes)
+        degrees[idx] = connected_degrees
         return degrees
 
     def to_networkx(self) -> nx.Graph:
