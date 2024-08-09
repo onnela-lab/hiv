@@ -30,16 +30,16 @@ prior_presets = {
     "default": default_preset,
     # Discrete-time stochastic simulator based on the continuous-time stochastic
     # simulator of Hansson et al. (2019) and the continous-time deterministic simulator
-    # of Xiridou et al. (2003) obtained by setting :math:`\xi = 1`, i.e., serial
+    # of Xiridou et al. (2003) obtained by setting :math:`\xi = 0`, i.e., serial
     # monogamy.
-    "hansson2019": default_preset | {"xi": 1.0},
+    "hansson2019": default_preset | {"xi": 0},
     # Discrete-time stochastic simulator based on the stochastic discrete-time simulator
     # of Kretzschmar et al. (1996) obtained by setting :math:`\mu = 0` and
     # :math:`w_0 = w_1 = 0`, i.e., a closed population without casual contacts.
     "kretzschmar1996": default_preset | {"omega0": 0, "omega1": 0, "mu": 0},
     # Discrete-time stochastic simulator based on the deterministic continuous-time
     # simulator of Leng et al. (2018) obtained by setting :math:`\mu = 0` and
-    # :math:`\xi = 1`, i.e., a closed population and serial monogamy.
+    # :math:`\xi = 0`, i.e., a closed population and serial monogamy.
     "leng2018": default_preset | {"xi": 0, "mu": 0},
     # Discrete-time stochastic simulator based on Kretzschmar et al. (1998) obtained by
     # setting :math:`w_0 = w_1 = 0`, i.e., no casual sexual partners. They use a
@@ -174,12 +174,14 @@ def __main__(argv=None) -> None:
         collectiontools.append_values(result.setdefault("params", {}), params)
 
     end = datetime.now()
-    result.update({
-        "params": to_np_dict(result["params"]),
-        "summaries": to_np_dict(result["summaries"]),
-        "end": end,
-        "duration": (end - result["start"]).total_seconds()
-    })
+    result.update(
+        {
+            "params": to_np_dict(result["params"]),
+            "summaries": to_np_dict(result["summaries"]),
+            "end": end,
+            "duration": (end - result["start"]).total_seconds(),
+        }
+    )
 
     with open(args.output, "wb") as fp:
         pickle.dump(result, fp)
