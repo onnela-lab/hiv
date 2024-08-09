@@ -93,7 +93,11 @@ def load(preset: str, exclude_params=None, exclude_summaries=None) -> tuple[dict
 
 results_by_preset = {}
 for preset in PRESETS:
-    result = load(preset, exclude_params={"xi"}, exclude_summaries={"frac_concurrent"}) 
+    result = load(
+        preset, 
+        exclude_params={"xi"}, 
+        exclude_summaries={"frac_concurrent"},
+    ) 
     results_by_preset[preset] = result
 
     print("; ".join([
@@ -161,6 +165,7 @@ def evaluate_mses(
         Mean-squared errors with shape `(num_lags, num_test_samples)` if `aggregate` 
         else `(num_lags, num_test_samples, num_params)`.
     """
+    # These have ({num_train, num_test}, num_lags, num_stats).
     train_summaries = flatten_dict(result["summaries_by_split"]["train"])
     train_params = flatten_dict(result["params_by_split"]["train"])
     test_summaries = flatten_dict(result["summaries_by_split"]["test"])
@@ -175,16 +180,16 @@ def evaluate_mses(
     if standardize:
         scaler = StandardScaler()
         shape = train_summaries.shape
-        assert shape[0] == num_summaries, (shape, num_summaries)
+        assert shape[-1] == num_summaries, (shape, num_summaries)
         train_summaries = scaler.fit_transform(
-            train_summaries.T.reshape((-1, _num_summaries))
-        ).T.reshape(shape)
+            train_summaries.reshape((-1, num_summaries))
+        ).reshape(shape)
 
         shape = test_summaries.shape
-        assert shape[0] == num_summaries, (shape, num_summaries)
+        assert shape[-1] == num_summaries, (shape, num_summaries)
         test_summaries = scaler.transform(
-            test_summaries.T.reshape((-1, num_summaries))
-        ).T.reshape(shape)
+            test_summaries.reshape((-1, num_summaries))
+        ).reshape(shape)
 
     mses = []
     for lag in range(num_lags):
