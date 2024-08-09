@@ -9,8 +9,10 @@ line_profiler
 matplotlib
 networkx
 numpy
+pip-tools
 pytest
 pytest-cov
+scikit-learn
 scipy
 snakeviz
 tqdm
