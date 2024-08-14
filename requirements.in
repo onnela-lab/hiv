@@ -12,6 +12,7 @@ numpy
 pip-tools
 pytest
 pytest-cov
+git+https://github.com/tillahoffmann/scikit-abc
 scikit-learn
 scipy
 snakeviz

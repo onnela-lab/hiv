@@ -357,8 +357,12 @@ rpds-py==0.20.0
     # via
     #   jsonschema
     #   referencing
-scikit-learn==1.5.1
+scikit-abc @ git+https://github.com/tillahoffmann/scikit-abc
     # via -r requirements.in
+scikit-learn==1.5.1
+    # via
+    #   -r requirements.in
+    #   scikit-abc
 scipy==1.14.0
     # via
     #   -r requirements.in
