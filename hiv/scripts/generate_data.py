@@ -158,9 +158,18 @@ def __main__(argv=None) -> None:
         for step in range(args.num_lags):
             if args.save_graphs:
                 graph_sequence.append(graph1.copy())
-            collectiontools.append_values(
-                summaries, simulator.evaluate_summaries(graph0, graph1)
-            )
+            lag_summaries = simulator.evaluate_summaries(graph0, graph1)
+            # We cannot have lost any nodes or edges without having run another update
+            # step.
+            if step == 0:
+                assert (
+                    lag_summaries["frac_retained_nodes"] == 1 or graph0.nodes.size == 0
+                )
+                assert (
+                    lag_summaries["frac_retained_steady_edges"] == 1
+                    or graph0.edges["steady"].size == 0
+                )
+            collectiontools.append_values(summaries, lag_summaries)
             # Skip simulation for the last step.
             if step == args.num_lags - 1:
                 continue
