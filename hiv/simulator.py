@@ -1,4 +1,3 @@
-import networkx as nx
 import numpy as np
 from .util import candidates_to_edges, NumpyGraph, Timer, decompress_edges
 
@@ -6,18 +5,6 @@ from .util import candidates_to_edges, NumpyGraph, Timer, decompress_edges
 def add_padded(a: np.ndarray, b: np.ndarray) -> np.ndarray:
     n = max(a.size, b.size)
     return np.pad(a, (0, n - a.size)) + np.pad(b, (0, n - b.size))
-
-
-def number_of_nodes(graph: nx.Graph, predicate=None, **kwargs) -> int:
-    """
-    Evaluate the number of nodes satisfying the predicate or matching the keyword
-    arguments.
-    """
-    if predicate is None:
-        predicate = lambda data: all(  # noqa: E731
-            data[key] == value for key, value in kwargs.items()
-        )
-    return sum(1 for _, data in graph.nodes(data=True) if predicate(data))
 
 
 class Constraint:
@@ -220,7 +207,7 @@ class UniversalSimulator:
             degrees = graph.degrees("steady")
             num_nodes_by_degree = add_padded(num_nodes_by_degree, np.bincount(degrees))
 
-            has_casual = np.in1d(graph.nodes, decompress_edges(graph.edges["casual"]))
+            has_casual = np.isin(graph.nodes, decompress_edges(graph.edges["casual"]))
             num_nodes_with_casual_by_degree = add_padded(
                 num_nodes_with_casual_by_degree, np.bincount(degrees[has_casual])
             )
