@@ -58,8 +58,8 @@ class NearestNeighborAlgorithm(BaseEstimator):
         return self
 
     def predict(
-            self, data: np.ndarray, return_features: bool = False, **kwargs: Any
-        ) -> np.ndarray | tuple[np.ndarray, np.ndarray]:
+        self, data: np.ndarray, return_features: bool = False, **kwargs: Any
+    ) -> np.ndarray | tuple[np.ndarray, np.ndarray]:
         """
         Draw approximate posterior samples.
 
@@ -100,14 +100,27 @@ def regression_adjust(
     Args:
         regressor: Scikit-learn model for regression adjustment.
         X: Summary statistics of candidate samples to be adjusted with shape (n_samples,
-            n_summaries).
+            n_summaries). The shape can also be (batch_size, n_samples, n_summaries) in
+            which case the regression adjustment is explicitly broadcast along the first
+            dimension.
         y: Candidate parameter samples to be adjusted with shape (n_samples,
-            n_parameters).
-        X_obs: Observed summary statistics with shape (n_summaries,).
+            n_parameters). The same comment on batch shape above applies.
+        X_obs: Observed summary statistics with shape (n_summaries,).  The same comment
+            on batch shape above applies.
 
     Returns:
-        Regression-adjusted parameters with shape (n_samples, n_parameters).
+        Regression-adjusted parameters with shape (n_samples, n_parameters) or
+        (batch_size, n_samples, n_parameters).
     """
+    # Broadcast along the first dimension by iteration.
+    if np.ndim(X) == 3:
+        batch_size, _, _ = X.shape
+        assert X_obs.shape[0] == batch_size
+        assert y.shape[0] == batch_size
+        return np.asarray(
+            [regression_adjust(regressor, *args) for args in zip(X, y, X_obs)]
+        )
+
     n_summary_samples, n_summaries = X.shape
     n_param_samples, _ = y.shape
     assert n_summary_samples == n_param_samples

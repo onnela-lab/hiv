@@ -68,6 +68,12 @@ def test_posterior_mean_correlation(
     )
     assert adjusted.var() < posterior_samples[0].var()
 
+    # Just check that the shapes work out.
+    adjusted = regression_adjust(
+        LinearRegression(), posterior_features, posterior_samples, observed_data
+    )
+    assert adjusted.shape == posterior_samples.shape
+
 
 def test_nearest_neighbor_not_fitted() -> None:
     with pytest.raises(NotFittedError):
