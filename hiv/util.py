@@ -1,5 +1,5 @@
 import contextlib
-import networkx as nx
+import networkx as nx  # type: ignore
 import numpy as np
 import typing
 from time import time
@@ -77,8 +77,12 @@ class NumpyGraph:
     """
 
     def __init__(
-        self, nodes: np.ndarray = None, edges: dict[str, np.ndarray] = None
+        self,
+        nodes: np.ndarray | None = None,
+        edges: dict[str, np.ndarray] | None = None,
     ) -> None:
+        if nodes is None:
+            nodes = np.empty((), dtype=int)
         self.nodes = nodes
         self.edges = edges or {}
 
@@ -88,7 +92,13 @@ class NumpyGraph:
         """
         return self.__class__(self.nodes, self.edges.copy())
 
-    def degrees(self, key=None) -> np.ndarray:
+    @typing.overload
+    def degrees(self, key: str) -> np.ndarray: ...
+
+    @typing.overload
+    def degrees(self, key: None) -> dict[str, np.ndarray]: ...
+
+    def degrees(self, key=None) -> np.ndarray | dict[str, np.ndarray]:
         if key is None:
             return {key: self.degrees(key) for key in self.edges}
         edges = decompress_edges(self.edges[key])
@@ -109,7 +119,7 @@ class NumpyGraph:
             graph.add_edges_from(decompress_edges(edges), type=key)
         return graph
 
-    def validate(self) -> nx.Graph:
+    def validate(self) -> None:
         # Check nodes are sorted.
         np.testing.assert_array_less(
             0, np.diff(self.nodes), err_msg="Node labels must be sorted."
