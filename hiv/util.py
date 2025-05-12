@@ -1,6 +1,8 @@
 import contextlib
 import networkx as nx  # type: ignore
 import numpy as np
+from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.exceptions import NotFittedError
 import typing
 from time import time
 
@@ -148,3 +150,62 @@ class NumpyGraph:
             edges.setdefault(data.get("type", "default"), []).append(edge)
         edges = {key: compress_edges(np.asarray(value)) for key, value in edges.items()}
         return cls(nodes, edges)
+
+
+def _validate_shapes(
+    X: dict[str, np.ndarray], expected_shapes: dict[str, tuple] | None = None
+) -> tuple[int, dict[str, tuple]]:
+    if expected_shapes:
+        assert set(X) == set(expected_shapes)
+
+    n_samples = None
+    actual_shapes = {}
+    for key, value in X.items():
+
+        # Validate consistent number of samples.
+        n, *actual_shape = value.shape
+        if n_samples is None:
+            n_samples = n
+        elif n_samples != n:
+            raise ValueError
+
+        # Validate shapes.
+        actual_shape = tuple(actual_shape)
+        if expected_shapes:
+            assert expected_shapes[key] == actual_shape
+        else:
+            actual_shapes[key] = actual_shape
+
+    return n_samples, actual_shapes
+
+
+class FlattenDict(TransformerMixin, BaseEstimator):
+    """
+    Flatten a dictionary of arrays to a matrix.
+    """
+
+    def fit(self, X: dict[str, np.ndarray], y: None = None) -> "FlattenDict":
+        _, self.shapes_ = _validate_shapes(X)
+        return self
+
+    def transform(self, X: dict[str, np.ndarray]) -> np.ndarray:
+        if not hasattr(self, "shapes_"):
+            raise NotFittedError
+        n_samples, _ = _validate_shapes(X, self.shapes_)
+        parts = [X[key].reshape((n_samples, -1)) for key in self.shapes_]
+        return np.concatenate(parts, -1)
+
+    def inverse_transform(self, X: np.ndarray) -> dict[str, np.ndarray]:
+        if not hasattr(self, "shapes_"):
+            raise NotFittedError
+
+        n_samples, actual_size = X.shape
+        assert actual_size == sum([np.prod(shape) for shape in self.shapes_.values()])
+
+        offset = 0
+        result = {}
+        for key, shape in self.shapes_.items():
+            size = int(np.prod(shape))
+            result[key] = X[:, offset : offset + size].reshape((n_samples, *shape))
+            offset += size
+        return result

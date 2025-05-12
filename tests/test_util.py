@@ -60,3 +60,23 @@ def test_degree(density: float) -> None:
         npgraph.degrees()["default"],
         [degree for _, degree in sorted(nxgraph.degree)],
     )
+
+
+def test_flatten_dict() -> None:
+    X1 = {
+        "a": np.random.normal(size=(10,)),
+        "b": np.random.normal(size=(10, 5)),
+        "c": np.random.normal(size=(10, 3, 7)),
+    }
+    estimator = util.FlattenDict().fit(X1)
+    y1 = estimator.transform(X1)
+    assert y1.shape == (10, 1 + 5 + 3 * 7)
+
+    X2 = estimator.inverse_transform(y1)
+    assert tuple(X1) == tuple(X2)
+    for key, value in X1.items():
+        np.testing.assert_allclose(value, X2[key])
+
+    X3 = dict(reversed(X1.items()))
+    y3 = estimator.transform(X3)
+    np.testing.assert_allclose(y1, y3)
