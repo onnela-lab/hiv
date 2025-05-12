@@ -1,8 +1,6 @@
-import networkx as nx
 from hiv.simulator import (
     estimate_paired_fraction,
     Interval,
-    number_of_nodes,
     UniversalSimulator,
 )
 import pytest
@@ -44,16 +42,6 @@ def test_invalid_type() -> None:
     assert not constraint.is_valid(17.0)
     assert not constraint.is_valid(-1)
     assert "type=<class 'int'>" in repr(constraint)
-
-
-def test_number_of_nodes() -> None:
-    graph = nx.Graph()
-    graph.add_nodes_from(
-        [(0, {"foo": "bar"}), (1, {"foo": "bazz"}), (2, {"foo": "bazz"})]
-    )
-    assert number_of_nodes(graph) == 3
-    assert number_of_nodes(graph, foo="bazz") == 2
-    assert number_of_nodes(graph, lambda x: x["foo"] == "bar") == 1
 
 
 def test_estimate_paired_fraction() -> None:
