@@ -88,6 +88,8 @@ class Args:
 
 
 def __main__(argv=None) -> None:
+    if argv:
+        argv = list(map(str, argv))
     parser = argparse.ArgumentParser()
     parser.add_argument("--seed", "-s", type=int, help="random number generator seed")
     parser.add_argument(
@@ -192,6 +194,7 @@ def __main__(argv=None) -> None:
         }
     )
 
+    args.output.parent.mkdir(parents=True, exist_ok=True)
     with open(args.output, "wb") as fp:
         pickle.dump(result, fp)
 

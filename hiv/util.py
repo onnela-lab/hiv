@@ -83,9 +83,7 @@ class NumpyGraph:
         nodes: np.ndarray | None = None,
         edges: dict[str, np.ndarray] | None = None,
     ) -> None:
-        if nodes is None:
-            nodes = np.empty((), dtype=int)
-        self.nodes = nodes
+        self.nodes = np.empty((), dtype=int) if nodes is None else nodes
         self.edges = edges or {}
 
     def copy(self) -> "NumpyGraph":
@@ -167,7 +165,7 @@ def _validate_shapes(
         if n_samples is None:
             n_samples = n
         elif n_samples != n:
-            raise ValueError
+            raise ValueError  # pragma: no cover
 
         # Validate shapes.
         actual_shape = tuple(actual_shape)
@@ -190,14 +188,14 @@ class FlattenDict(TransformerMixin, BaseEstimator):
 
     def transform(self, X: dict[str, np.ndarray]) -> np.ndarray:
         if not hasattr(self, "shapes_"):
-            raise NotFittedError
+            raise NotFittedError  # pragma: no cover
         n_samples, _ = _validate_shapes(X, self.shapes_)
         parts = [X[key].reshape((n_samples, -1)) for key in self.shapes_]
         return np.concatenate(parts, -1)
 
     def inverse_transform(self, X: np.ndarray) -> dict[str, np.ndarray]:
         if not hasattr(self, "shapes_"):
-            raise NotFittedError
+            raise NotFittedError  # pragma: no cover
 
         n_samples, actual_size = X.shape
         assert actual_size == sum([np.prod(shape) for shape in self.shapes_.values()])
