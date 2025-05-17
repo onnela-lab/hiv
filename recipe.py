@@ -19,7 +19,7 @@ split_sizes = {
     "debug": (1, 10),
     "test": (10, 100),
     "validation": (1, 100),
-    "train": (10, 1000),
+    "train": (100, 1000),
 }
 configs = {
     "default": {},
@@ -56,7 +56,7 @@ configs = {
     },
 }
 small_burnin_presets = {"medium", "small", "x-small"}
-# Models run at weekly scales. We consider up to five year lags.
+# Models run at *weekly* scales. We consider up to five year lags.
 num_lags = 5 if CI else 5 * 52
 
 # Iterate over different models.
