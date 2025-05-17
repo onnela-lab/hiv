@@ -1,5 +1,6 @@
 from cook import create_task
 import hashlib
+import itertools
 import os
 from pathlib import Path
 
@@ -62,6 +63,7 @@ num_lags = 5 if CI else 5 * 52
 # Iterate over different models.
 for preset, prior in configs.items():
     # Iterate over different splits.
+    batches_by_split: dict[str, list] = {}
     for split, (num_batches, batch_size) in split_sizes.items():
         for batch in range(num_batches):
             task_name = f"{preset}/{split}/{batch}"
@@ -95,3 +97,29 @@ for preset, prior in configs.items():
                     target.with_suffix(".prof"),
                 ] + action[1:]
             create_task(task_name, action=action, targets=[target])
+            batches_by_split.setdefault(split, []).append(target)
+
+    # Run inference on the batches with different configurations.
+    for adjust, standardize in itertools.product(
+        [False, True], [None, "global", "local"]
+    ):
+        parts = [
+            "adjusted" if adjust else "unadjusted",
+            standardize if standardize else "none",
+        ]
+        task_name = "/".join([preset, "inference"] + parts)
+
+        argv = ["python", "-m", "hiv.scripts.run_abc"]
+        if adjust:
+            argv.append("--adjust")
+        if standardize:
+            argv.append(f"--standardize={standardize}")
+
+        target = (workspace / preset / "-".join(["result"] + parts)).with_suffix(".pkl")
+        argv.extend([workspace / preset / "train", workspace / preset / "test", target])
+        create_task(
+            task_name,
+            action=argv,
+            targets=[target],
+            dependencies=batches_by_split["train"] + batches_by_split["test"],
+        )
