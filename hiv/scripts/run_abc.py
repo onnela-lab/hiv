@@ -136,9 +136,13 @@ def __main__(argv: list[str] | None = None) -> None:
 
     print(
         f"Loaded {n_train_samples:,} training samples with {n_train_lags} lags, "
-        f"{n_features} features, and {n_params} parameters from '{args.train}'."
+        f"{n_features} features, and {n_params} parameters from "
+        f"{len(list(args.train.glob('*.pkl')))} files in '{args.train}'."
     )
-    print(f"Loaded {n_test_samples:,} test samples from '{args.test}'.")
+    print(
+        f"Loaded {n_test_samples:,} test samples from "
+        f"{len(list(args.test.glob('*.pkl')))} files in'{args.test}'."
+    )
 
     # Apply feature standardization if desired.
     if args.standardize is None:
@@ -165,7 +169,17 @@ def __main__(argv: list[str] | None = None) -> None:
 
     n_posterior_samples = int(args.frac * n_train_samples)
 
+    # Sanity check the memory requirements.
+    expected_gb = 8 * n_lags * n_posterior_samples * n_test_samples * n_params / 1e9
+    if args.save_samples and expected_gb > 4:  # pragma: no cover
+        print(f"WARNING: Saving samples will consume {expected_gb:.1f} GB.")
+        response = input("Continue? (y/*n*)")
+        if not response.startswith("y"):
+            print("Exiting ...")
+            return
+
     samples = []
+    mses = []
     for lag in tqdm(range(n_lags)):
         # Draw samples using rejection ABC.
         sampler = NearestNeighborAlgorithm(frac=args.frac)
@@ -185,19 +199,23 @@ def __main__(argv: list[str] | None = None) -> None:
                 test_features[:, lag],
             )
 
-        # NOTE: Saving all the samples in memory really isn't very memory efficient. But
-        # it doesn't currently break anything on a Macbook.
-        samples.append(param_samples)
+        # Evaluate the MSE for this lag. We do the evaluation here because
+        assert param_samples.shape == (n_test_samples, n_posterior_samples, n_params)
+        mses.append(np.square(param_samples - test_params[:, None, :]).mean(axis=1))
 
-    # Starts out with (n_lags, n_test_samples, n_posterior_samples, n_params). We want
-    # (..., n_test_samples, n_params) so we can easily do the evaluation of diagnostics.
-    # A sensible format might be
-    # (n_lags, n_posterior_samples, n_test_samples, n_params). But there is some
-    # ambiguity on whether the posterior samples or lags should lead.
-    samples = np.swapaxes(np.stack(samples), 1, 2)
-    assert samples.shape == (n_lags, n_posterior_samples, n_test_samples, n_params)
+        if args.save_samples:
+            samples.append(param_samples)
 
-    mses: np.ndarray = np.square(samples - test_params).mean(axis=1)
+    if args.save_samples:
+        # Starts out with (n_lags, n_test_samples, n_posterior_samples, n_params). We
+        # want (..., n_test_samples, n_params) so we can easily do the evaluation of
+        # diagnostics. A sensible format might be
+        # (n_lags, n_posterior_samples, n_test_samples, n_params). But there is some
+        # ambiguity on whether the posterior samples or lags should lead.
+        samples = np.swapaxes(np.stack(samples), 1, 2)
+        assert samples.shape == (n_lags, n_posterior_samples, n_test_samples, n_params)
+
+    mses = np.stack(mses)
     assert mses.shape == (n_lags, n_test_samples, n_params)
 
     # Save the results, including the simulated parameter values and posterior samples
@@ -206,6 +224,7 @@ def __main__(argv: list[str] | None = None) -> None:
         "args": vars(args),
         "param_names": param_names,
         "mses": mses,
+        "standardize": {"loc": loc, "scale": scale},
     }
     if args.save_samples:
         result.update(
