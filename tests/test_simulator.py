@@ -1,8 +1,5 @@
-from hiv.simulator import (
-    estimate_paired_fraction,
-    Interval,
-    UniversalSimulator,
-)
+from hiv.simulator import estimate_paired_fraction, Interval, UniversalSimulator
+import numpy as np
 import pytest
 
 
@@ -45,5 +42,5 @@ def test_invalid_type() -> None:
 
 
 def test_estimate_paired_fraction() -> None:
-    assert estimate_paired_fraction(0.2, 0, 0) == 1
-    assert estimate_paired_fraction(0, 0.5, 0.7) == 0
+    np.testing.assert_allclose(estimate_paired_fraction(0.2, 0, 0), 1)
+    np.testing.assert_allclose(estimate_paired_fraction(0, 0.5, 0.7), 0)

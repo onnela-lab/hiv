@@ -256,7 +256,9 @@ class UniversalSimulator:
 
 def estimate_paired_fraction(rho, mu, sigma):
     """
-    Estimate the fraction of paired nodes based on inline text about 3/4 of the way
-    down page 369 of 10.1016/j.idm.2017.07.002.
+    Estimate the fraction of paired nodes.
+
+    This differs from the continuous-time version based on inline text about 3/4 of the
+    way down page 369 of 10.1016/j.idm.2017.07.002: rho / (rho + sigma + 2 * mu)
     """
-    return rho / (rho + sigma + 2 * mu)
+    return rho / (1 - (1 - mu) ** 2 * (1 - sigma) * (1 - rho))
