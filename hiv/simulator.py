@@ -2,6 +2,9 @@ import numpy as np
 from .util import candidates_to_edges, NumpyGraph, Timer, decompress_edges
 
 
+empty_int_array = np.empty((), dtype=int)
+
+
 def add_padded(a: np.ndarray, b: np.ndarray) -> np.ndarray:
     n = max(a.size, b.size)
     return np.pad(a, (0, n - a.size)) + np.pad(b, (0, n - b.size))
@@ -194,40 +197,79 @@ class UniversalSimulator:
         return (graph, timer.times) if return_times else graph
 
     def evaluate_summaries(
-        self, graph0: NumpyGraph, graph1: NumpyGraph
+        self, graph0: NumpyGraph, graph1: NumpyGraph, sample_size: int | None = None
     ) -> dict[str, float]:
-        steady_edges0 = graph0.edges["steady"]
-        steady_edges1 = graph1.edges["steady"]
+        """
+        Evaluate (longitudinal) summary statistics for two graphs.
+
+        Args:
+            graph0: Graph at first observation.
+            graph1: Graph at second observation.
+            sample_size: Number nodes to sample or `None` to observe the whole graph.
+
+        Returns:
+            Dictionary of summary statistics.
+        """
+        # Sample nodes to include in survey. For all summary statistics, we will filter
+        # data to this subset of nodes, representing a survey sample. The sample in
+        # graph0 is a superset of the sample in graph1 because nodes may leave, but we
+        # are not recruiting new participants in the second wave. So here we evaluate
+        # the intersection of the initial sample and the current graph. For the first,
+        # this is a no-op. For the second, we obtain a subset.
+        initial_sample = (
+            np.random.choice(graph0.nodes, sample_size, replace=False)
+            if sample_size
+            else graph0.nodes
+        )
+        samples: list[np.ndarray] = [
+            initial_sample,
+            np.intersect1d(initial_sample, graph1.nodes),
+        ]
 
         # Evaluate number of nodes and nodes with casual relationships by relationship
         # status.
         num_nodes_by_degree = np.zeros(())
         num_nodes_with_casual_by_degree = np.zeros(())
-        for graph in [graph0, graph1]:
+        steady_edges: list[np.ndarray] = []
+        for graph, sample in zip([graph0, graph1], samples):
+            # Get degree of steady relationships and filter to the nodes included in the
+            # survey.
             degrees = graph.degrees("steady")
+            assert degrees.shape == graph.nodes.shape
+            degrees = degrees[np.isin(graph.nodes, sample)]
+            assert degrees.size <= sample.size
             num_nodes_by_degree = add_padded(num_nodes_by_degree, np.bincount(degrees))
 
-            has_casual = np.isin(graph.nodes, decompress_edges(graph.edges["casual"]))
+            # For the same set of individuals, evaluate the degree distribution for
+            # folks who have a casual partner.
+            has_casual = np.isin(
+                sample, decompress_edges(graph.edges.get("casual", empty_int_array))
+            )
+            assert degrees.shape == has_casual.shape
             num_nodes_with_casual_by_degree = add_padded(
                 num_nodes_with_casual_by_degree, np.bincount(degrees[has_casual])
             )
+
+            # Filter the edges to ones where at least one member is included in the
+            # sample.
+            edges = graph.edges.get("steady", empty_int_array)
+            has_member_in_sample = np.isin(decompress_edges(edges), sample).any(axis=1)
+            steady_edges.append(edges[has_member_in_sample])
 
         return {
             # Fraction of nodes retained which is monotonically decreasing. We expect
             # this statistics to change slowly because the migration probability `mu`
             # tends to be small.
-            "frac_retained_nodes": np.intersect1d(
-                graph0.nodes, graph1.nodes, assume_unique=True
-            ).size
-            / graph0.nodes.size,
+            "frac_retained_nodes": np.intersect1d(*samples, assume_unique=True).size
+            / max(initial_sample.size, 1),
             # Fraction of retained steady edges. This is generally decreasing but there
             # may be increasing "blips" because a relationship could re-form, and we
             # don't ask "did you break up and make up again" in the survey. This
             # statistic is indicative of the break up probability `sigma`.
             "frac_retained_steady_edges": np.intersect1d(
-                steady_edges0, steady_edges1, assume_unique=True
+                *steady_edges, assume_unique=True
             ).size
-            / max(steady_edges0.size, 1),
+            / max(steady_edges[0].size, 1),
             # Fraction of singles with a casual contact. This statistics is informative
             # of `omega0`.
             "frac_single_with_casual": num_nodes_with_casual_by_degree[0]
@@ -242,17 +284,18 @@ class UniversalSimulator:
             # also affected by parameters like the dissolution rate `sigma` and
             # emigration rate `mu`.
             "frac_paired": num_nodes_by_degree[1:].sum()
-            / (graph0.nodes.size + graph1.nodes.size),
+            / max(samples[0].size + samples[1].size, 1),
             # Fraction of nodes in a steady relationship who have more than one steady
             # relationship. This is indicative of the monogamy parameter `xi`.
             "frac_concurrent": num_nodes_by_degree[2:].sum()
             / max(num_nodes_by_degree[1:].sum(), 1),
             # Measure of concurrency from Kretzschmar and Morris (1996). "Measures of
-            # concurrency in networks and the spread of infectious disease."
-            "kappa3": degrees.var() / degrees.mean() + degrees.mean() - 1,
+            # concurrency in networks and the spread of infectious disease." See eq
+            # TODO: reinstate once clear how this behaves for graphs without edges.
+            # "kappa3": degrees.var() / (1 if not degrees.any() else degrees.mean()) + degrees.mean() - 1,
             # Debug statistics, not used for inference.
-            "_num_steady_edges": len(steady_edges1),
-            "_num_casual_edges": graph1.edges["casual"].size,
+            "_num_steady_edges": steady_edges[1].size,
+            "_num_casual_edges": graph1.edges.get("casual", empty_int_array).size,
             "_num_nodes": graph1.nodes.size,
         }
 

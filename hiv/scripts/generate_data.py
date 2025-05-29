@@ -25,7 +25,7 @@ default_preset = {
     "xi": stats.beta(2.0, 2.0),
 }
 
-prior_presets = {
+prior_presets: dict[str, dict[str, stats.distributions.rv_continuous]] = {
     "empty": {},
     "default": default_preset,
     # Discrete-time stochastic simulator based on the continuous-time stochastic
@@ -49,7 +49,9 @@ prior_presets = {
 }
 
 
-def parse_prior(param):
+def parse_prior(
+    param: str,
+) -> tuple[str, numbers.Number | stats.distributions.rv_continuous]:
     """
     Parse a prior specification.
     """
@@ -85,6 +87,7 @@ class Args:
     param: list[str]
     save_graphs: bool
     seed: int
+    sample_size: int | None
 
 
 def __main__(argv=None) -> None:
@@ -111,6 +114,7 @@ def __main__(argv=None) -> None:
     parser.add_argument(
         "--preset", help="prior preset to use", choices=prior_presets, default="default"
     )
+    parser.add_argument("--sample-size", help="size of survey sample", type=int)
     parser.add_argument("num_samples", help="number of samples", type=int)
     parser.add_argument("num_lags", help="number of lags to consider", type=int)
     parser.add_argument("output", help="output path for the samples", type=Path)
@@ -160,7 +164,9 @@ def __main__(argv=None) -> None:
         for step in range(args.num_lags):
             if args.save_graphs:
                 graph_sequence.append(graph1.copy())
-            lag_summaries = simulator.evaluate_summaries(graph0, graph1)
+            lag_summaries = simulator.evaluate_summaries(
+                graph0, graph1, args.sample_size
+            )
             # We cannot have lost any nodes or edges without having run another update
             # step.
             if step == 0:

@@ -122,7 +122,7 @@ class NumpyGraph:
         """
         if key is None:
             return {key: self.degrees(key) for key in self.edges}
-        edges = decompress_edges(self.edges[key])
+        edges = decompress_edges(self.edges.get(key, np.empty((), dtype=int)))
         connected_nodes, connected_degrees = np.unique(edges, return_counts=True)
         assert connected_nodes.size <= self.nodes.size
         degrees = np.zeros_like(self.nodes)

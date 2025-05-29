@@ -14,7 +14,10 @@ import pytest
         ),
     ],
 )
-def test_simulator(simulator: UniversalSimulator) -> None:
+@pytest.mark.parametrize("sample_size_frac", [None, 0.1, 0.5, 1.0])
+def test_simulator(
+    simulator: UniversalSimulator, sample_size_frac: float | None
+) -> None:
     graph0 = simulator.init()
     simulator.step(graph0)
 
@@ -23,7 +26,13 @@ def test_simulator(simulator: UniversalSimulator) -> None:
     simulator.evaluate_summaries(graph0, graph1)
 
     simulator.run(graph1, 100, validate=True)
-    simulator.evaluate_summaries(graph0, graph1)
+
+    sample_size = (
+        None
+        if sample_size_frac is None
+        else max(1, int(sample_size_frac * graph0.nodes.size))
+    )
+    simulator.evaluate_summaries(graph0, graph1, sample_size)
 
 
 def test_invalid_param() -> None:

@@ -60,6 +60,7 @@ def test_degree(density: float) -> None:
         npgraph.degrees()["default"],
         [degree for _, degree in sorted(nxgraph.degree)],
     )
+    assert npgraph.nodes.shape == npgraph.degrees(key="default").shape
 
 
 def test_flatten_dict() -> None:
