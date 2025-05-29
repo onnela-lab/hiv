@@ -247,6 +247,9 @@ class UniversalSimulator:
             # relationship. This is indicative of the monogamy parameter `xi`.
             "frac_concurrent": num_nodes_by_degree[2:].sum()
             / max(num_nodes_by_degree[1:].sum(), 1),
+            # Measure of concurrency from Kretzschmar and Morris (1996). "Measures of
+            # concurrency in networks and the spread of infectious disease."
+            "kappa3": degrees.var() / degrees.mean() + degrees.mean() - 1,
             # Debug statistics, not used for inference.
             "_num_steady_edges": len(steady_edges1),
             "_num_casual_edges": graph1.edges["casual"].size,
