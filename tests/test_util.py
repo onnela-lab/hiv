@@ -80,3 +80,46 @@ def test_flatten_dict() -> None:
     X3 = dict(reversed(X1.items()))
     y3 = estimator.transform(X3)
     np.testing.assert_allclose(y1, y3)
+
+
+@pytest.mark.parametrize(
+    "proba, factor, expected",
+    [
+        (1e-6, 7, 7e-6),
+        (0.01, 50, 0.394994),
+    ],
+)
+def test_transform_proba_discrete(proba: float, factor: float, expected: float) -> None:
+    actual = util.transform_proba_discrete(proba, factor)
+    np.testing.assert_allclose(actual, expected, atol=1e-9, rtol=1e-6)
+    rec = util.transform_proba_discrete(actual, 1 / factor)
+    np.testing.assert_allclose(proba, rec)
+
+    # Simulate the process and do a z-score check if there is any variation (not all 0
+    # or 1).
+    events = (np.random.uniform(size=(1000, factor)) < proba).any(axis=-1)
+    mean = events.mean()
+    std = events.std() / (events.size - 1) ** 0.5
+    if std > 0:
+        z = (mean - actual) / std
+        assert np.abs(z) < 2
+
+
+@pytest.mark.parametrize(
+    "rate, factor, expected",
+    [
+        (1, 3, 0.950213),
+    ],
+)
+def test_transform_proba_continuous(
+    rate: float, factor: float, expected: float
+) -> None:
+    actual = util.transform_proba_continuous(rate, factor)
+    np.testing.assert_allclose(actual, expected, rtol=1e-6)
+
+    events = np.random.exponential(rate * factor, 1000) > 0
+    mean = events.mean()
+    std = events.std() / (events.size - 1) ** 0.5
+    if std > 0:
+        z = (mean - actual) / std
+        assert np.abs(z) < 2

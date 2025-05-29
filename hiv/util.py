@@ -61,6 +61,16 @@ def decompress_edges(uv: np.ndarray) -> np.ndarray:
 
 
 def candidates_to_edges(candidates: np.ndarray) -> np.ndarray:
+    """
+    Randomly pair candidates to create edges. If the number of candidates is odd, one of
+    them is dropped at random.
+
+    Args:
+        candidates: Node identifiers to pair with shape `(n,)`.
+
+    Returns:
+        Compressed edge list with shape `(n // 2,)`.
+    """
     candidates = np.random.permutation(candidates)
     if candidates.size % 2:
         candidates = candidates[1:]
@@ -98,7 +108,18 @@ class NumpyGraph:
     @typing.overload
     def degrees(self, key: None) -> dict[str, np.ndarray]: ...
 
-    def degrees(self, key=None) -> np.ndarray | dict[str, np.ndarray]:
+    def degrees(self, key: str | None = None) -> np.ndarray | dict[str, np.ndarray]:
+        """
+        Evaluate the degree of nodes.
+
+        Args:
+            key: Edge key to evaluate the degree for.
+
+        Returns:
+            If `key` is given, vector of degrees for keyed edges corresponding to
+            :attr:`nodes`. If `key` is not given, a dictionary mapping edge keys to the
+            corresponding degree vector.
+        """
         if key is None:
             return {key: self.degrees(key) for key in self.edges}
         edges = decompress_edges(self.edges[key])
@@ -120,6 +141,14 @@ class NumpyGraph:
         return graph
 
     def validate(self) -> None:
+        """
+        Validate the structure of the graph, ensuring that
+
+        - node labels are sorted,
+        - edges do not refer to missing nodes,
+        - and edges are unique across keys (i.e., edges can only exist in one layer of a
+          multi-layer graph).
+        """
         # Check nodes are sorted.
         np.testing.assert_array_less(
             0, np.diff(self.nodes), err_msg="Node labels must be sorted."
@@ -207,3 +236,40 @@ class FlattenDict(TransformerMixin, BaseEstimator):
             result[key] = X[:, offset : offset + size].reshape((n_samples, *shape))
             offset += size
         return result
+
+
+def transform_proba_discrete(proba: float, factor: float) -> float:
+    """
+    Transform the probability for an event to happen on one timescale to another,
+    assuming discrete-time dynamics.
+
+    Args:
+        proba: Original probability for the event to happen.
+        factor: Ratio of timescales with transformation to a longer scale indicated by
+            :code:`factor > 1`, e.g., :code:`factor = 7` for day-to-week transformation.
+
+    Returns:
+        Transformed probability.
+    """
+    # The probability for the event to happen at least once is 1 - probability that the
+    # event does not happen at all, i.e., at_least_once = 1 - (1 - proba) ** factor. We
+    # use log1p formulation for small probabilities/large factor changes.
+    not_proba = np.exp(factor * np.log1p(-proba))
+    return np.exp(np.log1p(-not_proba))
+
+
+def transform_proba_continuous(rate: float, factor: float) -> float:
+    """
+    Transform the probability for an event to happen on one timescale in continuous time
+    to the event happening in a discrete time window.
+
+    Args:
+        rate: Rate at which events happen.
+        factor: Length of the time window.
+
+    Returns:
+        Probability that an event happens in the window.
+    """
+    rate = np.asarray(rate)
+    factor = np.asarray(factor)
+    return 1 - np.exp(-rate * factor)
