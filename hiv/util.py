@@ -22,16 +22,6 @@ class Timer:
         self.times[key] = time() - start
 
 
-def assert_graphs_equal(actual: nx.Graph, expected: nx.Graph) -> None:
-    """
-    Assert that two graphs have the same nodes, edges, and attributes.
-    """
-    assert dict(actual.nodes(data=True)) == dict(expected.nodes(data=True))
-    assert {tuple(edge): data for *edge, data in actual.edges(data=True)} == {
-        tuple(edge): data for *edge, data in expected.edges(data=True)
-    }
-
-
 def to_np_dict(
     x: dict[typing.Hashable, typing.Iterable]
 ) -> dict[typing.Hashable, np.ndarray]:
@@ -273,3 +263,21 @@ def transform_proba_continuous(rate: float, factor: float) -> float:
     rate = np.asarray(rate)
     factor = np.asarray(factor)
     return 1 - np.exp(-rate * factor)
+
+
+def assert_graphs_equal(
+    actual: nx.Graph | NumpyGraph, expected: nx.Graph | NumpyGraph
+) -> None:
+    """
+    Assert that two graphs have the same nodes, edges, and attributes.
+    """
+    if actual is expected:
+        return
+    if isinstance(actual, NumpyGraph):
+        actual = actual.to_networkx()
+    if isinstance(expected, NumpyGraph):
+        expected = expected.to_networkx()
+    assert dict(actual.nodes(data=True)) == dict(expected.nodes(data=True))
+    assert {tuple(edge): data for *edge, data in actual.edges(data=True)} == {
+        tuple(edge): data for *edge, data in expected.edges(data=True)
+    }
