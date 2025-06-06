@@ -23,9 +23,19 @@ class Timer:
 
 
 def to_np_dict(
-    x: dict[typing.Hashable, typing.Iterable]
+    x: dict[typing.Hashable, typing.Iterable],
+    cond: typing.Callable[[typing.Hashable], bool] | None = None,
 ) -> dict[typing.Hashable, np.ndarray]:
-    return {key: np.asarray(value) for key, value in x.items()}
+    cond = cond or (lambda _: True)
+    result = {}
+    for key, value in x.items():
+        if cond(key):
+            try:
+                value = np.asarray(value)
+            except Exception as ex:
+                raise ValueError(f"Failed to convert '{key}' to numpy array.") from ex
+        result[key] = value
+    return result
 
 
 def compress_edges(uv: np.ndarray) -> np.ndarray:
@@ -46,7 +56,7 @@ def decompress_edges(uv: np.ndarray) -> np.ndarray:
     Unpack a compressed edge with shape `(num_edges,)` to an edge list with shape
     `(num_edges, 2)`.
     """
-    assert uv.dtype == np.uint64
+    assert uv.dtype == np.uint64, f"Expected dtype {np.uint64}, got {uv.dtype}."
     return np.transpose([(uv & 0xFFFFFFFF00000000) >> 32, uv & 0x00000000FFFFFFFF])
 
 
@@ -112,7 +122,10 @@ class NumpyGraph:
         """
         if key is None:
             return {key: self.degrees(key) for key in self.edges}
-        edges = decompress_edges(self.edges.get(key, np.empty((), dtype=int)))
+        try:
+            edges = decompress_edges(self.edges[key])
+        except KeyError:
+            return np.zeros_like(self.nodes)
         connected_nodes, connected_degrees = np.unique(edges, return_counts=True)
         assert connected_nodes.size <= self.nodes.size
         degrees = np.zeros_like(self.nodes)
@@ -151,9 +164,10 @@ class NumpyGraph:
             assert has_nodes.all(), f"Edges with type {key} have missing nodes."
 
         # Check that edges are unique.
-        concatenated = np.concatenate(list(self.edges.values()))
-        nunique = np.unique(concatenated).size
-        assert concatenated.size == nunique, "Edges are not unique."
+        if self.edges:
+            concatenated = np.concatenate(list(self.edges.values()))
+            nunique = np.unique(concatenated).size
+            assert concatenated.size == nunique, "Edges are not unique."
 
     @classmethod
     def from_networkx(cls, graph: nx.Graph) -> "NumpyGraph":
@@ -167,6 +181,12 @@ class NumpyGraph:
             edges.setdefault(data.get("type", "default"), []).append(edge)
         edges = {key: compress_edges(np.asarray(value)) for key, value in edges.items()}
         return cls(nodes, edges)
+
+    def __repr__(self) -> str:
+        return (
+            f"{super().__repr__()} with {self.nodes.size} nodes and "
+            f"{({key: edges.size for key, edges in self.edges.items()})} edges"
+        )
 
 
 def _validate_shapes(

@@ -1,8 +1,9 @@
+import collectiontools
 import numpy as np
 from .util import candidates_to_edges, NumpyGraph, Timer, decompress_edges
 
 
-empty_int_array = np.empty((), dtype=int)
+empty_int_array = np.asarray((), dtype=np.uint64)
 
 
 def add_padded(a: np.ndarray, b: np.ndarray) -> np.ndarray:
@@ -197,7 +198,7 @@ class UniversalSimulator:
         return (graph, timer.times) if return_times else graph
 
     def evaluate_summaries(
-        self, graph0: NumpyGraph, graph1: NumpyGraph, sample_size: int | None = None
+        self, graph0: NumpyGraph, graph1: NumpyGraph, sample0: np.ndarray | None = None
     ) -> dict[str, float]:
         """
         Evaluate (longitudinal) summary statistics for two graphs.
@@ -205,98 +206,125 @@ class UniversalSimulator:
         Args:
             graph0: Graph at first observation.
             graph1: Graph at second observation.
-            sample_size: Number nodes to sample or `None` to observe the whole graph.
+            sample0: Nodes to include in the initial sample.
 
         Returns:
             Dictionary of summary statistics.
         """
-        # Sample nodes to include in survey. For all summary statistics, we will filter
-        # data to this subset of nodes, representing a survey sample. The sample in
-        # graph0 is a superset of the sample in graph1 because nodes may leave, but we
-        # are not recruiting new participants in the second wave. So here we evaluate
-        # the intersection of the initial sample and the current graph. For the first,
-        # this is a no-op. For the second, we obtain a subset.
-        initial_sample = (
-            np.random.choice(graph0.nodes, sample_size, replace=False)
-            if sample_size
-            else graph0.nodes
-        )
-        samples: list[np.ndarray] = [
-            initial_sample,
-            np.intersect1d(initial_sample, graph1.nodes),
-        ]
+        # Construct the set of nodes that we will use for each of the two graphs.
+        if sample0 is None:
+            sample0 = graph0.nodes
+        else:
+            assert np.isin(
+                sample0, graph0.nodes
+            ).all(), "Some nodes in initial `sample0` are not present in `graph0`."
+        samples: list[np.ndarray] = [sample0, np.intersect1d(sample0, graph1.nodes)]
 
-        # Evaluate number of nodes and nodes with casual relationships by relationship
-        # status.
-        num_nodes_by_degree = np.zeros(())
-        num_nodes_with_casual_by_degree = np.zeros(())
-        steady_edges: list[np.ndarray] = []
+        # Evaluate summary statistics for each of the graphs. We will then consolidate
+        # these statistics to obtain summaries for approximate Bayesian computation.
+        summaries: dict[str, list[float | int | np.ndarray]] = {}
         for graph, sample in zip([graph0, graph1], samples):
-            # Get degree of steady relationships and filter to the nodes included in the
-            # survey.
+            # Get degrees of nodes and degree distribution.
             degrees = graph.degrees("steady")
-            assert degrees.shape == graph.nodes.shape
+            assert degrees.shape == graph.nodes.shape, (
+                f"Expected degree vector shape ({degrees.shape}) to match nodes shape "
+                f"({graph.nodes.shape})."
+            )
             degrees = degrees[np.isin(graph.nodes, sample)]
-            assert degrees.size <= sample.size
-            num_nodes_by_degree = add_padded(num_nodes_by_degree, np.bincount(degrees))
+            assert degrees.size == sample.size, (
+                f"Expected degree vector shape ({degrees.shape}) to match node sample "
+                f"shape ({sample.shape})."
+            )
+            num_nodes_by_degree = np.bincount(degrees)
+            assert num_nodes_by_degree.sum() <= sample.size, (
+                f"Expected sum of degree distribution ({num_nodes_by_degree.sum()}) "
+                f"to match sample size ({sample.size})."
+            )
 
-            # For the same set of individuals, evaluate the degree distribution for
-            # folks who have a casual partner.
+            # Filter to nodes that had a casual interaction.
             has_casual = np.isin(
                 sample, decompress_edges(graph.edges.get("casual", empty_int_array))
             )
-            assert degrees.shape == has_casual.shape
-            num_nodes_with_casual_by_degree = add_padded(
-                num_nodes_with_casual_by_degree, np.bincount(degrees[has_casual])
+            assert has_casual.shape == sample.shape, (
+                f"Expected the `has_casual` indicator shape ({has_casual.shape}) to "
+                f"match the sample shape ({sample.shape})."
+            )
+            degrees_with_casual = degrees[has_casual]
+            assert degrees_with_casual.shape == (has_casual.sum(),), (
+                f"Expected the degree vector shape ({degrees_with_casual.shape}) for "
+                "nodes with casual partners to match the number of nodes with casual "
+                f"partners ({has_casual.sum()})."
+            )
+            num_nodes_by_degree_with_casual = np.bincount(degrees_with_casual)
+
+            # Get compressed steady edges so we can evaluate how many are retained. We
+            # restrict to edges where at least one member is in the sample.
+            steady_edges = graph.edges.get("steady", empty_int_array)
+            steady_edges = steady_edges[
+                np.isin(decompress_edges(steady_edges), sample).any(axis=1)
+            ]
+
+            # Append values to the summaries. Any keys prefixed with _ will not be
+            # stored. E.g., the vector of steady edges may be large, leading to big
+            # files (~GB) for the simulations.
+            collectiontools.append_values(
+                summaries,
+                {
+                    "sample_size": sample.size,
+                    "num_nodes_by_degree": num_nodes_by_degree,
+                    "num_nodes_by_degree_with_casual": num_nodes_by_degree_with_casual,
+                    "_steady_edges": steady_edges,
+                    "frac_paired": num_nodes_by_degree[1:].sum() / max(sample.size, 1),
+                    "frac_single_with_casual": num_nodes_by_degree_with_casual[0]
+                    / max(num_nodes_by_degree_with_casual[0], 1),
+                    "frac_paired_with_casual": num_nodes_by_degree_with_casual[1:].sum()
+                    / max(num_nodes_by_degree_with_casual[1:].sum(), 1),
+                    "min_node_label": sample.min() if sample.size else -1,
+                    "max_node_label": sample.max() if sample.size else -1,
+                },
             )
 
-            # Filter the edges to ones where at least one member is included in the
-            # sample.
-            edges = graph.edges.get("steady", empty_int_array)
-            has_member_in_sample = np.isin(decompress_edges(edges), sample).any(axis=1)
-            steady_edges.append(edges[has_member_in_sample])
-
+        weight = np.asarray(summaries["sample_size"]) / max(
+            sum(summaries["sample_size"]), 1
+        )
         return {
             # Fraction of nodes retained which is monotonically decreasing. We expect
             # this statistics to change slowly because the migration probability `mu`
             # tends to be small.
             "frac_retained_nodes": np.intersect1d(*samples, assume_unique=True).size
-            / max(initial_sample.size, 1),
+            / max(summaries["sample_size"][0], 1),
             # Fraction of retained steady edges. This is generally decreasing but there
             # may be increasing "blips" because a relationship could re-form, and we
             # don't ask "did you break up and make up again" in the survey. This
             # statistic is indicative of the break up probability `sigma`.
             "frac_retained_steady_edges": np.intersect1d(
-                *steady_edges, assume_unique=True
+                *summaries["_steady_edges"], assume_unique=True
             ).size
-            / max(steady_edges[0].size, 1),
+            / max(summaries["_steady_edges"][0].size, 1),
             # Fraction of singles with a casual contact. This statistics is informative
             # of `omega0`.
-            "frac_single_with_casual": num_nodes_with_casual_by_degree[0]
-            / max(num_nodes_by_degree[0], 1),
+            "frac_single_with_casual": np.dot(
+                summaries["frac_single_with_casual"], weight
+            ),
             # Fraction of individuals in steady relationships with a casual contact.
             # This statistics is indicative of `omega1`.
-            "frac_paired_with_casual": num_nodes_with_casual_by_degree[1:].sum()
-            / max(num_nodes_by_degree[1:].sum(), 1),
+            "frac_paired_with_casual": np.dot(
+                summaries["frac_paired_with_casual"], weight
+            ),
             # Fraction of nodes that have one or more steady relations. This statistics
             # informs `rho`, the tendency to form connections. In contrast to other
             # statistics, such as the fraction of retained nodes, this statistic is
             # also affected by parameters like the dissolution rate `sigma` and
             # emigration rate `mu`.
-            "frac_paired": num_nodes_by_degree[1:].sum()
-            / max(samples[0].size + samples[1].size, 1),
+            "frac_paired": np.dot(summaries["frac_paired"], weight),
             # Fraction of nodes in a steady relationship who have more than one steady
             # relationship. This is indicative of the monogamy parameter `xi`.
             "frac_concurrent": num_nodes_by_degree[2:].sum()
             / max(num_nodes_by_degree[1:].sum(), 1),
-            # Measure of concurrency from Kretzschmar and Morris (1996). "Measures of
-            # concurrency in networks and the spread of infectious disease." See eq
-            # TODO: reinstate once clear how this behaves for graphs without edges.
-            # "kappa3": degrees.var() / (1 if not degrees.any() else degrees.mean()) + degrees.mean() - 1,
-            # Debug statistics, not used for inference.
-            "_num_steady_edges": steady_edges[1].size,
-            "_num_casual_edges": graph1.edges.get("casual", empty_int_array).size,
-            "_num_nodes": graph1.nodes.size,
+        } | {
+            f"_{key}": value
+            for key, value in summaries.items()
+            if not key.startswith("_")
         }
 
 

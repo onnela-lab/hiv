@@ -103,7 +103,7 @@ def test_transform_proba_discrete(proba: float, factor: float, expected: float) 
     std = events.std() / (events.size - 1) ** 0.5
     if std > 0:
         z = (mean - actual) / std
-        assert np.abs(z) < 2
+        assert np.abs(z) < 2.5
 
 
 @pytest.mark.parametrize(

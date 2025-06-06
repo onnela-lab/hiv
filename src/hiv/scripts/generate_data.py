@@ -7,7 +7,7 @@ from pathlib import Path
 import pickle
 from scipy import stats
 from ..simulator import UniversalSimulator
-from ..util import to_np_dict
+from ..util import assert_graphs_equal, decompress_edges, to_np_dict
 from tqdm import tqdm
 
 
@@ -131,17 +131,26 @@ def __main__(argv=None) -> None:
     if args.seed is not None:
         np.random.seed(args.seed)
 
+    # Container for results.
     result = {
         "args": vars(args),
         "priors": priors,
         "start": datetime.now(),
     }
-    for _ in tqdm(range(args.num_samples)):
+    # Generate parameter values up front. This means that for fixed seed, we always have
+    # the same parameter values even if the burnin is different, etc.
+    result["params"] = {
+        arg: (
+            prior * np.ones(args.num_samples)
+            if isinstance(prior, numbers.Number)
+            else prior.rvs(args.num_samples)
+        )
+        for arg, prior in priors.items()
+    }
+
+    for i in tqdm(range(args.num_samples)):
         # Sample and use fixed values if provided.
-        params = {
-            arg: prior if isinstance(prior, numbers.Number) else prior.rvs()
-            for arg, prior in priors.items()
-        }
+        params = {key: value[i] for key, value in result["params"].items()}
         simulator = UniversalSimulator(**params)
 
         # Run the burnin to get the first sample and validate the graph.
@@ -161,21 +170,40 @@ def __main__(argv=None) -> None:
         # Initialize summary sequences.
         summaries = {}
 
+        if args.sample_size:
+            initial_sample = np.random.choice(
+                graph0.nodes, args.sample_size, replace=False
+            )
+        else:
+            initial_sample = graph0.nodes
+
         for step in range(args.num_lags):
             if args.save_graphs:
                 graph_sequence.append(graph1.copy())
-            lag_summaries = simulator.evaluate_summaries(
-                graph0, graph1, args.sample_size
-            )
-            # We cannot have lost any nodes or edges without having run another update
-            # step.
+            lag_summaries = simulator.evaluate_summaries(graph0, graph1, initial_sample)
+
+            # Sanity check for summary statistics if no evolution has happened yet.
             if step == 0:
+                assert_graphs_equal(graph0, graph1)
                 assert (
-                    lag_summaries["frac_retained_nodes"] == 1 or graph0.nodes.size == 0
+                    lag_summaries["frac_retained_nodes"] == 1
+                    or initial_sample.size == 0
+                ), (
+                    "Fraction of retained nodes is "
+                    f"{lag_summaries['frac_retained_nodes']}, but the graph is "
+                    "unchanged."
                 )
+                steady_edges = graph0.edges["steady"]
+                steady_edges = steady_edges[
+                    np.isin(decompress_edges(steady_edges), initial_sample).any(axis=1)
+                ]
                 assert (
                     lag_summaries["frac_retained_steady_edges"] == 1
-                    or graph0.edges["steady"].size == 0
+                    or steady_edges.size == 0
+                ), (
+                    "Fraction of retained edges is "
+                    f"{lag_summaries['frac_retained_steady_edges']}, but the graph is "
+                    "unchanged."
                 )
             collectiontools.append_values(summaries, lag_summaries)
             # Skip simulation for the last step.
@@ -186,15 +214,16 @@ def __main__(argv=None) -> None:
         # Validate that the final graph is still valid.
         graph1.validate()
 
-        # Add summaries and parameters to the sequence.
+        # Add summaries to the sequence.
         collectiontools.append_values(result.setdefault("summaries", {}), summaries)
-        collectiontools.append_values(result.setdefault("params", {}), params)
 
     end = datetime.now()
     result.update(
         {
             "params": to_np_dict(result["params"]),
-            "summaries": to_np_dict(result["summaries"]),
+            "summaries": to_np_dict(
+                result["summaries"], lambda key: not key.startswith("_")
+            ),
             "end": end,
             "duration": (end - result["start"]).total_seconds(),
         }
