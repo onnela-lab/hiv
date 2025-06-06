@@ -32,7 +32,7 @@ def to_np_dict(
         if cond(key):
             try:
                 value = np.asarray(value)
-            except Exception as ex:
+            except Exception as ex:  # pragma: no cover
                 raise ValueError(f"Failed to convert '{key}' to numpy array.") from ex
         result[key] = value
     return result
@@ -182,7 +182,7 @@ class NumpyGraph:
         edges = {key: compress_edges(np.asarray(value)) for key, value in edges.items()}
         return cls(nodes, edges)
 
-    def __repr__(self) -> str:
+    def __repr__(self) -> str:  # pragma: no cover
         return (
             f"{super().__repr__()} with {self.nodes.size} nodes and "
             f"{({key: edges.size for key, edges in self.edges.items()})} edges"

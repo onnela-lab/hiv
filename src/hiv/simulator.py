@@ -6,11 +6,6 @@ from .util import candidates_to_edges, NumpyGraph, Timer, decompress_edges
 empty_int_array = np.asarray((), dtype=np.uint64)
 
 
-def add_padded(a: np.ndarray, b: np.ndarray) -> np.ndarray:
-    n = max(a.size, b.size)
-    return np.pad(a, (0, n - a.size)) + np.pad(b, (0, n - b.size))
-
-
 class Constraint:
     def is_valid(self, value) -> bool:
         raise NotImplementedError
