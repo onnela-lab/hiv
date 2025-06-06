@@ -19,6 +19,8 @@ dependencies = [
 [dependency-groups]
 dev = [
     "black>=25.1.0",
+    "cook-build>=0.5.1",
     "jupyter>=1.1.1",
     "pytest>=8.4.0",
+    "pytest-cov>=6.1.1",
 ]
