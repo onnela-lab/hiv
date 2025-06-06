@@ -255,7 +255,9 @@ class UniversalSimulator:
                 "nodes with casual partners to match the number of nodes with casual "
                 f"partners ({has_casual.sum()})."
             )
-            num_nodes_by_degree_with_casual = np.bincount(degrees_with_casual)
+            num_nodes_by_degree_with_casual = np.bincount(
+                degrees_with_casual, minlength=1
+            )
 
             # Get compressed steady edges so we can evaluate how many are retained. We
             # restrict to edges where at least one member is in the sample.
