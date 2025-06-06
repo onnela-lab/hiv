@@ -8,27 +8,32 @@ import pytest
 @pytest.mark.parametrize(
     "argv",
     [
-        ["--param=n=23.", "--param=omega0=beta:2,2", "--preset=hansson2019"],
-        ["--param=n=17", "--param=rho=beta:2,2", "--preset=kretzschmar1996"],
-        ["--param=n=17", "--param=rho=beta:2,2", "--preset=kretzschmar1998"],
-        ["--param=n=17", "--param=rho=beta:2,2", "--preset=leng2018", "--seed=3"],
-        [
+        ("--param=n=23.", "--param=omega0=beta:2,2", "--preset=hansson2019"),
+        ("--param=n=17", "--param=rho=beta:2,2", "--preset=kretzschmar1996"),
+        ("--param=n=17", "--param=rho=beta:2,2", "--preset=kretzschmar1998"),
+        ("--param=n=17", "--param=rho=beta:2,2", "--preset=leng2018", "--seed=3"),
+        (
             "--param=n=17",
             "--param=mu=0.95",
             "--param=rho=beta:2,2",
             "--preset=leng2018",
             "--seed=3",
-        ],
+        ),
     ],
 )
 @pytest.mark.parametrize("save_graphs", [False, True])
-def test_generate_data(argv: list, save_graphs: bool, tmp_path: pathlib.Path) -> None:
+@pytest.mark.parametrize("sample_size", [10, None])
+def test_generate_data(
+    argv: tuple, save_graphs: bool, tmp_path: pathlib.Path, sample_size: int | None
+) -> None:
     num_samples = 27
     num_lags = 5
     output = tmp_path / "output.pkl"
-    argv = argv + [num_samples, num_lags, output]
+    if sample_size:
+        argv += (f"--sample-size={sample_size}",)
     if save_graphs:
-        argv.append("--save-graphs")
+        argv += ("--save-graphs",)
+    argv += (num_samples, num_lags, output)
     generate_data.__main__(list(map(str, argv)))
 
     with open(output, "rb") as fp:
@@ -44,7 +49,8 @@ def test_generate_data(argv: list, save_graphs: bool, tmp_path: pathlib.Path) ->
         assert values.shape == (num_samples,)
 
     for key, values in result["summaries"].items():
-        assert values.shape == (num_samples, num_lags)
-        if key.startswith("frac"):
-            assert (values >= 0).all(), "probability is negative"
-            assert (values <= 1).all(), "probability is larger than one"
+        if not key.startswith("_"):
+            assert values.shape == (num_samples, num_lags)
+            if key.startswith("frac"):
+                assert (values >= 0).all(), "probability is negative"
+                assert (values <= 1).all(), "probability is larger than one"

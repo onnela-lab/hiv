@@ -27,12 +27,12 @@ def test_simulator(
 
     simulator.run(graph1, 100, validate=True)
 
-    sample_size = (
-        None
-        if sample_size_frac is None
-        else max(1, int(sample_size_frac * graph0.nodes.size))
-    )
-    simulator.evaluate_summaries(graph0, graph1, sample_size)
+    if sample_size_frac is None or graph0.nodes.size == 0:
+        sample0 = None
+    else:
+        sample_size = max(1, int(sample_size_frac * graph0.nodes.size))
+        sample0 = np.random.choice(graph0.nodes, sample_size, replace=False)
+    simulator.evaluate_summaries(graph0, graph1, sample0)
 
 
 def test_invalid_param() -> None:
