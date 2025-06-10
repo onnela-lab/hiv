@@ -261,6 +261,8 @@ def transform_proba_discrete(proba: float, factor: float) -> float:
     Returns:
         Transformed probability.
     """
+    if proba == 0:
+        return 0
     # The probability for the event to happen at least once is 1 - probability that the
     # event does not happen at all, i.e., at_least_once = 1 - (1 - proba) ** factor. We
     # use log1p formulation for small probabilities/large factor changes.
