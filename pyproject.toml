@@ -23,7 +23,9 @@ dev = [
     "jupyter>=1.1.1",
     "matplotlib>=3.10.3",
     "pandas>=2.3.0",
+    "pyaml>=25.5.0",
     "pydantic-ai>=0.2.16",
     "pytest>=8.4.0",
     "pytest-cov>=6.1.1",
+    "python-dotenv>=1.1.0",
 ]
