@@ -1,0 +1,117 @@
+confidence: 4
+description: "The study employs a dynamic stochastic network model to simulate sexual\
+  \ partnerships among Men who have Sex with Men (MSM) in San Francisco and Atlanta,\
+  \ with the primary goal of estimating the Forward-Reachable Path (FRP). The pair-formation\
+  \ model is based on Exponential Random Graph Models (ERGMs) and Temporal ERGMs (TERGMs).\n\
+  1.  **Data and Targets**: Empirical network statistics derived from the ARTnet survey\
+  \ (egocentrically sampled data) serve as inputs. These include individual-level\
+  \ measures like momentary degree, past-year cumulative partner counts, partnership\
+  \ durations, and assortative mixing by age and race (detailed in Table 1 of the\
+  \ manuscript). These measures are aggregated to population-level statistics (for\
+  \ a standardized population of 10,000 MSM per city, weighted by race-ethnicity distributions),\
+  \ which act as targets for fitting the network models.\n2.  **Model Structure**:\
+  \ Three distinct network models are estimated for each city:\n    *   A cross-sectional\
+  \ ERGM for one-time partnerships.\n    *   A TERGM for main partnerships (modeling\
+  \ formation and dissolution).\n    *   A TERGM for casual partnerships (modeling\
+  \ formation and dissolution).\n3.  **Simulation**: Using the parameters estimated\
+  \ from these fitted models, complete, multilayer dynamic networks are simulated.\
+  \ The simulation proceeds in weekly time steps for 5 years. A closed population\
+  \ of 10,000 nodes (individuals) is assumed. The network has three layers (one for\
+  \ each partnership type) with a shared node set but unique edge sets per layer.\
+  \ Dependencies between layers are captured through 'cross-network' terms. The layers\
+  \ are simulated sequentially at each weekly time step.\n4.  **Outcome**: The primary\
+  \ outcome derived from these simulated dynamic networks is the Forward-Reachable\
+  \ Path (FRP), estimated weekly for each node.\n5.  **Software**: The study utilized\
+  \ Statnet R packages and EpiModel for network model estimation and simulation.\n\
+  While the manuscript describes the type of models and the process, it does not provide\
+  \ the specific mathematical formulations of all ERGM/TERGM terms used or the estimated\
+  \ values of their coefficients in the main text. It mentions that some additional\
+  \ details on network measures used in the model are in an eAppendix."
+infection_model: none
+network_type: unimodal
+parameters:
+- description: Generative parameters (coefficients) for the terms in the Exponential
+    Random Graph Models (ERGMs) and Temporal ERGMs (TERGMs). These terms define the
+    likelihood of partnership formation and dissolution based on network configurations
+    (e.g., number of edges, degree distribution), nodal attributes (e.g., age, race
+    for assortative mixing), and partnership duration dynamics (for TERGMs). The specific
+    set of ERGM/TERGM terms included in each of the three models (one-time, main,
+    casual) and their estimated values are not detailed in the provided manuscript
+    text. eAppendices are referenced for some model input details.
+  estimate: unknown
+  location: Methods (p. 681, p. 684 Step 2). Specific values not provided in manuscript.
+  symbol: TERGM/ERGM coefficients
+population_structure: Structured by city (San Francisco, Atlanta), age (15-24, 25-34,
+  35-44, 45-54, 55-64 years), and race-ethnicity (Black nonHispanic/Hispanic vs. White
+  nonHispanic/Other).
+references:
+- doi: 10.1016/j.tpb.2003.12.003
+  formatted: Handcock MS, Jones JH. Likelihood-based inference for stochastic models
+    of sexual network formation. Theor Popul Biol. 2004;65:413-422.
+  reason: This reference discusses likelihood-based inference for stochastic models
+    of sexual network formation, which is directly relevant to the ERGM/TERGM methodology
+    used for modeling pair formation in the manuscript.
+- doi: 10.1214/16-AOAS1010
+  formatted: Krivitsky PN, Morris M. Inference for social network models from egocentrically
+    sampled data, with application to understanding persistent racial disparities
+    in HIV prevalence in the US. Ann Appl Stat. 2017;11:427-455.
+  reason: This paper is relevant as it addresses methods for inferring social network
+    models (like ERGMs/TERGMs) from egocentrically sampled data, the type of data
+    used (ARTnet) in the manuscript to parameterize the pair-formation models.
+- doi: 10.18637/jss.v084.i08
+  formatted: 'Jenness SM, Goodreau SM, Morris M. EpiModel: an R package for mathematical
+    modeling of infectious disease over networks. J Stat Softw. 2018;84:8.'
+  reason: EpiModel is the R package used in the manuscript for network simulations.
+    This package implements Separable Temporal ERGMs (STERGMs), a form of TERGM, which
+    are pair-formation models. The reference describes this software.
+simulation_type: discrete
+summaries:
+- description: Mean momentary degree for main partnerships, overall, San Francisco
+    (average number of ongoing main partners).
+  location: Table 1, Page 683
+  value: 0.47
+- description: Mean momentary degree for main partnerships, overall, Atlanta (average
+    number of ongoing main partners).
+  location: Table 1, Page 683
+  value: 0.4
+- description: Mean momentary degree for casual partnerships, overall, San Francisco
+    (average number of ongoing casual partners).
+  location: Table 1, Page 683
+  value: 0.88
+- description: Mean momentary degree for casual partnerships, overall, Atlanta (average
+    number of ongoing casual partners).
+  location: Table 1, Page 683
+  value: 0.54
+- description: Mean past-year cumulative counts of one-time partners, overall, San
+    Francisco.
+  location: Table 1, Page 683
+  value: 10.0
+- description: Mean past-year cumulative counts of one-time partners, overall, Atlanta.
+  location: Table 1, Page 683
+  value: 4.0
+- description: Mean duration of main partnerships (in weeks) for individuals aged
+    25-34 with partners in the same age group, San Francisco.
+  location: Table 1, Page 683
+  value: 247.0
+- description: Mean duration of casual partnerships (in weeks) for individuals aged
+    25-34 with partners in the same age group, San Francisco.
+  location: Table 1, Page 683
+  value: 67.0
+- description: Assortative mixing by age (proportion of main partnerships within the
+    same age group) for 15-24 year olds, San Francisco.
+  location: Table 2, Page 685
+  value: 0.77
+- description: Assortative mixing by race (proportion of main partnerships within
+    the same race/ethnicity group) for Black/Hispanic individuals, San Francisco.
+  location: Table 2, Page 685
+  value: 0.47
+- description: Mean one-year Forward-Reachable Path (FRP) standardized to 10,000 MSM,
+    overall network, San Francisco.
+  location: Table 3, Page 685
+  value: 8200.0
+- description: Mean one-year Forward-Reachable Path (FRP) standardized to 10,000 MSM,
+    overall network, Atlanta.
+  location: Table 3, Page 685
+  value: 5159.0
+title: HIV and Sexually Transmitted Infection Epidemic Potential of Networks of Men
+  Who Have Sex With Men in Two Cities

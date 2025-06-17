@@ -1,0 +1,119 @@
+confidence: 4
+description: "The manuscript develops three nested deterministic Ordinary Differential\
+  \ Equation (ODE) based pair-formation models to study the impact of concurrency\
+  \ on Sexually Transmitted Infection (STI) spread and control by vaccination. The\
+  \ STI dynamics follow a Susceptible-Infected-Susceptible (SIS) pattern. \nModel\
+  \ 1 (No Concurrency): Individuals are either Susceptible (S) or Infected (I) and\
+  \ can be single or in stable partnerships ([SS], [SI], [II]). Single individuals\
+  \ form stable partnerships at a rate 'f' per individual, with partners chosen randomly\
+  \ from the single population. Stable partnerships break up at a rate '2b' (where\
+  \ 'b' is the per-partner breakup rate). Transmission within an [SI] partnership\
+  \ occurs at rate 'τ', converting the S partner to I. Infected individuals recover\
+  \ at rate 'γ'. The total population is normalized, S + I + 2([SS] + [SI] + [II])\
+  \ = 1. Equations 1.1-1.5 describe this model.\nModel 2 (Casual Partnerships for\
+  \ Singles): This model extends Model 1. Single susceptible individuals can acquire\
+  \ infection through casual partnerships with single infected individuals. Single\
+  \ individuals (S or I) form casual partnerships at a rate 'κ'. Transmission occurs\
+  \ with probability 'p' per casual partnership. This adds terms to the dS/dt and\
+  \ dI/dt equations (Eq. 2.1-2.2).\nModel 3 (Concurrency): This model extends Model\
+  \ 2 by allowing individuals already in stable partnerships to also engage in casual\
+  \ partnerships (concurrent partnerships). Partnered individuals engage in casual\
+  \ partnerships at a rate 'K'. These casual encounters can be with single individuals\
+  \ or other partnered individuals. The infection prevalence among those available\
+  \ for casual sex is denoted Î = (κI + K(P_I)) / (κF + KP_total), where F is total\
+  \ singles, P_I is infected partnered individuals, and P_total is total partnered\
+  \ individuals. Susceptible individuals in stable pairs ([SS] or [SI]) can thus acquire\
+  \ infection through these external casual partnerships. Two variations are considered:\
+  \ Model 3.1 (K=κ) and Model 3.2 (κ=2K, singles have twice the casual rate of partnered\
+  \ individuals). Equations 3.1-3.6 describe this model.\nAll models assume homogeneous\
+  \ mixing within the population, ignoring gender, age structure, or sexual preference\
+  \ in the core model structure, though parameters are informed by age/sex-specific\
+  \ data. The population is initially assumed to be closed (no births/deaths). Vaccination\
+  \ is later introduced to Model 3 to assess control efficacy."
+infection_model: SIS (Susceptible-Infected-Susceptible)
+network_type: unimodal
+parameters:
+- description: Rate at which individuals form a stable partnership.
+  estimate: 3.0
+  location: Section 3.1, p. 39; Appendix A
+  symbol: f
+- description: Rate at which each partner in a stable partnership initiates breakup
+    (partnership breaks at 2b).
+  estimate: 1.5
+  location: Section 3.1, p. 39; Appendix A
+  symbol: b
+- description: Transmission rate within a stable [SI] partnership.
+  estimate: 22.5
+  location: Fig 1 legend p.38 (default value); Appendix A
+  symbol: τ
+- description: Recovery rate from infection.
+  estimate: 2.0
+  location: Fig 1 legend p.38 (default value); Section 3.1, p.39; Appendix A
+  symbol: γ
+- description: Rate at which single individuals form casual partnerships.
+  estimate: 0.335
+  location: Section 3.1, p. 39 (for Model 2.1 and base for Model 3.1 where K=κ); Appendix
+    A
+  symbol: κ
+- description: Rate at which individuals in stable partnerships form additional casual
+    partnerships (concurrency).
+  estimate: 0.335
+  location: Section 3.1, p. 39 (for Model 3); Appendix A
+  symbol: K
+- description: Probability of transmission via a single casual partnership.
+  estimate: 0.45
+  location: Fig 2 legend, p. 40; Appendix A
+  symbol: p
+population_structure: unstructured
+references:
+- doi: 10.1016/j.idm.2017.10.002
+  formatted: 'Kretzschmar, M., Heijne, J.C., 2017. Pair formation models for sexually
+    transmitted infections: a primer. Infect. Dis. Model. 2 (3), 368–378.'
+  reason: Explicitly cited as a useful review on pair-formation models for STIs (page
+    2).
+- doi: 10.1016/0025-5564(92)90006-6
+  formatted: Watts, C.H., May, R.M., 1992. The influence of concurrent partnerships
+    on the dynamics of HIV/aids. Math. Biosci. 108 (1), 89–104.
+  reason: Developed an early deterministic ODE model exploring concurrent partnerships
+    (page 2).
+- doi: 10.1016/0025-5564(95)00099-X
+  formatted: Kretzschmar, M., Morris, M., 1996. Measures of concurrency in networks
+    and the spread of infectious disease. Math. Biosci. 133 (2), 165–195.
+  reason: Shows the impact of concurrency and their deterministic model is stated
+    as similar to Model 1 in the manuscript (page 2, page 3).
+- doi: 10.1016/j.mbs.2003.12.005
+  formatted: Eames, K.T.D., Keeling, M.J., 2004. Monogamous networks and the spread
+    of sexually transmitted diseases. Math. Biosci. 189 (2), 115–130.
+  reason: Compares serial monogamy with models including short-term casual partnerships
+    outside relationships; the manuscript's Model 3 approach is stated as similar
+    (page 2, page 4).
+- doi: 10.1016/j.tpb.2012.07.004
+  formatted: Leung, K.Y., Kretzschmar, M., Diekmann, O., 2012. Dynamic concurrent
+    partnership networks incorporating demography. Theor. Popul. Biol. 82 (3), 229–239.
+  reason: Develops a dynamic partnership network model to explore the influence of
+    concurrency (page 2).
+- doi: 10.1097/00002030-200305020-00009
+  formatted: Xiridou, M., Geskus, R., de Wit, J., Coutinho, R., Kretzschmar, M., 2003.
+    The contribution of steady and casual partnerships to the incidence of HIV infection
+    among homosexual men in Amsterdam. Aids 17 (7), 1029–1038.
+  reason: Models concurrency in an approach similar to the manuscript to assess contributions
+    of stable and casual partnerships (page 2).
+simulation_type: continuous
+summaries:
+- description: Proportion of young adults (16-24 years) reported to be involved in
+    at least one concurrent partnership within the previous year.
+  location: Section 3.1, p. 39 (from Natsal-2 data)
+  value: 0.2
+- description: Average number of new partnerships per year assumed for an individual
+    (16-24 years).
+  location: Section 3.1, p. 39 (derived from Natsal-2 data)
+  value: 1.0
+- description: Proportion of individuals not in a partnership at equilibrium (F*),
+    derived from AddHealth data (f=2b condition for F*=1/3).
+  location: Section 3.1, p. 39
+  value: 0.333
+- description: Default endemic prevalence of high-risk HPV used for model fitting.
+  location: Section 3.1, p. 39 (from Howell-Jones et al. 2012)
+  value: 0.35
+title: Concurrency of partnerships, consistency with data, and control of sexually
+  transmitted infections

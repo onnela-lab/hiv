@@ -1,0 +1,168 @@
+confidence: 4
+description: 'The manuscript describes a mathematical pair-formation model for men
+  who have sex with men (MSM) in The Netherlands. The model simulates the formation
+  and dissolution of main partnerships, as well as 1-time and short-term casual partnerships.
+  Men can have only one main partner at a time, but can have multiple casual partners
+  concurrently with a main partnership. The MSM population (N=200,000, with entry/exit
+  rate μ=0.02/year) is stratified into two sexual activity groups: low-activity (75%
+  of population) and high-activity (25%). These groups have different rates of forming
+  main partnerships (r_i) and casual partnerships (α_i for 1-time, w_i for short-term),
+  and these rates also differ by whether a man is single or has a main partner. Partnership
+  choice (for main and casual partners) incorporates assortative mixing by activity
+  level, with specific parameters εS for main (75% assortative) and εC for casual
+  (60% assortative) partnerships, indicating the proportion of partnerships formed
+  with individuals of the same activity group. Main partnerships are formed at rates
+  r_i and have durations d_ij (e.g., d_LL for low-low partnerships is 3-5 years; d_LH
+  for low-high is 0.75-1.5 years), implying dissolution rates σ_ij = 1/d_ij. One-time
+  casual partnerships are acquired at rates α_i. Short-term casual partnerships are
+  acquired at rates w_i and have an average duration of 2 weeks, implying a constant
+  dissolution rate (26 per year). The model is dynamic and was used for simulations
+  over 7 years. Parameters for pre-COVID sexual behavior were estimated from the Amsterdam
+  Cohort Study (ACS). The exact equations governing partnership formation dynamics,
+  particularly how assortativity (εS, εC) and population stratification influence
+  pairing probabilities, are stated to be in a supplement (http://links.lww.com/OLQ/A731),
+  which was not provided for this review.'
+infection_model: The model describes transmission of Chlamydia trachomatis (CT) and
+  Neisseria gonorrhoeae (NG) among MSM. It models anogenital CT and NG infections,
+  assuming them to be a single type of infection (not site-specific). Infections can
+  be symptomatic (θ_CT = 30-50%, θ_NG = 35-75% symptomatic) or asymptomatic. Symptomatic
+  cases have a duration of 1-2 weeks (1/γs) and are assumed to be treated and recover.
+  Asymptomatic cases remain infectious (duration 1/γa_CT = 10-14 months for CT, 1/γa_NG
+  = 5-7 months for NG) until natural recovery or detection via opportunistic testing
+  followed by treatment. Transmission probability per condomless anal intercourse
+  (CAI) act (β) is specific to CT (0.1-0.3) or NG (0.3-0.5).
+network_type: unimodal
+parameters:
+- description: Rate of forming main partnerships per year for low-activity MSM.
+  estimate: 0.28
+  location: Table 2
+  symbol: r_i (low activity)
+- description: Rate of forming main partnerships per year for high-activity MSM.
+  estimate: 0.3
+  location: Table 2
+  symbol: r_i (high activity)
+- description: Duration of main partnerships between two low-activity MSM, in years.
+  estimate: unknown
+  location: Table 2 (value 3-5 years for Low activity group)
+  symbol: d_ii (low-low)
+- description: Duration of main partnerships between two high-activity MSM, in years.
+    The manuscript uses d_ii for same-activity group partnerships.
+  estimate: unknown
+  location: Table 2 (value for high-high partnership duration assumed to be 3-5 years,
+    similar to low-low, as per d_ii symbol and description; specific range not explicitly
+    stated for d_HH alone)
+  symbol: d_ii (high-high)
+- description: Duration of main partnerships between a low-activity and a high-activity
+    MSM, in years.
+  estimate: unknown
+  location: Table 2 (value 0.75-1.5 years)
+  symbol: d_LH
+- description: Number of 1-time partners with whom single low-activity MSM have CAI,
+    per year.
+  estimate: 1.01
+  location: Table 2
+  symbol: α_i (low activity, single)
+- description: Number of 1-time partners with whom single high-activity MSM have CAI,
+    per year.
+  estimate: 7.28
+  location: Table 2
+  symbol: α_i (high activity, single)
+- description: Number of 1-time partners with whom low-activity MSM with a main partner
+    have CAI, per year.
+  estimate: 0.68
+  location: Table 2
+  symbol: α_i (low activity, main partner)
+- description: Number of 1-time partners with whom high-activity MSM with a main partner
+    have CAI, per year.
+  estimate: 5.36
+  location: Table 2
+  symbol: α_i (high activity, main partner)
+- description: Number of short-term partners with whom single low-activity MSM have
+    anal intercourse, per year.
+  estimate: 2.72
+  location: Table 2
+  symbol: w_i (low activity, single)
+- description: Number of short-term partners with whom single high-activity MSM have
+    anal intercourse, per year.
+  estimate: 6.97
+  location: Table 2
+  symbol: w_i (high activity, single)
+- description: Number of short-term partners with whom low-activity MSM with a main
+    partner have anal intercourse, per year.
+  estimate: 1.06
+  location: Table 2
+  symbol: w_i (low activity, main partner)
+- description: Number of short-term partners with whom high-activity MSM with a main
+    partner have anal intercourse, per year.
+  estimate: 5.74
+  location: Table 2
+  symbol: w_i (high activity, main partner)
+- description: Average duration of short-term partnerships, in weeks.
+  estimate: 2.0
+  location: Table 1
+  symbol: (not specified in table)
+- description: Parameter for assortative mixing in main partnerships (proportion of
+    partnerships formed with individuals of the same activity group).
+  estimate: 0.75
+  location: Table 1 (value 75%)
+  symbol: εS
+- description: Parameter for assortative mixing in casual partnerships (proportion
+    of partnerships formed with individuals of the same activity group).
+  estimate: 0.6
+  location: Table 1 (value 60%)
+  symbol: εC
+- description: Rate of entry into and exit out of the population, per year.
+  estimate: 0.02
+  location: Table 1
+  symbol: μ
+- description: Size of MSM population.
+  estimate: 200000.0
+  location: Table 1
+  symbol: N
+- description: Percentage of MSM in low activity group.
+  estimate: 0.75
+  location: Table 2 (value 75%)
+  symbol: p_i (low activity)
+- description: Percentage of MSM in high activity group.
+  estimate: 0.25
+  location: Table 2 (value 25%)
+  symbol: p_i (high activity)
+population_structure: Structured by sexual activity level (low-activity and high-activity
+  MSM based on partner numbers) and partnership status (single or in a main partnership).
+references:
+- doi: unknown
+  formatted: Xiridou M, Geskus R, de Wit J, et al. The contribution of steady and
+    casual partnerships to the incidence of HIV infection among homosexual men in
+    Amsterdam. AIDS 2003; 17:1029–1038.
+  reason: Cited as a basis (reference 14) for the pair-formation model used in this
+    manuscript (page 146).
+- doi: unknown
+  formatted: 'Punyacharoensin N, Edmunds WJ, De Angelis D, et al. Modelling the HIV
+    epidemic among MSM in the United Kingdom: Quantifying the contributions to HIV
+    transmission to better inform prevention initiatives. AIDS 2015; 29:339–349.'
+  reason: Cited as a basis (reference 15) for the pair-formation model used in this
+    manuscript (page 146).
+simulation_type: continuous
+summaries:
+- description: Percentage of MSM in The Netherlands reporting sexual activity in January
+    to February 2020 (pre-lockdown).
+  location: Page 145 (citing ref 7)
+  value: 82.0
+- description: Percentage of MSM in The Netherlands reporting sexual activity during
+    the first COVID-19 lockdown.
+  location: Page 145 (citing ref 7)
+  value: 64.0
+- description: Percentage of MSM in The Netherlands reporting sexual activity during
+    June to July 2020 (between lockdowns).
+  location: Page 145 (citing ref 7)
+  value: 76.0
+- description: Percentage of MSM in the low-activity sexual group.
+  location: Table 2 (derived from ACS data)
+  value: 75.0
+- description: Percentage of MSM in the high-activity sexual group (defined as >10
+    AI partners in preceding 6 months).
+  location: Table 2 (derived from ACS data)
+  value: 25.0
+title: 'How the Disruption in Sexually Transmitted Infection Care Due to the COVID-19
+  Pandemic Could Lead to Increased Sexually Transmitted Infection Transmission Among
+  Men Who Have Sex With Men in The Netherlands: A Mathematical Modeling Study'

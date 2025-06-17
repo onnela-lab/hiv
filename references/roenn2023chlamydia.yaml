@@ -1,0 +1,73 @@
+confidence: 4
+description: 'The manuscript describes a pair-formation transmission model used to
+  simulate chlamydia transmission in a heterosexual population in the United States.
+  The model is stratified by sex, age group (15–18, 19–24, 25–39, and 40–54 years),
+  and partnership status (not sexually active, sexually active people not in a long-term
+  partnership, and sexually active people in long-term partnerships). Long-term partnerships
+  are parameterized to reflect cohabiting partnerships. The model characterizes the
+  population in terms of discrete health states: chlamydia-susceptible or chlamydia-infected.
+  Infected states are further stratified by symptomatic/asymptomatic categories and
+  first/subsequent infections. Recovery occurs via natural processes or diagnosis
+  and treatment. Sexual partnerships are characterized by the combination of health
+  states of the two partners. Partner notification (PN) is modeled within long-term
+  partnerships. The model was previously calibrated to multiple epidemiological datasets
+  for the years 2000 to 2015 (detailed in their reference 2). Specific quantitative
+  parameters detailing the rates of pair formation, dissolution, or sexual act frequency
+  per partnership type are not explicitly listed in this manuscript but are part of
+  the underlying referenced model; this manuscript focuses on application and outcomes.'
+infection_model: Chlamydia trachomatis. The model includes states for susceptible
+  and infected individuals. Infected individuals can be symptomatic or asymptomatic,
+  and the model distinguishes between first and subsequent infections. Sequelae of
+  infection modeled include pelvic inflammatory disease (PID), chronic pelvic pain
+  (CPP), tubal factor infertility (TFI), and ectopic pregnancy (EP) in women, and
+  epididymitis in men.
+network_type: bimodal
+parameters:
+- description: Probability of symptomatic infection in women
+  estimate: 0.289
+  location: Page 3, Table 1 (from calibrated model)
+  symbol: unknown
+- description: Probability of symptomatic infection in men
+  estimate: 0.262
+  location: Page 3, Table 1 (from calibrated model)
+  symbol: unknown
+- description: Rate of PID per year of infection for women with chlamydia
+  estimate: 0.154
+  location: Page 3, Table 1 (Normal(0.154, 0.049))
+  symbol: unknown
+- description: Relative risk for PID among women with a repeat Chlamydia infection
+    compared to first infection
+  estimate: 1.08
+  location: Page 3, Table 1 (Uniform(1, 1.15), mean taken as midpoint)
+  symbol: unknown
+population_structure: Stratified by sex, age group (15–18, 19–24, 25–39, and 40–54
+  years), and partnership status (not sexually active, sexually active not in long-term
+  partnership, sexually active in long-term partnership).
+references:
+- doi: 10.1093/aje/kwy227
+  formatted: 'Rönn MM, Tuite AR, Menzies NA, et al. The impact of screening and partner
+    notification on chlamydia prevalence and numbers of infections averted in the
+    United States, 2000-2015: Evaluation of epidemiologic trends using a pair-formation
+    transmission model. Am J Epidemiol 2019; 188:545-554.'
+  reason: This reference is cited directly as the source of the 'published calibrated
+    pair formation transmission model' used in the study (Page 1, Methods section).
+- doi: 10.1097/00007435-200010000-00008
+  formatted: 'Welte R, Kretzschmar M, Leidl R, et al. Cost-effectiveness of screening
+    programs for Chlamydia trachomatis: A population-based dynamic approach. Sex Transm
+    Dis 2000; 27:518-529.'
+  reason: This paper discusses a 'population-based dynamic approach' for Chlamydia
+    screening, and such dynamic models often incorporate pair formation. Kretzschmar
+    is a prominent author in infectious disease network modeling.
+simulation_type: continuous
+summaries:
+- description: Estimated annual screening rate in 2000 for women aged 19-24 years
+    (midpoint of reported estimate range 0-0.3 per year).
+  location: Page 2, Methods, Transmission Dynamic Model of Intervention Scenarios
+  value: 0.15
+- description: Estimated proportion of partners (female index case, age 15-18, long-term
+    partnership) receiving PN and treatment if infected (midpoint of reported estimate
+    range 0.3-0.7).
+  location: Page 2, Methods, Transmission Dynamic Model of Intervention Scenarios
+  value: 0.5
+title: 'Costs, Health Benefits, and Cost-Effectiveness of Chlamydia Screening and
+  Partner Notification in the United States, 2000–2019: A Mathematical Modeling Analysis'

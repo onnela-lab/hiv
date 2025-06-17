@@ -1,0 +1,141 @@
+confidence: 5
+description: "The manuscript presents and compares two main types of pair-formation\
+  \ models for sexually transmitted infections without recovery: one with constant\
+  \ infectivity (Model M(+/c)) and one with variable infectivity over two stages (Model\
+  \ M(+/v)). Both are contrasted with simpler models assuming instantaneous contacts\
+  \ (M(0/c) and M(0/v)).\n\nModel M(+/c) - Pair Formation with Constant Infectivity:\n\
+  This model tracks the number of uninfected singles (X0), infected singles (X1),\
+  \ pairs of two susceptibles (P00), pairs with one susceptible and one infected (P01),\
+  \ and pairs with two infecteds (P11). The total number of singles is X = X0 + X1.\n\
+  The dynamics are described by a system of ordinary differential equations (Eq. 3,\
+  \ page 86):\n- Recruitment: New susceptible individuals enter X0 at rate ν.\n- Departure:\
+  \ Individuals leave any state (singles or from pairs) at a per-capita rate μ.\n\
+  - Pair Formation: Singles form pairs based on random mixing, with ρ being the per-capita\
+  \ rate for a single to seek a partner.\n  - X0 + X0 -> P00: rate (1/2)ρ(X0^2)/X\n\
+  \  - X0 + X1 (no transmission at formation): -> P01 at rate ρ(1-h)X0X1/X\n  - X0\
+  \ + X1 (transmission at formation): -> P11 at rate ρhX0X1/X\n  - X1 + X1 -> P11:\
+  \ rate (1/2)ρ(X1^2)/X\n- Pair Dissolution: Pairs (P00, P01, P11) dissolve at a rate\
+  \ σ (separation). Combined with departure μ for each partner, the total rate of\
+  \ a pair ending is (σ+2μ).\n  - P00 dissolves to 2X0.\n  - P01 dissolves to X0 +\
+  \ X1.\n  - P11 dissolves to 2X1.\n- Infection within Pairs: In a P01 pair (Susceptible-Infected),\
+  \ the susceptible partner can become infected at a rate φh (where φ is the contact\
+  \ frequency within a partnership and h is the transmission probability per contact).\
+  \ This converts a P01 pair into a P11 pair.\n  - dP01/dt includes a term -φhP01.\n\
+  \  - dP11/dt includes a term +φhP01.\nThe full system of ODEs is provided in Eq.\
+  \ (3) on page 86.\n\nModel M(+/v) - Pair Formation with Variable Infectivity:\n\
+  This model extends M(+/c) by incorporating two stages of infection for infected\
+  \ individuals: stage 1 (e.g., acute, infectivity h1) and stage 2 (e.g., chronic,\
+  \ infectivity h2). Infected individuals progress from stage 1 to stage 2 at a rate\
+  \ γ.\nThe state variables expand to include X0 (uninfected singles), X1 (infected\
+  \ singles, stage 1), X2 (infected singles, stage 2), and various pair types: P00\
+  \ (S-S), P01 (S-I1), P02 (S-I2), P11 (I1-I1), P12 (I1-I2), P22 (I2-I2). The total\
+  \ number of singles is X = X0+X1+X2.\nPair formation and dissolution dynamics are\
+  \ analogous to M(+/c), but account for the different infection stages and their\
+  \ respective transmission probabilities (h1, h2) at formation and during the partnership\
+  \ (φh1, φh2).\nProgression through infection stages (rate γ) also changes the state\
+  \ of singles (X1 -> X2) and the type of pairs (e.g., a P01 pair becomes P02 if the\
+  \ I1 partner progresses; an I1 in a P11 pair progresses, changing it to P12).\n\
+  The full derivation and system of ODEs for the 9 state variables are detailed in\
+  \ Appendix A (page 108). A reduced 6-equation model (system 22, page 98) is also\
+  \ presented in terms of X1, X2, P01, P02, and total infected in stage 1 (I1) and\
+  \ stage 2 (I2).\n\nBoth models assume a constant total population size N = ν/μ at\
+  \ equilibrium. They explore epidemic characteristics like the initial phase, exponential\
+  \ growth rate (r), and endemic equilibrium, comparing them to models without explicit\
+  \ pair duration under the assumption of equal Basic Reproduction Ratios (R0)."
+infection_model: "SI-type (Susceptible-Infected) without recovery. Two main variants\
+  \ are detailed for pair-formation models: \n1. Constant infectivity (Model M(+/c)):\
+  \ Infected individuals have a constant transmission probability 'h' per contact\
+  \ throughout their infectious period.\n2. Two-stage variable infectivity (Model\
+  \ M(+/v)): Infected individuals pass through two stages. Stage 1 has transmission\
+  \ probability 'h1' per contact, and stage 2 has 'h2'. Progression from stage 1 to\
+  \ stage 2 occurs at rate 'γ'."
+network_type: unimodal
+parameters:
+- description: Recruitment rate into the sexually active population.
+  estimate: unknown
+  location: Page 85 (for M(0/c)), Page 86 (for M(+/c))
+  symbol: ν
+- description: Rate of leaving the sexually active population (per capita).
+  estimate: unknown
+  location: Page 85 (for M(0/c)), Page 86 (for M(+/c))
+  symbol: μ
+- description: Rate of pair formation (per single individual).
+  estimate: unknown
+  location: Page 86
+  symbol: ρ
+- description: Rate of pair separation (dissolution).
+  estimate: unknown
+  location: Page 86
+  symbol: σ
+- description: Contact frequency within partnerships.
+  estimate: unknown
+  location: Page 86
+  symbol: φ
+- description: Transmission probability per contact (in constant infectivity model
+    M(+/c)).
+  estimate: unknown
+  location: Page 86
+  symbol: h
+- description: Transmission probability per contact if the infected individual is
+    in stage 1 (in variable infectivity model M(+/v)).
+  estimate: unknown
+  location: Page 97 (for M(0/v)), Appendix A (for M(+/v))
+  symbol: h1
+- description: Transmission probability per contact if the infected individual is
+    in stage 2 (in variable infectivity model M(+/v)).
+  estimate: unknown
+  location: Page 97 (for M(0/v)), Appendix A (for M(+/v))
+  symbol: h2
+- description: Rate of transition from stage 1 to stage 2 of infection (in variable
+    infectivity model M(+/v)).
+  estimate: unknown
+  location: Page 97 (for M(0/v)), Appendix A (for M(+/v))
+  symbol: γ
+population_structure: structured by infection status (susceptible, infected in stage
+  1, infected in stage 2) and partnership status (single, or type of pair based on
+  partners' infection status). The models do not include explicit age or other demographic
+  subgroup structures beyond this.
+references:
+- doi: unknown
+  formatted: K. Dietz, K.P. Hadeler, Epidemiological models for sexually transmitted
+    diseases, J. Math. Biol. 26 (1988) 1–25.
+  reason: Cited as an early work that incorporates pair formation and partnership
+    duration, forming a basis for the models discussed.
+- doi: unknown
+  formatted: M. Kretzschmar, J.C. Jager, D.P. Reinking, G. van Zessen, H. Brouwers,
+    The basic reproduction ratio Ro for a sexually transmitted disease in a pair formation
+    model with two types of pairs, Math. Biosci. 124 (1994) 181–202.
+  reason: A paper by one of the manuscript's authors that specifically addresses the
+    calculation of R0 in a pair formation model context.
+- doi: unknown
+  formatted: 'R. Waldstätter, Pair formation in sexually transmitted diseases, in:
+    C. Castillo-Chavez (Ed.), Mathematical and Statistical Approaches to AIDS Epidemiology,
+    Lecture Notes Biomathematics, vol. 83, Springer, Berlin, 1989, p. 260.'
+  reason: Cited in the introduction as an example of the pair formation modeling approach.
+- doi: unknown
+  formatted: M. Altmann, Susceptible-infected-removed epidemic models with dynamic
+    partnerships, J. Math. Biol. 33 (1995) 661–675.
+  reason: Cited as a model that incorporates dynamic partnerships, relevant to the
+    broader field of pair formation models.
+- doi: unknown
+  formatted: 'K.P. Hadeler, Structured population models for HIV infection: pair formation
+    and non-constant infectivity, in: N.P. Jewell, K. Dietz, V.T. Farewell (Eds.),
+    AIDS Epidemiology: Methodological Issues, Birkhäuser, Boston, 1992, p. 156.'
+  reason: Cited for work on incorporating variable infectivity in pair formation models,
+    a key theme of the manuscript.
+simulation_type: continuous
+summaries:
+- description: Mean duration of a partnership (years). Calculated as 1/(σ + 2μ).
+  location: Fig 1 caption (partnership duration 1/(σ+2μ)), page 87 (interpretation
+    of 1/(σ+2μ))
+  value: -1.0
+- description: Number of new partners per year for a specific parameter set (μ=0.1095/year,
+    ρ=18.25/year, σ=1.825/year, φ=0.2/day).
+  location: Fig. 5 caption, page 96
+  value: 15.89
+- description: Number of contacts per partner for a specific parameter set (μ=0.1095/year,
+    ρ=18.25/year, σ=1.825/year, φ=0.2/day).
+  location: Fig. 5 caption, page 96
+  value: 36.74
+title: The effect of pair formation and variable infectivity on the spread of an infection
+  without recovery

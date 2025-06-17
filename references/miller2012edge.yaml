@@ -1,0 +1,126 @@
+confidence: 4
+description: 'The manuscript presents a family of "edge-based compartmental models"
+  for SIR infectious disease spread on networks. The core idea is to track θ(t) (or
+  Θ(t) for expected degree models), the probability that a randomly selected edge
+  (partnership) connected to a test individual has *not* transmitted the infection
+  to that individual. The overall proportions of susceptible (S), infected (I), and
+  recovered (R) individuals in the population are then derived from θ(t) using the
+  (expected) degree distribution''s generating function (ψ or Ψ).
+
+  The dynamics of θ(t) (and related auxiliary variables representing the state of
+  the partner on the other end of the edge) are described by systems of ordinary differential
+  equations (ODEs). These ODEs account for infection transmission across the edge
+  (at rate β), recovery of partners (at rate γ), and, in dynamic network models, the
+  processes of partnership formation and dissolution (governed by rates like η, η1,
+  η2).
+
+  The paper details several specific models:
+
+  1. Configuration Model (CM): Static network with a given degree distribution P(k).
+  (Section 2, Eq. 2.1)
+
+  2. Mean Field Social Heterogeneity (MFSH - Actual Degree): Dynamic network, degrees
+  P(k), partners rewire instantly. (Section 3.1, Eq. 3.1)
+
+  3. Dynamic Fixed-Degree (DFD): Dynamic network, degrees P(k), edges break and re-form
+  at rate η. (Section 3.2, Eqs. 3.5-3.8)
+
+  4. Dormant Contact (DC): Dynamic network, degrees P(k_m), edges break (rate η2),
+  stubs can be dormant, then re-form edges (rate η1). (Section 3.3, Eqs. 3.11-3.18)
+
+  5. Mixed Poisson (MP): Static network with expected degree distribution ρ(κ). (Section
+  4.1, equation for Θ_dot on p.11)
+
+  6. MFSH (Expected Degree): Dynamic network, expected degrees ρ(κ), partners rewire
+  instantly. (Section 4.2, equation for Θ_dot on p.12)
+
+  7. Dynamic Variable-Degree (DVD): Dynamic network, expected degrees ρ(κ), edges
+  form and break at rates proportional to κη and η respectively. (Section 4.3, Eqs.
+  4.1-4.3)
+
+  These models allow for heterogeneous contact rates (via degree distributions) and
+  varying partnership durations.'
+infection_model: SIR (Susceptible-Infected-Recovered)
+network_type: unimodal
+parameters:
+- description: Transmission rate per infected partner/edge.
+  estimate: unknown
+  location: Throughout manuscript, e.g., p.1 (general), p.4 (Sec 2.2 for CM)
+  symbol: β
+- description: Recovery rate from infection.
+  estimate: unknown
+  location: Throughout manuscript, e.g., p.1 (general), p.4 (Sec 2.2 for CM)
+  symbol: γ
+- description: Edge swapping rate in DFD model; or base rate for edge creation/deletion
+    in DVD model.
+  estimate: unknown
+  location: p.6 (Sec 3.2, DFD), p.13 (Sec 4.3, DVD)
+  symbol: η
+- description: Rate at which dormant stubs become active (form edges) in DC model.
+  estimate: unknown
+  location: p.8 (Sec 3.3, DC)
+  symbol: η1
+- description: Rate at which active edges break (stubs become dormant) in DC model.
+  estimate: unknown
+  location: p.8 (Sec 3.3, DC)
+  symbol: η2
+- description: Degree distribution (probability mass function) for actual degree models.
+  estimate: unknown
+  location: p.3 (Sec 2, CM), p.5 (Sec 3.1, MFSH), p.8 (Sec 3.3, DC)
+  symbol: P(k)
+- description: Expected degree distribution (probability density function) for expected
+    degree models.
+  estimate: unknown
+  location: p.10 (Sec 4.1, MP), p.11 (Sec 4.2, MFSH_exp), p.13 (Sec 4.3, DVD)
+  symbol: ρ(κ)
+population_structure: Structured by degree (for 'actual degree models' using P(k))
+  or expected degree (for 'expected degree models' using ρ(κ)). The degree distribution
+  defines this heterogeneity. Otherwise, nodes are considered homogeneous.
+references:
+- doi: 10.1098/rspb.2007.1159
+  formatted: Volz, E. M. & Meyers, L. A. 2007 Susceptible-infected-recovered epidemics
+    in dynamic contact networks. Proc. R. Soc. B 274, 2925–2933.
+  reason: Discusses SIR epidemic models on dynamic networks, which is relevant to
+    modeling changing partnerships over time in sexual contact networks and pair formation
+    dynamics generally related to edge dynamics in networks approaches for epidemics.
+    The manuscript cites this paper with respect to dynamic contact networks. The
+    manuscript cites this paper in its general review of prior work related to dynamic
+    networks and partnership duration, specific to its DFD model derivation. The paper
+    itself is cited as Volz & Meyers [16].
+- doi: 10.1073/pnas.202244299
+  formatted: Eames, K. T. D. & Keeling, M. J. 2002 Modeling dynamic and network heterogeneities
+    in the spread of sexually transmitted diseases. Proc. Natl Acad. Sci. USA 99,
+    13 330–13 335.
+  reason: This reference directly addresses the modeling of sexually transmitted diseases,
+    incorporating dynamic networks and heterogeneity, which are key aspects of pair
+    formation models in sexual contact networks. The manuscript cites this paper [23]
+    when discussing approximations for network structures for predicting dynamics
+    on static networks which is one of the types of model that this manuscript builds
+    upon and contrasts its method with. It is cited as Eames & Keeling [23].
+- doi: 10.1098/rstb.1988.0108
+  formatted: May, R. M. & Anderson, R. M. 1988 The transmission dynamics of human
+    immunodeficiency virus (HIV). Phil. Trans. R. Soc. Lond. B 321, 565–607.
+  reason: This is a foundational paper on HIV transmission dynamics, a context where
+    pair formation and partnership characteristics are critically important for understanding
+    disease spread. The manuscript cites this paper [17] in its review of prior work
+    that introduces heterogeneity, e.g. through multiple risk-groups. It is cited
+    as May & Anderson [17].
+- doi: 10.1016/0378-8733(95)00268-S
+  formatted: Morris, M. & Kretzschmar, M. 1995 Concurrent partnerships and transmission
+    dynamics in networks. Soc. Networks 17, 299–318.
+  reason: This paper focuses on concurrent partnerships within network models, a crucial
+    element in accurately modeling sexual contact networks and their implications
+    for STD transmission, which relates to pair (edge) dynamics. It is cited as Morris
+    & Kretzschmar [45].
+- doi: 10.1239/jap/1032192860
+  formatted: Diekmann, O., De Jong, M. C. M. & Metz, J. A. J. 1998 A deterministic
+    epidemic model taking account of repeated contacts between the same individuals.
+    J. Appl. Probab. 35, 448–462.
+  reason: This work addresses the issue of repeated contacts between the same individuals,
+    which is fundamental to understanding partnership duration and its role in pair
+    formation models for disease transmission. The manuscript cites this paper [21]
+    when discussing static networks and permanent partnerships. It is cited as Diekmann,
+    De Jong & Metz [21].
+simulation_type: continuous
+summaries: []
+title: Edge-based compartmental modelling for infectious disease spread

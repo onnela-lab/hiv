@@ -1,0 +1,108 @@
+confidence: 4
+description: "The manuscript presents a compartmental pair-formation model to study\
+  \ the dynamics of Sexually Transmitted Infections (STIs) under different public\
+  \ health strategies. The model is an extension of Kretzschmar and Dietz (1998) and\
+  \ operates within a susceptible-infectious-susceptible (SIS) framework. \n\nState\
+  \ Variables:\n- X0(t): Number of single susceptible individuals.\n- X1(t): Number\
+  \ of single infected individuals.\n- P00(t): Number of pairs with two susceptible\
+  \ individuals.\n- P01(t): Number of pairs with one susceptible and one infected\
+  \ individual.\n- P11(t): Number of pairs with two infected individuals.\nThe total\
+  \ number of single individuals is X(t) = X0(t) + X1(t). The total number of pairs\
+  \ is P(t) = P00(t) + P01(t) + P11(t).\n\nModel Assumptions (Section 2, page 4103):\n\
+  (i) Susceptible individuals are recruited as singles at a rate ν and leave the sexually\
+  \ active population at a rate μ.\n(ii) Single individuals form pairs at a rate ρ.\
+  \ Pairs dissolve at a rate σ or due to death (μ).\n(iii) Transmission occurs within\
+  \ P01 pairs. φ is the contact rate within partnerships, and h is the transmission\
+  \ probability per contact. A control function uC(t) (condom promotion) can reduce\
+  \ h.\n(iv) Infected individuals recover naturally at a rate γ, returning to the\
+  \ susceptible class. Recovery is increased by a treatment control function uT(t).\n\
+  \nThe model is described by the following system of ordinary differential equations\
+  \ (Equation 1, pages 4103-4104):\n\nX0' = ν + (σ + μ)(2P00 + P01) - (μ + ρ)X0 +\
+  \ (γ + uT)X1\n\nX1' = (σ + μ)(2P11 + P01) - (μ + ρ)X1 - (γ + uT)X1\n\nP00' = (1/2)ρ(X0^2/X)\
+  \ - (σ + 2μ)P00 + (γ + uT)P01\n\nP01' = ρ(X0*X1/X) - ρ(1 - h(1-uC))(X0*X1/X) - (σ\
+  \ + φh(1-uC) + 2μ)P01 - (γ + uT)P01 + 2(γ + uT)P11\n\nP11' = (1/2)ρ(X1^2/X) + ρh(1-uC)(X0*X1/X)\
+  \ + φh(1-uC)P01 - (σ + 2μ)P11 - 2(γ + uT)P11\n\n(Note: The formulation for the formation\
+  \ of P01 pairs, specifically the terms ρ(X0*X1/X) - ρ(1 - h(1-uC))(X0*X1/X), simplifies\
+  \ to ρ(X0*X1/X)h(1-uC). This appears to differ from the visual representation in\
+  \ Figure 1, where P01 formation from X0 and X1 is proportional to (1-h_eff). The\
+  \ description here adheres to the written equations in the manuscript.)\n\nThe model\
+  \ is used to explore constant, feedback, and optimal control strategies for STIs\
+  \ like trichomoniasis, gonorrhea, chlamydia, and HPV. A reduced version of the model\
+  \ (Equation 6) is derived under the assumption of equilibrium pair formation dynamics\
+  \ for further analysis like R0 calculation and optimal control problem setup."
+infection_model: SIS (Susceptible-Infectious-Susceptible) framework. The model describes
+  curable STIs (trichomoniasis, gonorrhea, chlamydia) where individuals return to
+  susceptible state after recovery, and also analyzes HPV (non-curable) under transmission
+  control.
+network_type: unimodal
+parameters:
+- description: Recruitment rate of single individuals into the sexually active population.
+  estimate: 111100.0
+  location: Table 2 (description), Table 3 (value, N*μ)
+  symbol: ν
+- description: Rate of leaving the sexually active population (due to death or ceasing
+    sexual activity).
+  estimate: 0.111
+  location: Table 2 (description), Table 3 (value)
+  symbol: μ
+- description: Rate of pair formation per single individual.
+  estimate: 5.0
+  location: Table 2 (description), Table 3 (value)
+  symbol: ρ
+- description: Rate at which pairs dissolve (separation rate).
+  estimate: 2.0
+  location: Table 2 (description), Table 3 (value)
+  symbol: σ
+- description: Contact frequency (number of sexual acts per unit of time) within partnerships.
+  estimate: 52.0
+  location: Table 2 (description), Table 3 (value)
+  symbol: φ
+- description: Natural recovery rate from infection in the absence of treatment (inverse
+    of infectious period).
+  estimate: unknown
+  location: Table 2 (description). Disease-specific values in Table 4.
+  symbol: γ
+- description: Transmission probability per contact.
+  estimate: unknown
+  location: Table 2 (description). Disease-specific values in Table 4.
+  symbol: h
+- description: Maximum increase in the recovery rate γ due to treatment efforts (uT
+    <= MT).
+  estimate: 1.0
+  location: Page 4105 (Eq. 2 description), Page 4111 (value for uT0)
+  symbol: MT
+- description: Maximum decrease (proportional) in the transmission probability h due
+    to condom promotion (uC <= MC < 1).
+  estimate: 0.75
+  location: Page 4105 (Eq. 2 description), Page 4111 (value for uC0)
+  symbol: MC
+population_structure: unstructured
+references:
+- doi: 10.1016/S0025-5564(97)10008-6
+  formatted: Kretzschmar M, Dietz K (1998) The effect of pair formation and variable
+    infectivity on the spread of an infection without recovery. Math Biosci 148(1):83–113.
+  reason: The manuscript explicitly states that the presented pair model is an extension
+    of the model proposed in this reference (page 4102, 4103).
+- doi: 10.1016/j.idm.2017.07.002
+  formatted: 'Kretzschmar M, Heijne JC (2017) Pair formation models for sexually transmitted
+    infections: a primer. Infect Dis Model 2(3):368–378.'
+  reason: This reference is cited in the manuscript as a 'complete review of pair
+    models' (page 4101).
+- doi: 10.1016/j.idm.2018.12.001
+  formatted: Saldaña F, Barradas I (2019) The role of behavioral changes and prompt
+    treatment in the control of STIs. Infect Dis Model 4:1–10.
+  reason: This reference is cited for the basic assumptions governing the model (page
+    4103) and for details on R0 computation (page 4106 footnote).
+- doi: 10.1016/j.jtbi.2013.04.010
+  formatted: Heijne JC, Herzog SA, Althaus CL, Low N, Kretzschmar M (2013) Case and
+    partnership reproduction numbers for a curable sexually transmitted infection.
+    J Theor Biol 331:38–47.
+  reason: This reference is cited in the context of defining the basic reproduction
+    number (R0) for pair models (page 4106).
+simulation_type: continuous
+summaries:
+- description: Assumed total population size for numerical simulations.
+  location: Table 3, page 4111
+  value: 1000000.0
+title: Modeling Public Health Campaigns for Sexually Transmitted Infections via Optimal
+  and Feedback Control

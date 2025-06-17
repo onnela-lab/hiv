@@ -1,0 +1,144 @@
+confidence: 4
+description: 'The manuscript presents a deterministic compartmental pair-formation
+  model for infectious diseases that confer long-lasting immunity after recovery,
+  extending the Kretzschmar and Dietz (1998) framework. The model tracks single individuals
+  in Susceptible (S), Infectious (I), and Recovered (R) states, and six types of pairs:
+  Susceptible-Susceptible (P_SS), Susceptible-Infectious (P_SI), Infectious-Infectious
+  (P_II), Susceptible-Recovered (P_SR), Infectious-Recovered (P_IR), and Recovered-Recovered
+  (P_RR).
+
+
+  Key model dynamics:
+
+  1.  Population entry: New individuals enter the S class at a constant rate B.
+
+  2.  Natural mortality: All single individuals experience natural mortality at a
+  rate μ. Paired individuals also experience mortality, effectively removing them
+  from the pair and potentially the system, at rate μ per individual (2μ for the pair).
+
+  3.  Pair formation: Single individuals form pairs at a rate ρ. The rate of formation
+  for a specific pair type (e.g., S with S) is proportional to the product of the
+  densities of the constituent single types, normalized by N (total singles, N=S+I+R).
+  For example, dP_SS/dt formation term is ρ*S*S/N; dP_SI/dt formation term is ρ*2*S*I/N.
+
+  4.  Pair dissolution: Pairs dissolve at a rate σ, with individuals returning to
+  their respective single compartments.
+
+  5.  Transmission within pairs: In P_SI pairs, transmission from the infectious to
+  the susceptible partner occurs at a rate φ*h, where φ is the contact rate within
+  the partnership potentially leading to transmission, and h is the probability of
+  transmission per such contact. This converts a P_SI pair into a P_II pair.
+
+  6.  Recovery: Infectious individuals (single I, or an I in a P_SI, P_II, or P_IR
+  pair) recover at a rate δ. Recovery of a single I moves it to R. Recovery of an
+  I in a pair changes the pair type (e.g., P_SI becomes P_SR; one I in P_II recovers
+  to form P_IR; the I in P_IR recovers to form P_RR). Recovered individuals (R) are
+  assumed to have long-lasting immunity.
+
+
+  The model is defined by a system of nine ordinary differential equations (Equations
+  1-9, page 2 of the manuscript):
+
+  dS/dt = B – (μ + ρ)S + (σ + μ)(2P_SS + P_SI + P_SR)
+
+  dI/dt = – (μ + ρ + δ)I + (σ + μ)(2P_II + P_SI + P_IR)
+
+  dR/dt = –(μ + ρ)R + δI + (σ + μ)(2P_RR + P_SR + P_IR)
+
+  dP_SS/dt = ρ(S^2/N) – (σ + 2μ)P_SS
+
+  dP_SI/dt = ρ(2SI/N) – (σ + φh + 2μ + δ)P_SI
+
+  dP_II/dt = ρ(I^2/N) + φhP_SI – (σ + 2μ + 2δ)P_II
+
+  dP_SR/dt = ρ(2SR/N) + δP_SI – (σ + 2μ)P_SR
+
+  dP_IR/dt = ρ(2IR/N) + δP_II – (σ + 2μ + δ)P_IR
+
+  dP_RR/dt = ρ(R^2/N) + δP_IR – (σ + 2μ)P_RR
+
+  where N = S + I + R (total number of single individuals). For the mpox application,
+  parameters B and μ were set to 0 due to the short outbreak timescale.'
+infection_model: SIR-like dynamics (Susceptible, Infectious, Recovered with immunity)
+  embedded within a pair-formation network model. Transmission occurs within discordant
+  (SI) pairs, and infected individuals recover to a permanently immune state.
+network_type: unimodal
+parameters:
+- description: Recruitment rate into the population (new susceptibles).
+  estimate: unknown
+  location: Table 1, p.2 (Value listed as 'F'; set to 0 for mpox fitting on p.6)
+  symbol: B
+- description: Natural removal rate from the population (per capita natural death
+    rate).
+  estimate: 5.47945205479452e-05
+  location: Table 1, p.2 (Value listed as (18250 days)^-1; set to 0 for mpox fitting
+    on p.6)
+  symbol: μ
+- description: Pair formation rate per single individual.
+  estimate: 0.06666666666666667
+  location: Table 1, p.2 (Value listed as (15 days)^-1)
+  symbol: ρ
+- description: Pair dissolution rate.
+  estimate: 1.0
+  location: Table 1, p.2 (Value listed as (1 day)^-1)
+  symbol: σ
+- description: Infection recovery rate for infectious individuals.
+  estimate: 0.03333333333333333
+  location: Table 1, p.2 (Value listed as (30 days)^-1; fixed at this value for mpox
+    fitting)
+  symbol: δ
+- description: Probability of transmission per effective contact within a partnership
+    (contacts defined by φ).
+  estimate: 0.9
+  location: Table 1, p.2
+  symbol: h
+- description: Effective contact rate within a partnership leading to potential transmission.
+  estimate: 1.0
+  location: Table 1, p.2 (Value listed as 1, units inferred as day^-1)
+  symbol: φ
+population_structure: unstructured
+references:
+- doi: unknown
+  formatted: Kretzschmar, M., Dietz, K., 1998. The effect of pair formation and variable
+    infectivity on the spread of an infection without recovery. Math. Biosci. 148
+    (1), 83–113.
+  reason: This is the seminal model that the manuscript explicitly states it extends
+    to include recovery. It's central to the paper's framework (p.1, p.2).
+- doi: unknown
+  formatted: 'Ferguson, N.M., Garnett, G.P., 2000. More realistic models of sexually
+    transmitted disease transmission dynamics: sexual partnership networks, pair models,
+    and moment closure. Sex. Transm. Dis. 600–609.'
+  reason: Cited as a key reference for pair formation models being more realistic
+    for close, prolonged contact infections (p.1).
+- doi: unknown
+  formatted: 'Kretzschmar, M., Heijne, J.C., 2017. Pair formation models for sexually
+    transmitted infections: a primer. Infect. Dis. Model. 2 (3), 368–378.'
+  reason: Cited as an extension of the Kretzschmar et al. model, indicating its relevance
+    and development in the field of pair formation modeling (p.1).
+simulation_type: continuous
+summaries:
+- description: Basic reproduction number (Ro_bar, main formulation Eq. 20) estimated
+    for mpox using Canadian full outbreak data (May-December 2022).
+  location: Table 2, p.7
+  value: 2.81
+- description: Alternative basic reproduction number (Ro, alternative formulation
+    Eq. 21) estimated for mpox using Canadian full outbreak data (May-December 2022).
+  location: Table 2, p.7
+  value: 1.47
+- description: 'Fitted pair formation rate (ρ) for mpox using Canadian full outbreak
+    data (May-December 2022). Units: day^-1.'
+  location: Table 2, p.7
+  value: 0.27
+- description: 'Fitted pair dissolution rate (σ) for mpox using Canadian full outbreak
+    data (May-December 2022). Units: day^-1.'
+  location: Table 2, p.7
+  value: 11.33
+- description: Fitted probability of transmission (h) within a partnership for mpox
+    using Canadian full outbreak data (May-December 2022).
+  location: Table 2, p.7
+  value: 0.34
+- description: 'Fitted contact rate within partnership (φ) for mpox using Canadian
+    full outbreak data (May-December 2022). Units: day^-1.'
+  location: Table 2, p.7
+  value: 0.68
+title: 'A pair formation model with recovery: Application to mpox'

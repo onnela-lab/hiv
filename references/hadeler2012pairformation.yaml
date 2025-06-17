@@ -1,0 +1,90 @@
+confidence: 4
+description: 'The manuscript primarily develops and interprets a representation formula
+  (Eq 1.1, identical to Eq 8.2) for a symmetric pair distribution matrix `Ỹ` in a
+  one-sex, multitype population. This formula, based on earlier work by Busenberg
+  and Castillo-Chavez (1991), expresses `Ỹ` in terms of a given distribution of singles
+  `p` (by type) and a matrix of preference coefficients `Φ`:
+
+
+  `Ỹ(p) = P [Φ + ((e - Φp)(eᵀ - pᵀΦ)) / (1 - pᵀΦp)] P`
+
+
+  Where:
+
+  - `p = (pi)` is the vector of proportions for `n` types of singles, `Σpi = 1`.
+
+  - `P` is a diagonal matrix with elements of `p`.
+
+  - `e` is a vector of ones.
+
+  - `Φ = (Φij)` is a symmetric `n x n` matrix representing pre-assigned preference
+  coefficients between types `i` and `j`. It is assumed that `0 ≤ Φ ≤ eeᵀ` (element-wise).
+  `Φ` is independent of `p`.
+
+  - `Ỹ(p)` is the resulting pair distribution matrix, where `yij` is the proportion
+  of pairs between types `i` and `j`. It satisfies `Ỹe = p` (i.e., `p` is the marginal
+  distribution).
+
+
+  The formula is interpreted as follows: the term `PΦP` represents pair bonds allocated
+  according to a priori preferences. The remaining propensity to form pairs (mass
+  `1 - pᵀΦp`) is then distributed among types based on the terms `(e - Φp)` and `(eᵀ
+  - pᵀΦ)`, effectively a uniform allocation of remaining bonds.
+
+
+  The manuscript also discusses dynamic continuous-time models (Section 3, e.g., Eq.
+  3.7) that lead to a final pair distribution. For instance:
+
+  `dY/dt = XBX / (eᵀx)`
+
+  `dx/dt = -XBx / (eᵀx)`
+
+  where `x` is the vector of singles, `X=diag(x)`, `Y` is the matrix of symmetric
+  pairs, and `B` is a symmetric matrix of affinities (`B = M + Mᵀ`, where `M` is the
+  matrix of possibly non-symmetric affinities `mij` of type `j` for type `i`). These
+  dynamic models show that starting with singles `x(0)=p`, the system evolves until
+  `x(t) -> 0` and a pair distribution `Y_final` (where `Y_final * e = p`) is formed.
+  The formula (1.1)/(8.2) is presented as one specific, interpretable form of such
+  `Y_final` based on the preference matrix `Φ`.'
+infection_model: none
+network_type: unimodal
+parameters:
+- description: Vector representing the given distribution of `n` types of singles,
+    where `pi` is the proportion of type `i`. Used as the marginal distribution for
+    the pair matrix `Ỹ` (i.e., `Ỹe = p`).
+  estimate: unknown
+  location: Abstract, p.2 (Eq 1.1), Sect. 3 (p.11), Sect. 7 (p.21), Sect. 8 (p.25)
+  symbol: p
+- description: Symmetric `n x n` matrix of preference coefficients, where `Φij` represents
+    the pre-assigned preference between type `i` and type `j`. It's generally assumed
+    `0 ≤ Φ ≤ eeᵀ` (element-wise), where `e` is a vector of ones. This matrix is considered
+    independent of the type distribution `p` and determines how initial pair bonds
+    are allocated.
+  estimate: unknown
+  location: Abstract, p.2 (Eq 1.1), Sect. 5, Sect. 7 (for general Φ), Sect. 8 (Eq
+    8.2 for symmetric Φ), p.27 (discussion point i & vi)
+  symbol: Φ
+population_structure: Structured by `n` discrete types (for the main one-sex model).
+  Section 2 also reviews models structured by sex and age.
+references:
+- doi: 10.1093/imammb/8.1.1
+  formatted: Busenberg S, Castillo-Chavez C (1991) A general solution of the problem
+    of mixing of subpopulations and its application to risk-and age structured epidemic
+    models for the spread of AIDS. IMA J Math Appl Med Biol 8:1-20
+  reason: This reference is cited as providing the original representation formula
+    (similar to Eq 1.1) for the pair distribution matrix that is central to the manuscript's
+    analysis. The manuscript aims to understand and interpret this formula.
+- doi: 10.1007/BF00275981
+  formatted: Dietz K, Hadeler KP (1988) Epidemiological models for sexually transmitted
+    diseases. J Math Biol 26:1–25
+  reason: Cited as an example of multi-type epidemic models where pair formation concepts
+    are used, providing context for the development of pair formation theory.
+- doi: unknown
+  formatted: Hofbauer J, Sigmund K (1998) Evolutionary games and population dynamics.
+    Cambridge University Press, Cambridge
+  reason: Referenced in the context of replicator equations (Eq 3.9) and discrete
+    time dynamical systems (Eq 7.8) that arise in the analysis of pair formation and
+    preferences.
+simulation_type: continuous
+summaries: []
+title: Pair formation

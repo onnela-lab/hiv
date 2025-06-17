@@ -1,0 +1,246 @@
+confidence: 4
+description: "The manuscript presents a pair-formation model for sexually transmitted\
+  \ diseases, formulated as a system of ordinary differential equations. \n\n1. Basic\
+  \ Model (Section 1, Eq 1.1): This model describes a heterosexual population with\
+  \ densities of single females (x), single males (y), and pairs (p).\n   dx/dt =\
+  \ κx - μxx + (μy + σ)p – φ(x, y)\n   dy/dt = κy - μyy + (μx + σ)p – φ(x, y)\n  \
+  \ dp/dt = –(μx + μy + σ)p + φ(x, y)\n   Parameters include recruitment rates (κx,\
+  \ κy), mortality rates (μx, μy, assumed same for singles and those in pairs), and\
+  \ a pair separation rate (σ). The function φ(x, y) represents the pair formation\
+  \ rate. It is assumed to be non-negative, homogeneous of degree one (i.e., φ(αx,\
+  \ αy) = αφ(x,y)), increasing in both variables, and symmetric (φ(x,y) = φ(y,x)).\
+  \ Specific forms like the harmonic mean (φ(x,y) = 2ρxy/(x+y)) and the minimum function\
+  \ (φ(x,y) = ρ min(x,y)) are discussed, where ρ is a proportionality constant.\n\n\
+  2. Extended Model with Infection (Section 2, Eq 2.4): This model builds upon the\
+  \ basic framework to include infection dynamics. The population is categorized into\
+  \ eight types: single noninfected females (x0), single noninfected males (y0), single\
+  \ infected females (x1), single infected males (y1), and four types of pairs based\
+  \ on the infection status of partners (p00: S-S, p01: S-female/I-male, p10: I-female/S-male,\
+  \ p11: I-I).\n   Pair formation is described by functions Φij (the rate of encounters\
+  \ between females of type i and males of type j, where i,j ∈ {0,1} correspond to\
+  \ susceptible and infected status). The manuscript primarily uses a minimum law\
+  \ for these functions, which, assuming an excess of females (total single females\
+  \ s(X) = x0+x1), takes the form:\n   Φij(x0, y0, x1, y1) = (ρij * xi * yj) / (x0+x1)\
+  \ (derived from Eq 2.3, where ρij are constants).\n   The system of 8 ODEs (Eq 2.4,\
+  \ p7) accounts for:\n   - Recruitment into susceptible single classes (κx, κy).\n\
+  \   - Mortality rates dependent on sex and infection status (μx0, μy0, μx1, μy1).\n\
+  \   - Recovery from infection for single individuals (rates γx, γy).\n   - Separation\
+  \ rates for each pair type (σij).\n   - Formation of new pairs. For example, the\
+  \ term +Φ00 appears in the equation for dp00/dt.\n   - Transmission of infection:\
+  \ \n     a) At pair formation: An encounter between a susceptible (e.g., x0) and\
+  \ an infected individual (e.g., y1) at rate Φ01 can result in an S-I pair (p01)\
+  \ if transmission does not occur (e.g., with probability 1-hy), or an I-I pair (p11)\
+  \ if transmission occurs (e.g., with probability hy). This is modeled by terms like\
+  \ (1-hy)Φ01 in dp01/dt and hyΦ01 in dp11/dt.\n     b) Within existing pairs: Infection\
+  \ can spread within a pair at a rate β (sexual contacts within a pair), with per-contact\
+  \ transmission probabilities hx (infected female to susceptible male) and hy (infected\
+  \ male to susceptible female). This is modeled by terms like -hyβp01 (loss of p01\
+  \ as susceptible female gets infected) and +hyβp01 (gain of p11 from newly infected\
+  \ female in a former p01 pair).\n   - Change of pair type due to recovery of a partner\
+  \ within a pair."
+infection_model: The infection model is an SIS-type (Susceptible-Infective-Susceptible)
+  model, as individuals can recover from infection and become susceptible again (terms
+  with γx, γy). Infection is transmitted through sexual contact. Transmission can
+  occur at the point of pair formation or during the existence of a pair. Parameters
+  governing infection include the rate of sexual contacts within a pair (β), per-contact
+  transmission probabilities (hx for F->M, hy for M->F), and recovery rates (γx, γy).
+network_type: bimodal
+parameters:
+- description: Recruitment rate of susceptible single females.
+  estimate: unknown
+  location: p6 (as κx for females), Eq 2.4
+  symbol: κx
+- description: Recruitment rate of susceptible single males.
+  estimate: unknown
+  location: p6 (as κy for males), Eq 2.4
+  symbol: κy
+- description: Death rate of noninfected single females.
+  estimate: 0.02
+  location: p6 (as μx0), Eq 2.4. Estimate from p23 (as μ0=0.02/year in an example).
+  symbol: μx0
+- description: Death rate of noninfected single males.
+  estimate: 0.02
+  location: p6 (as μy0), Eq 2.4. Estimate from p23 (as μ0=0.02/year in an example).
+  symbol: μy0
+- description: Death rate of infected single females.
+  estimate: 0.1
+  location: p6 (as μx1), Eq 2.4. Estimate from p23 (as μ1=0.1/year in an example).
+  symbol: μx1
+- description: Death rate of infected single males.
+  estimate: 0.1
+  location: p6 (as μy1), Eq 2.4. Estimate from p23 (as μ1=0.1/year in an example).
+  symbol: μy1
+- description: Recovery rate for infected females.
+  estimate: 0.0
+  location: p7, Eq 2.4. Estimate from p23 (as γ=0 in an HIV example).
+  symbol: γx
+- description: Recovery rate for infected males.
+  estimate: 0.0
+  location: p7, Eq 2.4. Estimate from p23 (as γ=0 in an HIV example).
+  symbol: γy
+- description: Separation rate of pairs where both partners are noninfected (p00).
+  estimate: 0.16
+  location: p7 (as σij), Eq 2.4. Estimate from p23 (as σ=0.16/year in an example,
+    assuming σij=σ).
+  symbol: σ00
+- description: Separation rate of pairs with a noninfected female and an infected
+    male (p01).
+  estimate: 0.16
+  location: p7 (as σij), Eq 2.4. Estimate from p18 & p23 (as σ=0.16/year in an example,
+    assuming σ01=σ).
+  symbol: σ01
+- description: Separation rate of pairs with an infected female and a noninfected
+    male (p10).
+  estimate: 0.16
+  location: p7 (as σij), Eq 2.4. Estimate from p23 (as σ=0.16/year in an example,
+    assuming σij=σ).
+  symbol: σ10
+- description: Separation rate of pairs where both partners are infected (p11).
+  estimate: 0.16
+  location: p7 (as σij), Eq 2.4. Estimate from p18 & p23 (as σ=0.16/year in an example,
+    assuming σ11=σ).
+  symbol: σ11
+- description: Rate of sexual contacts within a pair.
+  estimate: 100.0
+  location: p7, Eq 2.4. Estimate from p18 & p23 (100/year in examples).
+  symbol: β
+- description: Probability an infected female infects a susceptible male during one
+    sexual contact.
+  estimate: 0.01
+  location: p7, Eq 2.4. Estimate from p23 (as h=0.01 in an example, assuming hx=hy=h).
+  symbol: hx
+- description: Probability an infected male infects a susceptible female during one
+    sexual contact.
+  estimate: 0.01
+  location: p7, Eq 2.4. Estimate from p23 (as h=0.01 in an example, assuming hx=hy=h).
+  symbol: hy
+- description: Constant in the formation rate function Φ00 (noninfected female, noninfected
+    male pairs).
+  estimate: 2.95
+  location: Eq 2.3 (as ρij), p6. Estimate from p23 (as ρ=2.95/year in an example,
+    assuming ρij=ρ).
+  symbol: ρ00
+- description: Constant in the formation rate function Φ01 (noninfected female, infected
+    male pairs).
+  estimate: 2.95
+  location: Eq 2.3 (as ρij), p6. Estimate from p23 (as ρ=2.95/year in an example,
+    assuming ρij=ρ).
+  symbol: ρ01
+- description: Constant in the formation rate function Φ10 (infected female, noninfected
+    male pairs).
+  estimate: 2.95
+  location: Eq 2.3 (as ρij), p6. Estimate from p23 (as ρ=2.95/year in an example,
+    assuming ρij=ρ).
+  symbol: ρ10
+- description: Constant in the formation rate function Φ11 (infected female, infected
+    male pairs).
+  estimate: 2.95
+  location: Eq 2.3 (as ρij), p6. Estimate from p23 (as ρ=2.95/year in an example,
+    assuming ρij=ρ).
+  symbol: ρ11
+population_structure: structured by sex, partnership status, and infection status
+references:
+- doi: unknown
+  formatted: 'Fredrickson, A. G.: A mathematical theory of age structure in sexual
+    populations: random mating and monogamous marriage models. Math. Biosc. 10, 117-143
+    (1971)'
+  reason: Cited for the pair formation function φ(x,y) (p3) and for age-structured
+    pair formation models (p23). Foundational for pair formation modeling approaches
+    discussed in the paper (p3).
+- doi: unknown
+  formatted: 'Kendall, D. G.: Stochastic processes and population growth, J. R. Statist.
+    Soc. Ser. B. 11, 230-264 (1949)'
+  reason: Cited as a reference for the initial pair formation equations (1.1) (p3).
+- doi: unknown
+  formatted: 'Pollard, J. H.: Mathematical models for the growth of human populations
+    chap. 7. Cambridge: The University Press 1973'
+  reason: Cited as a reference for the initial pair formation equations (1.1) (p3).
+- doi: unknown
+  formatted: 'Dietz, K.: Epidemiological models for sexually transmitted infections.
+    Proc. First World Congress Bernoulli Soc., Tashkent 1986, VNU Science Press, Utrecht,
+    to appear (1987b)'
+  reason: Cited as a reference for the initial pair formation equations (1.1) (p3)
+    and for an earlier definition of pair formation by one of the authors (p15). Likely
+    discusses pair formation models extensively as per its title and citation context
+    (p3, p7, p15).
+- doi: unknown
+  formatted: 'Hadeler, K. P., Waldstätter, R., Wörz, A.: Models for pair formation.
+    Conf. Proc. "Deutsch-Französisches Treffen über Evolutionsgleichungen und Positivität,
+    Blaubeuren 1987", Semesterbericht Funktionalanalysis Tübingen 1987'
+  reason: Explicitly titled "Models for pair formation" and cited for studying an
+    "appropriate model of pair formation" (p5).
+- doi: unknown
+  formatted: 'Keyfitz, N.: The mathematics of sex and marriage. Proceedings of the
+    Sixth Berkeley Symposium on Mathematical Statistics and Probability, vol. IV:
+    Biology and Health, 89-108 (1972)'
+  reason: Cited in the context of pair formation challenges (p3) and its title suggests
+    relevance to marriage/pair formation modeling (p24).
+- doi: unknown
+  formatted: 'McFarland, D. D.: Comparison of alternative marriage models. In: Greville,
+    T. N. E. (ed.) Population dynamics, pp. 80-106. New York, London: Academic Press
+    1972'
+  reason: Cited in the discussion of age-structured populations and marriage functions
+    (p23), relevant to pair formation modeling approaches. Its title clearly indicates
+    it discusses marriage (pair formation) models (p24).
+- doi: unknown
+  formatted: 'Parlett, B.: Can there be a marriage function? In: Greville T. N. E.
+    (ed.) Population dynamics, New York, London: Academic Press 1972'
+  reason: Cited in the discussion of age-structured populations and marriage functions
+    (p23), relevant to pair formation modeling approaches. Its title clearly indicates
+    it discusses marriage (pair formation) functions (p25).
+simulation_type: continuous
+summaries:
+- description: 'Average duration of one partnership in the basic model (sec 1), formula:
+    (μx + μy + σ)⁻¹ years (parameters not specified for this calculation).'
+  location: p5
+  value: -1.0
+- description: 'Mean number of partners per male during lifetime (Ny) in the basic
+    model (sec 1), formula: ρ(μx+μy+σ) / (μy(μx+μy+σ+ρ)) (parameters not specified
+    for this calculation).'
+  location: p5
+  value: -1.0
+- description: 'Mean number of partners per female during lifetime (Nx) in the basic
+    model (sec 1), formula: (κy/κx)Ny (parameters not specified for this calculation).'
+  location: p5
+  value: -1.0
+- description: 'Average lifetime of a sexually active uninfected individual (calculated
+    as 1/μ0, where μ0=0.02/year). Units: years.'
+  location: p18
+  value: 50.0
+- description: 'Average lifetime of a sexually active infected individual (calculated
+    as 1/μ1, where μ1=0.1/year). Units: years.'
+  location: p18
+  value: 10.0
+- description: 'Minimum number of lifetime partners for infection persistence, given
+    h=0.002 and average partnership duration of 4 years. Units: partners.'
+  location: p18
+  value: 12.0
+- description: 'Minimum number of lifetime partners for infection persistence, for
+    extremely short partnerships (3-4 days). Units: partners.'
+  location: p18
+  value: 1000.0
+- description: 'Equilibrium prevalence in the total population in an example scenario
+    (γ=0, μ0=0.02, h=0.01, β=100, μ1=0.1, σ=0.16, ρ=2.95). Units: proportion.'
+  location: p23
+  value: 0.49
+- description: 'Population size as a fraction of its infection-free level in an example
+    scenario (see prevalence). Units: proportion.'
+  location: p23
+  value: 0.34
+- description: 'Proportion of single individuals who are infected in an example scenario
+    (see prevalence). Units: proportion.'
+  location: p23
+  value: 0.43
+- description: 'Proportion of pairs that are susceptible-susceptible (S-S) in an example
+    scenario (see prevalence). Units: proportion.'
+  location: p23
+  value: 0.45
+- description: 'Proportion of pairs that have one partner infected (S-I) in an example
+    scenario (see prevalence). Units: proportion.'
+  location: p23
+  value: 0.11
+- description: 'Proportion of pairs that are infected-infected (I-I) in an example
+    scenario (see prevalence). Units: proportion.'
+  location: p23
+  value: 0.44
+title: Epidemiological models for sexually transmitted diseases

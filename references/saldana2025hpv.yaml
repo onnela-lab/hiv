@@ -1,0 +1,128 @@
+confidence: 5
+description: "The manuscript presents a deterministic, compartmental pair-formation\
+  \ model for HPV transmission in a heterosexual population. The population is divided\
+  \ into single males (M), single females (F), and monogamous pairs (P). Singles and\
+  \ individuals in pairs are further stratified by infection status (Susceptible (S),\
+  \ Infectious (I)). The model was later extended to include vaccinated (V) individuals\
+  \ and vaccination as a control measure (Model (6), p. 4).\n\nCore Model Dynamics\
+  \ (based on Eq. 1, p. 2, and Eq. 2, p. 3):\n1.  **Population Classes**: \n    *\
+  \   Single Susceptible Females (Fs), Single Infectious Females (Fı)\n    *   Single\
+  \ Susceptible Males (Ms), Single Infectious Males (Mı)\n    *   Pairs: Pss (Susceptible\
+  \ Female, Susceptible Male), Psı (Susceptible Female, Infectious Male), Pıs (Infectious\
+  \ Female, Susceptible Male), Pıı (Infectious Female, Infectious Male).\n2.  **Recruitment\
+  \ and Departure**: Individuals are recruited into the single sexually active population\
+  \ at a rate 'b' (50:50 sex ratio) and leave at a per capita rate 'd'. It's assumed\
+  \ b=d, and the total population N = F_total_singles + M_total_singles + 2*P_total\
+  \ is normalized to 1 (p. 3).\n3.  **Pair Formation**: Governed by the law φij =\
+  \ 2ρ * (Xi * Yj) / (X_total_singles + Y_total_singles), where X and Y are single\
+  \ female and male populations of specific infection statuses (i,j), and ρ is the\
+  \ pair formation rate constant. Infection status does not affect partnership formation\
+  \ (p. 3).\n4.  **Pair Dissolution**: Pairs separate at a rate σ. When a partner\
+  \ leaves the population (rate d), the other partner becomes single.\n5.  **Transmission**:\
+  \ HPV transmission occurs only within discordant pairs (Psı, Pıs). The per-act transmission\
+  \ probability is hm→f (male to female) and hf→m (female to male). The contact frequency\
+  \ within partnerships is φ acts per unit time. For example, in a Psı pair, the susceptible\
+  \ female becomes infected at a rate φ*hm→f. \n6.  **Recovery**: Infected females\
+  \ recover at rate γf and males at rate γm, returning to the susceptible state (SIS\
+  \ model structure). No immunity is gained from natural infection (p. 2).\n7.  **Equilibrium\
+  \ Assumption**: The pair formation process (numbers of singles and pairs) is assumed\
+  \ to be at equilibrium (p. 3).\n\nThe full system of ODEs for the base model is\
+  \ given in Equation (1) on page 2. This model is extended (Equation 6, p.4) to include\
+  \ vaccinated females (Fv), males (Mv) and corresponding pair types (Psv, Pıv, Pvs,\
+  \ Pvı, Pvv), vaccination rates (uf(t), um(t)), and waning vaccine immunity at rate\
+  \ θ."
+infection_model: Susceptible-Infectious-Susceptible (SIS). Natural recovery from HPV
+  infection does not confer long-lasting immunity (p. 2).
+network_type: bimodal
+parameters:
+- description: Pair formation rate constant.
+  estimate: 8.05
+  location: Table 2, p. 6; p. 4, Section 2.1
+  symbol: ρ
+- description: Rate of dissolution of partnerships.
+  estimate: 2.29
+  location: Table 2, p. 6; p. 4, Section 2.1
+  symbol: σ
+- description: Contact frequency (sexual acts per year) within partnerships.
+  estimate: 52.0
+  location: Table 2, p. 6; p. 4, Section 2.1
+  symbol: φ
+- description: Male-to-female HPV transmission probability per sexual contact.
+  estimate: 0.2
+  location: Table 2, p. 6; p. 4, Section 2.1
+  symbol: hm→f
+- description: Female-to-male HPV transmission probability per sexual contact.
+  estimate: 0.4
+  location: Table 2, p. 6; p. 4, Section 2.1
+  symbol: hf→m
+- description: Per capita recovery rate from HPV infection in females (1 / mean duration
+    of infection).
+  estimate: 1.2346
+  location: Table 2 (states 1/γf = 0.81 yr), p. 6; p. 4, Section 2.1
+  symbol: γf
+- description: Per capita recovery rate from HPV infection in males (1 / mean duration
+    of infection).
+  estimate: 1.6129
+  location: Table 2 (states 1/γm = 0.62 yr), p. 6; p. 4, Section 2.1
+  symbol: γm
+- description: Per capita rate of leaving the sexually active population (1 / mean
+    sexually active life expectancy).
+  estimate: 0.0333
+  location: Table 2 (states 1/d = 30 yr), p. 6; p. 4, Section 2.1
+  symbol: d
+- description: Recruitment rate into the sexually active population.
+  estimate: 0.0333
+  location: Table 2 (states b=d), p. 6; p. 3
+  symbol: b
+- description: Rate of loss of vaccine-induced immunity (1 / mean duration of vaccine
+    protection). This parameter is part of the extended model with vaccination (Model
+    6).
+  estimate: 0.1
+  location: Table 2 (states 1/θ = 10 yr), p. 6; p. 4, Section 2.1
+  symbol: θ
+population_structure: Structured by sex (male/female) and partnership status (single/paired).
+  Individuals are further classified by infection status (Susceptible, Infectious)
+  and, in the control model (Model 6), by vaccination status (Vaccinated). The model
+  considers a heterosexual population.
+references:
+- doi: 10.1007/BF00280169
+  formatted: Dietz, K., Hadeler, K.P., 1988. Epidemiological models for sexually transmitted
+    diseases. J. Math. Biol. 26, 1–25.
+  reason: Cited as a foundational paper for pair formation models and their application
+    to STIs (p. 2, p. 3).
+- doi: 10.1016/j.idm.2017.07.002
+  formatted: 'Kretzschmar, M., Heijne, J.C., 2017. Pair formation models for sexually
+    transmitted infections: A primer. Infect. Dis. Model. 2, 368–378.'
+  reason: Cited as a key reference for pair models, their assumptions, and implications
+    for STI dynamics (p. 2, p. 3, p. 4, p. 9).
+- doi: 10.3390/IJERPH7020635
+  formatted: Muller, H., Bauch, C., 2010. When do sexual partnerships need to be accounted
+    for in transmission models of human papillomavirus? Int. J. Environ. Res. Public
+    Health 7, 635–650.
+  reason: Cited as a study considering pair models for HPV transmission and highlighting
+    the importance of partnership duration (p. 2, p. 9).
+- doi: 10.1007/s00285-011-0454-0
+  formatted: Hadeler, K.P., 2012. Pair formation. J. Math. Biol. 64, 613–645.
+  reason: Cited in the context of pair formation models (p. 2, p. 3).
+- doi: 10.1016/j.idm.2018.12.001
+  formatted: Saldaña, F., Barradas, I., 2019. The role of behavioral changes and prompt
+    treatment in the control of STIs. Infect. Dis. Model. 4.
+  reason: Cited as an example of a pair formation model application and for the importance
+    of partnership dynamics (p. 2, p. 3, p. 9).
+- doi: 10.1007/s11538-019-00642-9
+  formatted: Camacho, A., Saldaña, F., Barradas, I., Jerez, S., 2019. Modeling public
+    health campaigns for sexually transmitted infections via optimal and feedback
+    control. Bull. Math. Biol. 81.
+  reason: Cited as an example of a pair formation model application (p. 2, p. 3).
+simulation_type: continuous
+summaries:
+- description: Fraction of individuals in a partnership (at equilibrium, assumed for
+    parameter estimation of ρ and σ).
+  location: Page 4, Section 2.1
+  value: 0.78
+- description: Mean number of new partners reported per year by a typical individual
+    (assumed for parameter estimation of ρ and σ).
+  location: Page 4, Section 2.1
+  value: 1.8
+title: 'Vaccination strategies in a pair formation model for human papillomavirus
+  infection: An optimal control approach'

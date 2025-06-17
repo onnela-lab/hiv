@@ -1,0 +1,200 @@
+confidence: 4
+description: 'The manuscript describes a deterministic pair-formation model for heterosexual
+  gonorrhea transmission. The population is divided into categories based on 5 partnership
+  duration types (1 day, 0.5 months, 2 months, 7.5 months, 9.1 years) and 3 preceding
+  gap length types (14 days, 51.6 days, 591.2 days). Individuals cycle sequentially
+  between being single and being in partnerships, with no concurrency (overlapping
+  partnerships) modeled. The total population size and the number of sexually active
+  men and women are assumed to be equal and constant. When a new pair is formed, the
+  preceding gap lengths of both the male and female individuals are tracked, resulting
+  in 9 sub-compartments for each partnership length category. The rates at which individuals
+  form and leave partnerships are defined as the inverse of their mean gap and partnership
+  lengths, respectively. Mixing for partnership formation is based on preceding gap
+  lengths, controlled by a mixing parameter ε (epsilon), where ε=1 denotes fully assortative
+  pairing (e.g., males with short gaps pair only with females with short gaps) and
+  ε=0 denotes proportionate mixing based on availability. Individuals can change their
+  gap-partnership preference type at the end of a partnership, with a probability
+  ''p'' of crossing over to a different gap-partnership combination for the next cycle.
+  The model tracks three infection states for individuals (male: subscript l, female:
+  subscript m): 1=symptomatic care-seeking, 2=uninfected, and 3=infected but noncare-seeking.
+  Recovery from infection returns individuals to a susceptible (uninfected) state.
+  Infection acquisition occurs only within partnerships where one partner is infected
+  and the other is susceptible. The infection rate per susceptible partner in an S-I
+  pair is the product of the per-act transmission probability, the frequency of sexual
+  intercourse, and the proportion of acts not protected by consistent condom use.
+  The model is implemented as a system of ordinary differential equations (detailed
+  in the Appendix) tracking single males (M_ijl), single females (F_ikm), and pairs
+  (P_ijklm) based on their partnership length (i), preceding gap lengths (j for male,
+  k for female), and infection states (l for male, m for female).'
+infection_model: 'Gonorrhea. Individuals can be in one of three states: susceptible
+  (uninfected), infected and symptomatic care-seeking, or infected and non-care-seeking.
+  Recovery rates differ for symptomatic and non-care-seeking individuals and can differ
+  by sex for symptomatic cases. Transmission occurs only within discordant pairs.
+  The transmission probability per partnership depends on the per-sex-act transmission
+  probability (gender-specific), frequency of intercourse (partnership-type specific),
+  and condom use.'
+network_type: bimodal
+parameters:
+- description: Mixing parameter for pairing by preceding gap length (1 = fully assortative,
+    0 = proportionate).
+  estimate: unknown
+  location: Page 437, Appendix page 443
+  symbol: ε
+- description: Proportion of individuals changing their assigned gap-partnership category
+    after a partnership ends.
+  estimate: unknown
+  location: Page 437, Appendix page 443 (Eq 12a, 12b)
+  symbol: p
+- description: Mean duration of partnerships for category 1 (1 day).
+  estimate: 1.0
+  location: Table 1, page 437 ('Model duration parameter')
+  symbol: w_1
+- description: Mean duration of partnerships for category 2 (0.5 months, approx 15.22
+    days).
+  estimate: 15.22
+  location: Table 1, page 437 ('Model duration parameter')
+  symbol: w_2
+- description: Mean duration of partnerships for category 3 (2 months, approx 60.88
+    days).
+  estimate: 60.88
+  location: Table 1, page 437 ('Model duration parameter')
+  symbol: w_3
+- description: Mean duration of partnerships for category 4 (7.5 months, approx 228.28
+    days).
+  estimate: 228.28
+  location: Table 1, page 437 ('Model duration parameter')
+  symbol: w_4
+- description: Mean duration of partnerships for category 5 (9.1 years, approx 3323.78
+    days).
+  estimate: 3323.78
+  location: Table 1, page 437 ('Model duration parameter')
+  symbol: w_5
+- description: 'Mean duration of gaps for category 1 (short gaps: 14 days).'
+  estimate: 14.0
+  location: Page 437 (text)
+  symbol: φ_1
+- description: 'Mean duration of gaps for category 2 (mid-length gaps: 51.6 days).'
+  estimate: 51.6
+  location: Page 437 (text)
+  symbol: φ_2
+- description: 'Mean duration of gaps for category 3 (long gaps: 591.2 days).'
+  estimate: 591.2
+  location: Page 437 (text)
+  symbol: φ_3
+- description: Frequency of sex in single day partnerships (sex acts per day).
+  estimate: 1.0
+  location: Table 2, page 438; Appendix page 443 (Eq 9)
+  symbol: ζ_i
+- description: Frequency of sex in partnerships longer than a single day (sex acts
+    per week).
+  estimate: 2.44
+  location: Table 2, page 438; Appendix page 443 (Eq 9)
+  symbol: ζ_i
+- description: Proportion of acts not protected by consistent condom use (derived
+    from 19% consistent use).
+  estimate: 0.81
+  location: Table 2, page 438 (19%); Appendix page 443 (Eq 9)
+  symbol: 1-χ_i
+- description: Probability of gonorrhea transmission from female to male, per sex
+    act.
+  estimate: 0.25
+  location: Table 2, page 438
+  symbol: β^M
+- description: Probability of gonorrhea transmission from male to female, per sex
+    act.
+  estimate: 0.5
+  location: Table 2, page 438
+  symbol: β^F
+- description: Duration of infectiousness for symptomatic, care-seeking males (days).
+  estimate: 13.0
+  location: Table 2, page 438; Appendix page 443 (H_ijklm definition)
+  symbol: σ^M
+- description: Duration of infectiousness for symptomatic, care-seeking females (days).
+  estimate: 20.0
+  location: Table 2, page 438; Appendix page 443 (H_ijklm definition)
+  symbol: σ^F
+- description: Duration of infectiousness for non-care-seeking infected individuals
+    (days).
+  estimate: 185.0
+  location: Table 2, page 438; Appendix page 443 (H_ijklm definition)
+  symbol: κ
+- description: Proportion of new infections in males that are symptomatic and care-seeking.
+  estimate: 0.59
+  location: Table 2, page 438; Appendix page 443 (I_ijklm definition)
+  symbol: θ^M
+- description: Proportion of new infections in females that are symptomatic and care-seeking.
+  estimate: 0.36
+  location: Table 2, page 438; Appendix page 443 (I_ijklm definition)
+  symbol: θ^F
+population_structure: Heterosexual population structured by 5 partnership length categories
+  and 3 preceding gap length categories. Individuals are assigned a specific gap-partnership
+  combination. The model tracks males and females separately. No age or other demographic
+  structure is explicitly mentioned beyond partnership/gap categories.
+references:
+- doi: 10.1097/00007435-200010000-00007
+  formatted: 'Ferguson NM, Garnett GP. More realistic models of sexually transmitted
+    disease transmission dynamics: Sexual partnership networks, pair models, and moment
+    closure. Sex Transm Dis 2000; 27:600–609.'
+  reason: The title explicitly mentions 'pair models' and discusses modeling sexual
+    partnership networks, directly relevant to pair-formation models.
+- doi: 10.1098/rstb.1999.0433
+  formatted: 'Garnett GP, Mertz KJ, Finelli L, et al. The transmission dynamics of
+    gonorrhoea: Modelling the reported behaviour of infected patients from Newark,
+    New Jersey. Philos Trans R Soc Lond B Biol Sci 1999; 354:787–797.'
+  reason: This paper models gonorrhea transmission dynamics considering patient behavior,
+    which is foundational for detailed partnership-based models like pair-formation
+    models.
+- doi: unknown
+  formatted: 'Hethcote HW, Yorke JA. Gonorrhea Transmission, Dynamics and Control.
+    Lecture Notes in Biomathematics 56. Berlin: Springer-Verlag, 1984.'
+  reason: This is a classical reference on gonorrhea modeling, often serving as a
+    basis or point of comparison for more complex models including pair-formation
+    approaches.
+simulation_type: continuous
+summaries:
+- description: Percentage of modeled population whose typical partnerships last 1
+    day.
+  location: Table 1, page 437
+  value: 3.2
+- description: Percentage of modeled population whose typical partnerships last 0.5
+    months (model category).
+  location: Table 1, page 437
+  value: 7.9
+- description: Percentage of modeled population whose typical partnerships last 2
+    months (model category).
+  location: Table 1, page 437
+  value: 1.3
+- description: Percentage of modeled population whose typical partnerships last 7.5
+    months (model category).
+  location: Table 1, page 437
+  value: 3.0
+- description: Percentage of modeled population whose typical partnerships last 9.1
+    years (model category).
+  location: Table 1, page 437
+  value: 84.5
+- description: Percentage of modeled population with short gaps between partners (<1
+    month; model parameter 14 days).
+  location: Table 1, page 437
+  value: 1.6
+- description: Percentage of modeled population with mid-length gaps between partners
+    (1-3 months; model parameter 51.6 days).
+  location: Table 1, page 437
+  value: 6.9
+- description: Percentage of modeled population with long gaps between partners (>=4
+    months; model parameter 591.2 days).
+  location: Table 1, page 437
+  value: 91.5
+- description: Percentage of all partnerships estimated to be short-term (less than
+    1 month) in the UK population aged 16-44.
+  location: Page 439, paragraph 1
+  value: 10.0
+- description: Percentage of all partnerships estimated to be long-term (1 year or
+    more) in the UK population aged 16-44.
+  location: Page 439, paragraph 1
+  value: 85.0
+- description: Percentage of new partnerships estimated to be formed more than 4 months
+    after the preceding partnership ceases.
+  location: Page 439, paragraph 1 (also deducible from Table 1 'Long gaps')
+  value: 91.5
+title: 'Mind the Gap: The Role of Time Between Sex With Two Consecutive Partners on
+  the Transmission Dynamics of Gonorrhea'

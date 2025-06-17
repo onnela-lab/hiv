@@ -1,0 +1,145 @@
+confidence: 4
+description: 'The manuscript presents descriptive results and summary statistics from
+  the ARTnet study, explicitly stating these are intended to parameterize stochastic
+  network models for HIV/STI transmission, particularly Temporal Exponential Random
+  Graph Models (TERGMs). The study characterizes network features critical for pair-formation
+  models: degree distributions, assortative mixing by attributes (race/ethnicity,
+  age, HIV status), and partnership durations (estimated from current partnership
+  age assuming geometrically distributed durations). These are stratified by partnership
+  type (main, casual, one-time), demography, and geography. The manuscript also explicitly
+  discusses (page 8) how these data can be used to derive parameters (e.g., partnership
+  acquisition and dissolution rates) for pair-formation ordinary differential equation
+  (ODE) models. For instance, partnership acquisition rate is defined as mean degree
+  divided by mean partnership duration, and an example calculation is provided for
+  main partnerships. Dissolution rates are the reciprocal of mean partnership durations.
+  While providing the empirical basis and methods for deriving parameters, the paper
+  does not present a novel, fully specified pair-formation model (e.g., the specific
+  set of TERGM terms or full ODE system) itself, but rather the foundational data
+  and statistics for such models.'
+infection_model: The manuscript states ARTnet data is for HIV/STI prevention research
+  and to parameterize network models for disease projection. EpiModel, a tool mentioned
+  for building such models, can incorporate infection dynamics. However, this paper
+  focuses on the network characterization and does not specify the details of any
+  particular STI/HIV infection process or model (e.g., states like Susceptible, Infected,
+  Recovered; or specific transmission probabilities) that would be coupled with the
+  described network dynamics.
+network_type: unimodal
+parameters:
+- description: The per-week rate at which main partnerships dissolve. This is derived
+    as the reciprocal of the mean age of ongoing main partnerships (272.5 weeks),
+    assuming geometrically distributed partnership durations as stated on page 3 and
+    8. A common symbol for this type of parameter is σ_main.
+  estimate: 0.00367
+  location: Derived from mean partnership age reported in Abstract, Page 5 (text),
+    and Table 4 (272.5 weeks).
+  symbol: Not explicitly given in manuscript
+- description: The per-week rate at which casual partnerships dissolve. This is derived
+    as the reciprocal of the mean age of ongoing casual partnerships (133.0 weeks),
+    assuming geometrically distributed partnership durations as stated on page 3 and
+    8. A common symbol for this type of parameter is σ_casual.
+  estimate: 0.00752
+  location: Derived from mean partnership age reported in Abstract, Page 5 (text),
+    and Table 4 (133.0 weeks).
+  symbol: Not explicitly given in manuscript
+- description: The overall weekly partnership acquisition rate for main partnerships,
+    suitable for use in ODE pair-formation models. Calculated as mean main partnership
+    degree (0.45 from Table 2) divided by mean main partnership duration (272.5 weeks
+    from Table 4). A common symbol for this type of parameter is ρ_main.
+  estimate: 0.00165
+  location: Explicitly calculated on Page 8.
+  symbol: Not explicitly given in manuscript
+- description: The overall weekly partnership acquisition rate for casual partnerships,
+    suitable for use in ODE pair-formation models. Calculated as mean casual partnership
+    degree (0.74 from Table 2) divided by mean casual partnership duration (133.0
+    weeks from Table 4). A common symbol for this type of parameter is ρ_casual.
+  estimate: 0.00556
+  location: Derived using formula on Page 8, with mean degree from Page 4/Table 2
+    and mean duration from Page 5/Table 4.
+  symbol: Not explicitly given in manuscript
+- description: The mean weekly rate of acquiring new one-time partners per participant.
+    This directly serves as a formation rate parameter for one-time partnerships.
+    A common symbol for this type of parameter is ρ_onetime.
+  estimate: 0.163
+  location: Abstract, Page 4, Table 2 (as 'One-Time Mean').
+  symbol: Not explicitly given in manuscript
+population_structure: Structured by age (e.g., 15-24, 25-34, etc.), race/ethnicity
+  (Black non-Hispanic, White non-Hispanic, Hispanic, Other/Multiple), self-reported
+  HIV status (Negative, Positive, Unknown), U.S. Census region/division, urbanicity
+  (e.g., Large Central Metro, Large Fringe Metro, etc.), and by sexual partnership
+  type (main, casual, one-time).
+references:
+- doi: 10.1111/rssb.12014
+  formatted: Krivitsky, P.N., Handcock, M.S., 2014. A separable model for dynamic
+    networks. J R Stat Soc Ser B Stat Methodol. 76 (1), 29-46.
+  reason: Cited on page 2 as a 'general statistical framework for temporal network
+    model estimation from sampled network data,' which is fundamental for dynamic
+    pair-formation models like TERGMs.
+- doi: 10.18637/jss.v084.i08
+  formatted: Jenness, S.M., Goodreau, S.M., EpiModel, M.M., 2018. An r package for
+    mathematical modeling of infectious disease over networks. J. Stat. Softw. 84
+    (8).
+  reason: Cited on page 2 for software (EpiModel) for building network-based epidemic
+    models using egocentric data, and on page 3 for the methodology of using partnership
+    age to estimate duration in such models.
+- doi: 10.1214/16-AOAS1010
+  formatted: Krivitsky, P.N., Morris, M., 2017. Inference for social network models
+    from egocentrically sampled data, with application to understanding persistent
+    racial disparities in HIV prevalence in the US. Ann. Appl. Stat. 11 (March (1)),
+    427-455.
+  reason: Cited on page 2 for 'principled estimation of Exponential-family Random
+    Graph Models and their temporal counterparts from egocentrically sampled network
+    data,' directly relevant to modeling pair formation dynamics.
+- doi: 10.1016/S0140-6736(11)60566-9
+  formatted: 'Powers, K.A., Ghani, A.C., Miller, W.C., Hoffman, I.F., Pettifor, A.E.,
+    Kamanga, G., et al., 2011. The role of acute and early HIV infection in the spread
+    of HIV and implications for transmission prevention strategies in Lilongwe, Malawi:
+    a modelling study. Lancet. 378 (9787), 256-268.'
+  reason: Cited on page 8 as an example of 'pair-formation ordinary differential equation
+    models' for which the ARTnet data and derived parameters (like acquisition/dissolution
+    rates) can be used.
+- doi: 10.2105/AJPH.2008.140055
+  formatted: 'Morris, M., Kurth, A.E., Hamilton, D.T., Moody, J., Wakefield, S., 2009.
+    Concurrent partnerships and HIV prevalence disparities by race: linking science
+    and public health practice. Am. J. Public Health 99 (6), 1023-1031.'
+  reason: Cited on pages 1 and 2 for the importance of partnership concurrency and
+    the dynamics of how partnerships form and dissolve, which are core concepts in
+    pair-formation models.
+simulation_type: discrete
+summaries:
+- description: Mean number of ongoing persistent (main or casual) partnerships per
+    participant.
+  location: Abstract, Page 4, Table 2.
+  value: 1.19
+- description: Mean number of ongoing main partnerships per participant.
+  location: Abstract, Page 4, Table 2.
+  value: 0.45
+- description: Mean number of ongoing casual partnerships per participant.
+  location: Abstract, Page 4, Table 2.
+  value: 0.74
+- description: Mean current age of ongoing main partnerships (used as an estimator
+    for duration).
+  location: Abstract, Page 5 (text), Table 4.
+  value: 272.5
+- description: Mean current age of ongoing casual partnerships (used as an estimator
+    for duration).
+  location: Abstract, Page 5 (text), Table 4.
+  value: 133.0
+- description: Mean weekly rate of one-time partnership acquisition per participant.
+  location: Abstract, Page 4, Table 2.
+  value: 0.163
+- description: Mean absolute age difference between partners, for all partnership
+    types.
+  location: Abstract, Page 6, Table 6.
+  value: 9.5
+- description: Mean absolute age difference between partners in main partnerships.
+  location: Abstract, Page 6, Table 6.
+  value: 6.3
+- description: Mean absolute age difference between partners in casual partnerships.
+  location: Abstract, Page 6, Table 6.
+  value: 10.8
+- description: Proportion of Black MSM participants who reported a Black partner (measure
+    of within-race mixing).
+  location: Page 6 (text describing assortative mixing).
+  value: 0.453
+title: 'Egocentric sexual networks of men who have sex with men in the United States:
+  Results from the ARTnet study'

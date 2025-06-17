@@ -1,0 +1,150 @@
+confidence: 4
+description: 'The manuscript describes a deterministic, partnership-based mathematical
+  model using a system of ordinary differential equations to simulate the HIV epidemic
+  among MSM aged 15-64 years in the UK. The modelled population is divided into two
+  age groups (15–34 and 35–64 years) and two sexual activity levels (low: ≤1 new partner/year,
+  high: >1 new partner/year), creating four MSM classes. MSM are also categorized
+  as ''current'' (still acquire new partners) or ''past'' (no longer have sexual relationships
+  with men). The model defines two types of sexual partnerships: one-off sexual partnerships
+  (single sex act) and repeat sexual partnerships (multiple sex acts with the same
+  partner, lasting for a finite duration). MSM in repeat partnerships can also acquire
+  one-off partners. Rates for forming and dissolving repeat partnerships, and rates
+  for forming one-off partnerships, are stratified by the four MSM classes. Non-random
+  mixing between partners based on age group, sexual activity level, and perceived
+  HIV serostatus is implemented using an odds ratio method. HIV transmission occurs
+  only through sex between men, via unprotected receptive anal intercourse (URAI),
+  unprotected insertive anal intercourse (UIAI), and unprotected receptive oral intercourse
+  (UROI). Condom use with repeat sexual partners is modelled based on class-specific
+  proportions of susceptible individuals who have unprotected anal intercourse (UAI)
+  with perceived HIV-negative partners and with diagnosed HIV-positive partners. For
+  one-off partnerships, susceptible individuals are categorized into three groups:
+  those with no UAI, those with UAI only with a perceived HIV-negative partner, and
+  those with UAI with a diagnosed HIV-positive one-off partner. The model was calibrated
+  to time series HIV prevalence and validated using multiple surveillance datasets.
+  Further details of the model structure and analysis methods are in an Appendix (http://links.lww.com/QAD/A612),
+  which was not provided.'
+infection_model: The HIV infection model includes a susceptible stage, followed by
+  progression through 11 HIV-positive stages. These stages are defined by CD4+ cell
+  counts (Primary HIV Infection (PHI), CD4+ ≥500, 350–499, 200–349, and <200 cells/µl),
+  HIV diagnosis status (undiagnosed or diagnosed), and ART status (diagnosed individuals
+  can move to a treatment stage). Different HIV transmission probabilities are associated
+  with each stage, based on average viral load. Transmission probability and plasma
+  viral load are related according to a function proposed by Smith and Blower [6].
+  Figure 1 provides a schematic representation of these HIV infection stages.
+network_type: unimodal
+parameters:
+- description: Rate of repeat sexual partnership formation per year for high-activity
+    MSM aged 15-34 years.
+  estimate: 3.135
+  location: Table 2, Page 342
+  symbol: ρ_rep
+- description: Rate of repeat sexual partnership formation per year for low-activity
+    MSM aged 15-34 years.
+  estimate: 0.422
+  location: Table 2, Page 342
+  symbol: ρ_rep
+- description: Gap length (days) between two consecutive repeat sexual partnerships
+    for high-activity MSM.
+  estimate: 33.0
+  location: Table 2, Page 342
+  symbol: G
+- description: Gap length (days) between two consecutive repeat sexual partnerships
+    for low-activity MSM.
+  estimate: 178.0
+  location: Table 2, Page 342
+  symbol: G
+- description: Rate of repeat sexual partnership dissolution per year for high-activity
+    MSM aged 15-34 years.
+  estimate: 4.372
+  location: Table 2, Page 342
+  symbol: σ_rep
+- description: Rate of repeat sexual partnership dissolution per year for low-activity
+    MSM aged 15-34 years.
+  estimate: 0.53
+  location: Table 2, Page 342
+  symbol: σ_rep
+- description: Rate of one-off partnership formation per year for MSM with a repeat
+    sexual partner (high-activity, 15-34 years).
+  estimate: 8.96
+  location: Table 2, Page 342
+  symbol: ρ_one (P)
+- description: Rate of one-off partnership formation per year for MSM without a repeat
+    sexual partner (high-activity, 15-34 years).
+  estimate: 10.019
+  location: Table 2, Page 342
+  symbol: ρ_one (Y)
+- description: Mixing odds ratio by age group.
+  estimate: 4.2
+  location: Table 2 (continued), Page 343
+  symbol: ω_age
+- description: Mixing odds ratio by sexual activity level.
+  estimate: 3.0
+  location: Table 2 (continued), Page 343
+  symbol: ω_act
+- description: Mixing odds ratio by HIV serostatus.
+  estimate: 2.3
+  location: Table 2 (continued), Page 343
+  symbol: ω_hiv
+- description: Proportion of susceptible individuals who have UAI with a perceived
+    HIV-negative repeat sexual partner (low-activity, 15-34 years).
+  estimate: unknown
+  location: Table 2, Page 342
+  symbol: P_uai,pneg_rep
+- description: Proportion of susceptible individuals who have UAI with a diagnosed
+    HIV-positive repeat sexual partner (low-activity, 15-34 years).
+  estimate: unknown
+  location: Table 2, Page 342
+  symbol: P_uai,dpos_rep
+population_structure: 'Population is structured by age (two groups: 15–34 years and
+  35–64 years) and sexual activity level (low: ≤1 new partner/year, high: >1 new partner/year).
+  This results in four classes of MSM.'
+references:
+- doi: unknown
+  formatted: Xiridou M, Geskus R, De Wit J, Coutinho R, Kretzschmar M. The contribution
+    of steady and casual partnerships to the incidence of HIV infection among homosexual
+    men in Amsterdam. AIDS 2003; 17:1029–1038.
+  reason: Cited as a basis for the partnership-based model used in the manuscript,
+    explicitly mentions steady and casual partnerships which are key concepts in pair
+    formation models related to HIV/STI transmission
+- doi: unknown
+  formatted: Dietz K. On the transmission dynamics of HIV. Math Biosci 1988; 90:397–414.
+  reason: Cited as a basis for the partnership-based model; it's a foundational paper
+    on HIV transmission dynamics that often includes concepts of partnership structures
+    relevant to pair formation models
+- doi: unknown
+  formatted: Goodreau SM, Golden MR. Biological and demographic causes of high HIV
+    and sexually transmitted disease prevalence in men who have sex with men. Sex
+    Transm Infect 2007; 83:458–462.
+  reason: This reference is cited for the method used to implement non-random mixing
+    between partners according to age group, sexual activity level, and perceived
+    HIV serostatus. Non-random mixing is a critical component of realistic pair formation
+    models.
+simulation_type: continuous
+summaries:
+- description: Annual number of new HIV infections among MSM in the UK, as background
+    to the study.
+  location: Page 1, Objectives
+  value: 2400.0
+- description: Estimated number of MSM living with HIV in the UK in 2012.
+  location: Page 2, Introduction
+  value: 41000.0
+- description: Prevalence rate of HIV among MSM in the UK in 2012.
+  location: Page 2, Introduction
+  value: 0.047
+- description: Approximate number of MSM newly infected each year in the UK during
+    2001–2010 (average of 2000-3000).
+  location: Page 2, Introduction
+  value: 2500.0
+- description: Proportion of all MSM in the model classified as high-activity.
+  location: Page 6, Results, 'Age and sexual activity groups'
+  value: 0.4
+- description: Number of individuals (model output) engaging in one-off partnerships
+    at a point in time contributing to transmission.
+  location: Page 6, Results, 'Sexual behaviour'
+  value: 885.0
+- description: Number of men (model output) having repeat sexual partners at a point
+    in time contributing to transmission.
+  location: Page 6, Results, 'Sexual behaviour'
+  value: 15350.0
+title: 'Modelling the HIV epidemic among MSM in the United Kingdom: quantifying the
+  contributions to HIV transmission to better inform prevention initiatives'

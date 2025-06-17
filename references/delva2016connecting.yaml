@@ -1,0 +1,110 @@
+confidence: 3
+description: 'The manuscript is a review that discusses approaches to network modeling
+  in HIV epidemiology, rather than presenting a single, specific, and fully detailed
+  pair formation model. It describes two main frameworks within which pair formation
+  is modeled:
+
+  1. Agent-Based Models (ABMs): In these models, the social network, including the
+  formation and dissolution of partnerships, emerges from ''behavioural and biological
+  rules'' specified by the analyst at the level of individual agents [59]. These rules
+  dictate partner choice, relationship initiation, and termination. The manuscript
+  cites ''Simpact'' [23] as an example of an ABM tool for simulating HIV transmission
+  in dynamic sexual networks (Figure 1). However, the specific algorithms or parameterizations
+  for pair formation rules within Simpact or other ABMs (e.g., precise functions for
+  partner selection, distributions for relationship durations) are not detailed in
+  this manuscript.
+
+  2. Exponential Random Graph Models (ERGMs): ERGMs are statistical models used to
+  describe network structures. They can be fitted to observed network data (often
+  from egocentric surveys) to understand population-level patterns such as homophily
+  or concurrency [44]. Subsequently, complete networks can be *generated* based on
+  a fitted ERGM, and these synthetic networks are then used for simulating HIV epidemics
+  [39, 46]. In this approach, pair formation is implicitly governed by the probabilities
+  of ties derived from the ERGM specification, reflecting the observed structural
+  properties. The manuscript does not provide specific ERGM equations or detailed
+  parameter sets for a pair formation model.
+
+
+  In summary, while the manuscript explains the concepts and refers to methodologies
+  and tools that incorporate pair formation, it does not provide sufficient detail
+  (e.g., specific equations, algorithms, or a full list of parameters with values)
+  to reproduce a particular pair formation model implementation directly from its
+  text.'
+infection_model: HIV transmission model. The manuscript discusses simulating HIV epidemics
+  on the modeled networks. This implies an underlying model of HIV transmission, where
+  individuals can transmit or acquire infection based on network connections and other
+  factors. Relevant aspects mentioned include viral load (e.g., SPVL in Figure 1a)
+  and condom use (page 2). Specific details of the infection model (e.g., transmission
+  probabilities per act, disease progression stages, effect of ART) are not provided
+  in this review.
+network_type: bimodal
+parameters:
+- description: Parameters for an Exponential Random Graph Model (ERGM). These parameters
+    (coefficients) quantify the effect of various network configurations (e.g., number
+    of edges, degree distribution, homophily based on attributes, concurrency) on
+    the likelihood of a network. They are estimated from data and then used to generate
+    synthetic networks. Specific symbols or estimates are not provided.
+  estimate: unknown
+  location: Page 4 (general discussion of ERGMs)
+  symbol: unknown (conceptual, e.g., ERGM coefficients)
+- description: Parameters defining the behavioural and biological rules for pair formation
+    and dissolution in an Agent-Based Model (ABM). These could include probabilities
+    of relationship formation, parameters governing partner choice functions (e.g.,
+    based on age or other attributes), and parameters for relationship duration distributions.
+    Specific symbols or estimates are not provided.
+  estimate: unknown
+  location: Page 4 (general discussion of ABMs, e.g., Simpact [23])
+  symbol: unknown (conceptual, e.g., rates, probabilities)
+population_structure: The models discussed can incorporate structured populations.
+  Structure can be based on various individual attributes such as gender (Figure 1
+  shows male and female agents), race, ethnicity, age, sexual activity level, and
+  membership in key populations (e.g., men who have sex with men, sex workers, injecting
+  drug users). Network formation can be influenced by these attributes, for example,
+  through homophilous mixing (preference for partners with similar characteristics).
+references:
+- doi: unknown
+  formatted: Liesenborgs J, Meng F, Hens N, Delva W. Simpact Cyan 0.19.4. http://www.simpact.org/how-simpact-works/
+    2015. [Accessed 14 June 2016].
+  reason: This is the reference for Simpact, an agent-based modeling tool mentioned
+    and used for generating example networks in Figure 1. ABMs like Simpact inherently
+    include rules for pair formation and dissolution over time.
+- doi: 10.1016/j.socnet.2006.08.002
+  formatted: Robins G, Pattison P, Kalish Y, Lusher D. An introduction to exponential
+    random graph (p*) models for social networks. Soc Networks 2007; 29:173-191.
+  reason: This paper introduces ERGMs, which are discussed in the manuscript as a
+    key statistical modeling framework for analyzing and generating social networks,
+    thereby implicitly defining pair formation processes based on network properties.
+- doi: 10.1371/journal.pone.0075624
+  formatted: 'Abuelezam NN, Rough K, Seage GR 3rd. Individual-based simulation models
+    of HIV transmission: reporting quality and recommendations. PLoS One 2013; 8:e75624.'
+  reason: This paper reviews individual-based simulation models (often agent-based
+    models) for HIV transmission, which rely on explicit rules for partnership formation
+    and dissolution.
+- doi: 10.1371/journal.pone.0112668
+  formatted: 'Brookmeyer R, Boren D, Baral SD, Bekker LG, Phaswana-Mafuya N, Beyrer
+    C, et al. Combination HIV prevention among MSM in South Africa: results from agent-based
+    modeling. PLoS One 2014; 9:e112668.'
+  reason: This article presents an application of agent-based modeling to HIV prevention,
+    illustrating how pair formation dynamics are incorporated into such models to
+    study epidemics.
+- doi: 10.1111/rssb.12014
+  formatted: Krivitsky PN, Handcock MS. A separable model for dynamic networks. J
+    R Stat Soc Series B Stat Methodol 2014; 76:29-46.
+  reason: This paper is cited for recent advances in ERGM methodology for dynamic
+    networks, which are directly relevant to modeling the evolution of partnerships
+    (pair formation and dissolution) over time.
+simulation_type: discrete
+summaries:
+- description: Distribution of lifetime number of partners (degree) in a simulated
+    population. Illustrated as a histogram.
+  location: Page 3, Figure 1a
+  value: 0.0
+- description: Distribution of relationship durations (in years) in a simulated population.
+    Illustrated as a histogram.
+  location: Page 3, Figure 1a
+  value: 0.0
+- description: Distribution of log10 set-point viral load (SPVL) among PLWH in a simulated
+    population. Illustrated as a histogram.
+  location: Page 3, Figure 1a
+  value: 0.0
+title: 'Connecting the dots: network data and models in HIV epidemiology'

@@ -1,0 +1,122 @@
+confidence: 4
+description: 'The manuscript describes a deterministic compartmental heterosexual
+  pair-formation model for Chlamydia trachomatis transmission. The population is stratified
+  by age (15–18, 19–24, 25–39, 40–54 years), sex, partnership status, sexual risk
+  behavior, and chlamydial infection status. The pair-formation framework explicitly
+  represents partnerships as compartments. This allows for modeling differential infection
+  risks between single and paired individuals. For instance, pairs where both partners
+  are susceptible are protected from external infection (unless concurrency occurs
+  with an external infected partner), and if one infected person in a pair is diagnosed
+  and treated but their immediate partner is not, reinfection within the partnership
+  is considered likely. The model is operationalized using difference equations (details
+  in Web Appendix 2).
+
+  Partnership dynamics include three mutually exclusive statuses:
+
+  1. Non-sexually active (in the two youngest age groups). By age 25, all individuals
+  are assumed to be sexually experienced.
+
+  2. Unpaired (single) sexually active individuals: These individuals can form casual
+  partnerships, modeled as instantaneous, at age-specific rates.
+
+  3. Paired individuals: Long-term partnerships (e.g., cohabiting, marital) are formed
+  from the unpaired pool. Pair formation is preferentially within the same age group,
+  though women may form partnerships with older men.
+
+  Heterogeneity in sexual risk behavior is modeled at two levels:
+
+  *   Partnership level: Pairs are predominantly monogamous with a low frequency of
+  concurrency. Concurrency for paired individuals is modeled similarly to casual partnerships
+  for single individuals (short-term instantaneous partnership from the casual partners
+  pool).
+
+  *   Population level: 10% of the population is assumed to belong to a higher-risk
+  group (with higher rates of casual and concurrent partners), while 90% belong to
+  a lower-risk group with fewer such partners.
+
+  When a pair dissolves, individuals return to the unpaired state.
+
+  The model incorporates time-varying parameters for: sensitivity of diagnostic tests,
+  age-specific screening rates, adoption of nucleic acid amplification tests, completeness
+  of case reporting to the CDC, and initiation of sexual activity in the youngest
+  age group. Specific values and functional forms for many parameters are detailed
+  in Web Appendices, which are not provided with the main manuscript text.'
+infection_model: Chlamydia trachomatis infection. Natural history is represented using
+  a susceptible-infected-susceptible (SIS-like) structure, differentiating asymptomatic
+  and symptomatic infections, and first from subsequent infections. Transmission occurs
+  via unprotected sex in heterosexual partnerships. Infection risk comes from the
+  main partner in a pair and from casual/concurrent partners. Testing of symptomatic
+  individuals and screening of asymptomatic individuals are included. A background
+  natural recovery rate is modeled. Partner notification is explicitly modeled for
+  long-term partnerships, with time-invariant parameters.
+network_type: bimodal
+parameters:
+- description: Proportion of the population assumed to belong to the higher-risk group,
+    characterized by a higher rate of casual and concurrent partners.
+  estimate: 0.1
+  location: Page 2, Partnership dynamics
+  symbol: unknown
+population_structure: 'Population is stratified by age (4 categories: 15-18, 19-24,
+  25-39, 40-54 years), sex, partnership status (non-sexually active, unpaired, paired),
+  sexual risk behavior (a 10% higher-risk group with more casual/concurrent partners
+  and a 90% lower-risk group), and chlamydial infection status.'
+references:
+- doi: unknown
+  formatted: Dietz K, Hadeler KP. Epidemiological models for sexually transmitted
+    diseases. J Math Biol. 1988;26(1):1-25.
+  reason: Cited as seminal work in developing pair-formation models for sexually transmitted
+    infections (Page 2).
+- doi: unknown
+  formatted: 'Waldstätter R. Pair formation in sexually-transmitted diseases. In:
+    Castillo-Chavez C, ed. Mathematical and Statistical Approaches to AIDS Epidemiology.
+    (Lecture Notes in Biomathematics, vol. 83). Heidelberg, Germany: Springer-Verlag;
+    1989:260-274.'
+  reason: Cited as seminal work in developing pair-formation models for sexually transmitted
+    infections (Page 2).
+- doi: unknown
+  formatted: Kretzschmar M, Dietz K. The effect of pair formation and variable infectivity
+    on the spread of an infection without recovery. Math Biosci. 1998;148(1):83–113.
+  reason: Cited as key work applying pair-formation models to sexually transmitted
+    infections, considering variable infectivity (Page 2).
+- doi: unknown
+  formatted: 'Ferguson NM, Garnett GP. More realistic models of sexually transmitted
+    disease transmission dynamics: sexual partnership networks, pair models, and moment
+    closure. Sex Transm Dis. 2000;27(10):600-609.'
+  reason: Cited as an application of mathematical models for STIs, and the title explicitly
+    refers to 'pair models' (Page 2, reference 20).
+simulation_type: discrete
+summaries:
+- description: 'Assumption: Percentage of reported male chlamydia cases attributed
+    to men who had sex with men (MSM), used to estimate diagnoses among heterosexual
+    men from overall male case reports.'
+  location: Page 4, Data
+  value: 0.1
+- description: 'Assumption: Percentage of the male population aged 15-54 years who
+    are men who had sex with men (MSM), used as a baseline for population estimates
+    relevant to heterosexual transmission.'
+  location: Page 4, Data
+  value: 0.03
+- description: 'Model-estimated chlamydia prevalence (as proportion) in 2015 among
+    women aged 15-24 years under current prevention efforts (calibration scenario
+    1: more constrained priors for reporting and screening).'
+  location: Page 6, paragraph 1
+  value: 0.028
+- description: 'Model-estimated chlamydia prevalence (as proportion) in 2015 among
+    women aged 15-24 years in counterfactual scenario of no screening and no partner
+    notification (calibration scenario 1: more constrained priors for reporting and
+    screening).'
+  location: Page 6, paragraph 1
+  value: 0.05
+- description: Mean number of averted chlamydia infections (in millions) among women
+    aged 15-24 years due to screening and partner notification over 2000-2015 (lower
+    bound of range across 4 calibration scenarios).
+  location: Page 6, paragraph 3; Figure 4A
+  value: 0.9
+- description: Mean number of averted chlamydia infections (in millions) among women
+    aged 15-24 years due to screening and partner notification over 2000-2015 (upper
+    bound of range across 4 calibration scenarios).
+  location: Page 6, paragraph 3; Figure 4A
+  value: 2.3
+title: 'The Impact of Screening and Partner Notification on Chlamydia Prevalence and
+  Numbers of Infections Averted in the United States, 2000–2015: Evaluation of Epidemiologic
+  Trends Using a Pair-Formation Transmission Model'

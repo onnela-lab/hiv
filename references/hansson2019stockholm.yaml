@@ -1,0 +1,167 @@
+confidence: 4
+description: "The model considers a population of men who have sex with men (MSM).\
+  \ New individuals enter the population as single and susceptible. Individuals leave\
+  \ the sexually active population at a rate μ. The total population size, n, is assumed\
+  \ to be large and its dynamics are such that n fluctuates around an average value.\
+  \ \nPair-formation for steady partnerships:\n- Single individuals form steady partnerships\
+  \ at a rate proportional to the fraction of single individuals, P0. The specific\
+  \ rate constant is ρ, so the rate is ρP0 per single individual.\n- Individuals can\
+  \ have at most one steady partner at a time.\n- Steady partnerships dissolve at\
+  \ a separation rate σ per partnership. The mean duration of a steady partnership,\
+  \ considering dissolution and individual departure, is 1/(σ + 2μ).\n- The model\
+  \ assumes the proportion of single individuals, P0, and partnered individuals, P1\
+  \ = 1-P0, are in a stable state. P0 is expressed in terms of ρ, σ, and μ.\n- The\
+  \ rate of sexual acts within a steady partnership is λ*.\nCasual contacts:\n- Both\
+  \ single individuals and those in steady partnerships can engage in casual sexual\
+  \ contacts.\n- The model uses two parameters to capture casual contact behavior:\
+  \ ω0, the rate at which a single individual tries to have casual sex, and ω1, the\
+  \ rate at which an individual in a steady partnership tries to have casual sex.\
+  \ Typically ω0 > ω1.\n- The rate of casual contact between individuals depends on\
+  \ their partnership status and these rates (ω0, ω1). For example, the rate for a\
+  \ single individual to have casual sex with other singles is proportional to ω0*ω0*P0,\
+  \ and with partnered individuals is proportional to ω0*ω1*P1 (these are terms appearing\
+  \ in the ODEs for infection transmission).\n- The model does not allow for overlapping\
+  \ steady partnerships, but individuals in steady partnerships can have concurrent\
+  \ casual contacts.\nThe overall model is stochastic, with events (partnership formation/dissolution,\
+  \ casual contacts, infection, recovery) occurring based on exponentially distributed\
+  \ random variables. A deterministic approximation using a system of ordinary differential\
+  \ equations is also provided to describe the expected fractions of individuals in\
+  \ different states (e.g., single susceptible, partnered infectious)."
+infection_model: SIR (Susceptible -> Infectious -> Removed). Individuals are infected
+  with HIV and are infectious until diagnosed and successfully treated with HAART,
+  at which point they are considered 'removed' and no longer transmit the infection.
+  The rate of diagnosis followed by successful treatment is γ.
+network_type: unimodal
+parameters:
+- description: Average population size.
+  estimate: unknown
+  location: Table 1, p. 3. Discussed p. 2, p.3.
+  symbol: n
+- description: Rate of leaving the sexually active population (also influx rate in
+    ODEs).
+  estimate: 4.56e-05
+  location: Table 1, p. 3; Table 2 (1/μ = 60 years), p. 6. Estimate is 1/(60*365.25)
+    per day.
+  symbol: μ
+- description: Partnership formation rate constant (full rate is ρP0).
+  estimate: 0.01704158
+  location: Table 1, p. 3; derived from ρP0 = 1/163 days⁻¹ and P0 = 0.36 (p. 5). Estimate
+    is (1/163)/0.36 per day.
+  symbol: ρ
+- description: Separation rate for steady partnerships.
+  estimate: 0.003331048
+  location: Table 1, p. 3; derived from 1/(σ + 2μ) = 292.2 days (p. 5, Table 2) and
+    μ=1/(60*365.25) days⁻¹. Estimate is (1/292.2) - 2μ per day.
+  symbol: σ
+- description: Rate of sex acts within a steady partnership.
+  estimate: 0.08333333
+  location: Table 1, p. 3; Table 2 (1/λ* = 12 days), p. 5. Estimate is 1/12 per day.
+  symbol: λ*
+- description: Rate at which an individual who is single tries to have casual sex.
+  estimate: 0.237529
+  location: Table 1, p. 3; derived from α = 1/23.1 days⁻¹, α* = 1/36.3 days⁻¹, P0=0.36,
+    P1=0.64 (p. 5), using model structure ω0=α/sqrt(P0α+P1α*). Units per day.
+  symbol: ω0
+- description: Rate at which an individual in a partnership tries to have casual sex.
+  estimate: 0.151155
+  location: Table 1 (as ω*), p. 3; derived from α = 1/23.1 days⁻¹, α* = 1/36.3 days⁻¹,
+    P0=0.36, P1=0.64 (p. 5), using model structure ω1=α*/sqrt(P0α+P1α*). Units per
+    day.
+  symbol: ω1
+population_structure: Structured by partnership status (single or in a steady partnership),
+  which influences their rate of seeking casual sex partners (ω0 for singles, ω1 for
+  partnered).
+references:
+- doi: 10.1007/BF00280169
+  formatted: Dietz, K., Hadeler, K.P., 1988. Epidemiological models for sexually transmitted
+    diseases. J. Math. Biol. 26, 1–25.
+  reason: Cited as the first to introduce pair-formation models in epidemiology (p.
+    2).
+- doi: 10.1016/0378-8733(95)00268-S
+  formatted: Morris, M., Kretzschmar, M., 1995. Concurrent partnerships and transmission
+    dynamics in networks. Soc. Netw. 17, 299–318.
+  reason: Cited as an extension of pair-formation models (p. 2).
+- doi: 10.1016/S0025-5564(97)10008-6
+  formatted: Kretzschmar, M., Dietz, K., 1998. The effect of pair formation and variable
+    infectivity on the spread of an infection without recovery. Math. Biosci. 148
+    (1), 83–113.
+  reason: Cited as an extension of pair-formation models (p. 2) and for Ro formulation
+    (p. 4).
+- doi: 10.1097/01.aids.0000050879.72891.1d
+  formatted: Xiridou, M., Geskus, R., de Wit, J., Coutinho, R., Kretzschmar, M., 2003.
+    The contribution of steady and casual partnerships to the incidence of HIV infection
+    among homosexual men in Amsterdam. AIDS 17, 1029–1038.
+  reason: Cited for a related simulation model with casual and steady partnerships
+    (p. 2).
+- doi: 10.1007/s00285-014-0808-5
+  formatted: 'Leung, K.Y., Kretzschmar, M., Diekmann, O., 2015. SI infection on a
+    dynamic partnership network: characterization of Ro. J. Math. Biol. 71, 1–56.'
+  reason: Cited for the expression of P0 (proportion of single individuals) and Ro
+    in pair-formation models (p. 2, p. 4).
+- doi: 10.1016/j.epidem.2018.05.003
+  formatted: Leng, T., Keeling, M.J., 2018. Concurrency of partnerships, consistency
+    with data, and control of sexually transmitted infections. Epidemics.
+  reason: Cited for a deterministic pair-formation model incorporating casual contacts
+    concurrent to steady partnerships (p. 2).
+simulation_type: continuous
+summaries:
+- description: HIV prevalence among 403 MSM respondents at an STI clinic in Stockholm.
+  location: Page 1, Introduction
+  value: 0.06
+- description: Mean number of total sexual partners per year among 403 MSM at an STI
+    clinic in Stockholm.
+  location: Page 5, Section 2.4.1
+  value: 14.9
+- description: First quartile of number of sexual partners per year among 403 MSM
+    at an STI clinic in Stockholm.
+  location: Page 5, Section 2.4.1
+  value: 4.0
+- description: Third quartile of number of sexual partners per year among 403 MSM
+    at an STI clinic in Stockholm.
+  location: Page 5, Section 2.4.1
+  value: 18.0
+- description: Maximum number of sexual partners per year among 403 MSM at an STI
+    clinic in Stockholm.
+  location: Page 5, Section 2.4.1
+  value: 250.0
+- description: Mean number of sexual relationships (steady or casual, from 10 most
+    recent) in detailed data (past 12 months).
+  location: Page 5, Section 2.4.1
+  value: 5.2
+- description: Mean number of sex acts with a casual sex partner (from 10 most recent
+    partners data).
+  location: Page 5, Section 2.4.1 (calculated as 1.35 encounters * 1.13 acts/encounter)
+  value: 1.53
+- description: Mean condom use with steady sex partners (from 10 most recent partners
+    data).
+  location: Page 5, Section 2.4.1
+  value: 0.52
+- description: Mean condom use with casual sex partners (from 10 most recent partners
+    data).
+  location: Page 5, Section 2.4.1
+  value: 0.63
+- description: Mean duration of a steady partnership (days).
+  location: Page 5, Section 2.4.2 & Table 2
+  value: 292.2
+- description: Mean time for a single individual to enter a steady partnership (days).
+  location: Page 5, Section 2.4.2 & Table 2
+  value: 163.0
+- description: Fraction of individuals without a steady partner (P0).
+  location: Page 5, Section 2.4.2 (end of paragraph) & Table 2 (P0=0.36)
+  value: 0.36
+- description: Mean time between anal intercourse (AI) in a steady partnership (days).
+  location: Page 5, Section 2.4.2 & Table 2
+  value: 12.0
+- description: Mean time until a new casual sex partner for individuals in a steady
+    partnership (days, scaled value).
+  location: Page 5, Section 2.4.2 (α*⁻¹) & Table 2
+  value: 36.3
+- description: Mean time until a new casual sex partner for single individuals (days,
+    scaled value).
+  location: Page 5, Section 2.4.2 (α⁻¹) & Table 2
+  value: 23.1
+- description: Mean sexually active lifetime (years).
+  location: Page 5, Section 2.4.2 & Table 2
+  value: 60.0
+title: A dynamic network model to disentangle the roles of steady and casual partners
+  for HIV transmission among MSM

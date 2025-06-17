@@ -1,0 +1,187 @@
+# Semi-Automated Literature Review
+
+This literature review was conducted in a semi-automated fashion. The search was seeded with several papers that introduce pair formation models. These manuscripts were downloaded and processed using the [`ai_review`](../src/hiv/scripts/ai_review.py) script which generates a report and new leads for references to investigate. The abstracts of new leads were reviewed manually and added to the pool if deemed relevant. Seed papers include some references from a Google Scholar search for ["pair formation model"](https://scholar.google.com/scholar?q=%22pair+formation+model%22), including a separate [search for recent manuscripts since 2021](https://scholar.google.com/scholar?as_ylo=2021&q=%22pair+formation+model%22&hl=en&as_sdt=0,22). Manuscripts the authors had previously reviewed were also included in the seed.
+
+- [x] [`anderson2012potential`](./anderson2021potential.yaml): Anderson et al. (2021). "HIV and Sexually Transmitted Infection Epidemic Potential of Networks of Men Who Have Sex With Men in Two Cities." *Epidemiology*. https://doi.org/10.1097/EDE.0000000000001390
+    - `krivitsky2017egocentric`
+- [x] [`beck2015datadriven`](./beck2015datadriven.yaml): Beck et al. (2015). "A Data-Driven Simulation of HIV Spread Among Young Men Who Have Sex With Men." *Journal of Acquired Immune Deficiency Syndromes*. https://doi.org/10.1097/QAI.0000000000000733
+- [x] [`betti2023mpox`](./betti2023mpox.yaml): Betti, Farrell, and Heffernan (2023). "A pair formation model with recovery: Application to mpox." *Epidemics*. https://doi.org/10.1016/j.epidem.2023.100693
+    - `kretzschmar1994twotypes`
+    - `kretzschmar1998pairformation`
+    - `kretzschmar2017primer`
+    - `ferguson2000realistic`
+    - `garnett1996std`
+- [x] [`delva2016connecting`](./delva2016connecting.yaml): Delva et al. (2016). "Connecting the dots: network data and models in HIV epidemiology." *AIDS*. https://doi.org/10.1097/QAD.0000000000001184
+    - `abuelezam2013individual`
+- [x] [`dietz1988models`](./dietz1988models.yaml): Dietz and Hadeler (1988). "Epidemiological models for sexually transmitted diseases." *J. Math. Biol.* https://doi.org/10.1007/BF00280169
+    - Several older references.
+- [x] [`hansson2019stockholm`](./hansson2019stockholm.yaml): Hansson, Leung, Britton, and Strömdahl (2018). "A dynamic network model to disentangle the roles of steady and casual partners for HIV transmission among MSM." https://doi.org/10.1016/j.epidem.2019.02.001
+    - `dietz1988models`
+    - `kretzschmar1998pairformation`
+    - `leng2018concurrency`
+    - `leung2016dynamic`
+    - `morris1995concurrency`
+    - `xiridou2003amsterdam`
+- [x] [`ferguson2000realistic`](./ferguson2000realistic.yaml): Ferguson and Garnett (2000). "More realistic models of sexually transmitted disease transmission dynamics." *Sexually Transmitted Diseases*. https://doi.org/10.1097/00007435-200011000-00008
+    - `dietz1988models`
+    - `altmann1995SIR`
+- [x] [`garnett1996std`](./garnett1996std.yaml): Garnett and Anderson (1996). "Sexually transmitted diseases and sexual behavior: insights from mathematical models." *Journal of Infectious Diseases*. https://doi.org/10.1093/infdis/174.Supplement_2.S150
+    - `watts1992influence`
+    - `gupta1989networks`
+- [x] [`gurski2023dynamic.yaml`](./gurski2023dynamic.yaml): Gurski (2023). "Staged HIV transmission and treatment in a dynamic model with long-term partnerships." *Infectious Disease Modelling*. https://doi.org/10.1016/j.idm.2023.01.007
+    - `gurski2019`
+    - `kretzschmar1998pairformation`
+    - `kretzschmar2017primer`
+    - `leng2018concurrency`
+    - `watts1992influence`
+- [x] [`hvid2025mpox`](./hvid2025mpox.yaml): Hvid, Simonsen, Frisch, and Sneppen (2025). "Relationship dynamics and behavioral adaptations in the control of the 2022 mpox epidemic." *medRxiv*. https://doi.org/10.1101/2025.05.02.25326849
+    - `kretzschmar1996concurrency`
+    - `whittles2019powerlaw`
+- [x] [`kretzschmar1994twotypes`](./kretzschmar1994twotypes.yaml): Kretzschmar, Jager, Reinking, van Zessen, and Brouwers. "The basic reproduction ratio $R_0$ for a sexually transmitted disease in a pair formation model with two types of pairs." *Mathematical Biosciences*. https://doi.org/10.1016/0025-5564(94)90042-6
+    - `dietz1988models`
+    - Several older references.
+- [x] [`kretzschmar1996concurrency`](./kretzschmar1996concurrency.yaml): Kretzschmar and Morris (1996). "Measures of concurrency in networks and the spread of infectious disease." *Mathematical Biosciences*.
+    - `dietz1988models`
+    - (*difficult to get a copy*) M. Kretzschmar, D. P. Reinking, H. Brouwers, G. van Zessen, and J. C. Jager, Network models: from paradigm to mathematical tool, in Modeling the AIDS Epidemic: Planning, Policy, and Prediction, E. H. Kaplan and M. Brandeau, Eds., Raven Press, New York, 1994, pp. 561-583.
+    - `luo1992limit`
+    - `dietz1992triangles` (*difficult to get a copy*) K. Dietz and D. Tudor, Triangles in heterosexual HIV transmission, in AIDS Epidemiology: Methodological Issues, N. P. Jewell, K. Dietz, and V. Farewell, Eds., Birkhäuser, Boston, 1992, pp. 143-155.
+- [x] [`kretzschmar1998pairformation`](./kretzschmar1998pairformation.yaml): Kretzschmar and Dietz (1998). "The effect of pair formation and variable infectivity on the spread of an infection without recovery." *Mathematical Biosciences*. https://doi.org/10.1016/S0025-5564(97)10008-6
+    - `dietz1988models`
+    - `dietz1992triangles`
+    - `kretzschmar1994twotypes`
+    - `waldstaetter1989pairformation`
+    - `inaba1997R0`
+    - `altmann1995SIR`
+    - `dietz1986epidemiological`
+- [x] [`kretzschmar2017primer`](./kretzschmar2017primer.yaml): Kretzschmar and Heijne (2017). "Pair formation models for sexually transmitted infections: A primer." *Infectious Disease Modelling*. https://doi.org/10.1016/j.idm.2017.07.002
+    - `dietz1988models`
+    - `kretzschmar1998pairformation`
+    - `hadeler1988bisexual`
+    - `kretzschmar1994twotypes`
+- [x] [`leng2018concurrency`](./leng2018concurrency.yaml): Leng and Keeling (2018). "Concurrency of partnerships, consistency with data, and control of sexually transmitted infections." *Epidemics*. https://doi.org/10.1016/j.epidem.2018.05.003
+    - `kretzschmar2017primer`
+    - `kretzschmar1996concurrency`
+    - `watts1992influence`
+    - `eames2004monogamous`
+- [x] [`leung2015dynamic`](./leung2015dynamic.yaml): Leung, Kretzschmar, and Diekmann (2015). "SI infection on a dynamics partnership network: characterization of $R_0$." *J. Math. Biol." https://doi.org/10.1007/s00285-014-0808-5
+    - `dietz1988models`
+    - `leung2012demography`
+    - `kretzschmar1998pairformation`
+    - `watts1992influence`
+- [x] [`morris1995concurrent`](./morris1995concurrent.yaml): Morris and Kretzschmar (1995). "Concurrent partnerships and transmission dynamics in networks." *Social Networks*. https://doi.org/10.1016/0378-8733(95)00268-S
+    - `kretzschmar1996concurrency`
+    - `watts1992influence`
+- [x] [`xiridou2003amsterdam`](./xiridou2003amsterdam.yaml): Xiridou, Geskus, de Wit, Coutinho, Kretzschmar (2003). "The contribution of steady and casual partnerships to the incidence of HIV infection among homosexual men in Amsterdam." *AIDS*. https://doi.org/10.1097/01.aids.0000050879.72891.1d
+    - `kretzschmar1998pairformation`
+    - `kretzschmar1994twotypes`
+- [x] [`roenn2019chlamydia`](./roenn2019chlamydia.yaml): Rönn, et al. (2019) "The Impact of Screening and Partner Notification on Chlamydia Prevalence and Numbers of Infections Averted in the United States, 2000–2015: Evaluation of Epidemiologic Trends Using a Pair-Formation Transmission Model." *American Journal of Epidemiology*. https://doi.org/10.1093/aje/kwy272
+    - `dietz1988models`
+    - `ferguson2000realistic`
+    - `heijne2011reinfection`
+    - `kretzschmar1998pairformation`
+    - `powers2011malawi`
+    - `xiridou2023amsterdam`
+- [x] [`roenn2023chlamydia`](./roenn2023chlamydia.yaml): Rönn et al. (2023). "Costs, Health Benefits, and Cost-Effectiveness of Chlamydia Screening and Partner Notification in the United States, 2000–2019: A Mathematical Modeling Analysis." *Sexually Transmitted Diseases*. https://doi.org/10.1097/OLQ.0000000000001710
+    - `roenn2019chlamydia`
+    - `welte2000screening`
+- [x] [`gutowska2022prep`](./gutowska2022prep.yaml): Gutowska et al. (2022). "The effect of PrEP uptake and adherence on the spread of HIV in the presence of casual and long-term partnerships." *Mathematical Biosciences and Engineering*. https://doi.org/10.3934/mbe.2022455
+    - `hansson2020prep`
+    - `kretzschmar2017primer`
+    - `hadeler2012pairformation`
+    - `leung2015dynamic`
+- [x] [`hansson2020prep`](./hansson2020prep.yaml): Hansson et al. (2020). "Introducing pre-exposure prophylaxis to prevent HIV acquisition among men who have sex with men in Sweden: insights from a mathematical pair formation model." *BMJ Open*. https://doi.org/10.1136/bmjopen-2019-033852
+    - `hansson2019stockholm`
+- [x] ~~[`inaba2017pairformation`](./inaba2017pairformation.yaml): Inaba (2017). "Age-structured SIR epidemic model with constant population and pair formation models." *Journal of Mathematical Biology*. https://doi.org/10.1007/s00285-016-1045-8~~: This seems to be about pair formation but in a different context: demography.
+- [x] [`whittles2019powerlaw`](whittles2019powerlaw.yaml): Whittles, White, Didelot (2019). "A dynamic power-law sexual network model of gonorrhoea outbreaks.", *PLOS Computational Biology*. https://doi.org/10.1371/journal.pcbi.1006748
+    - `chen2008gap`
+    - `miller2012edge`
+- [x] [`camacho2019control`](./camacho2019control.yaml): Camacho et al. (2019). "Modeling Public Health Campaigns for Sexually Transmitted Infections via Optimal and Feedback Control." *Bulletin of Mathematical Biology*. https://doi.org/10.1007/s11538-019-00642-9
+    - `kretzschmar1998pairformation`
+    - `kretzschmar2017primer`
+    - `saldana2019behavioral`
+    - `heijne2013reproduction`
+- [x] [`heijne2013reproduction`](./heijne2013reproduction.yaml)
+    - `dietz1988models`
+    - `kretzschmar1994twotypes`
+    - Earlier reference from same author on heterosexual contact networks.
+- [x] [`hadeler2012pairformation`](./hadeler2012pairformation.yaml): Hadeler (2012). "Pair formation." *Journal of Mathematical Biology*. https://doi.org/10.1007/s00285-011-0454-0
+    - ...
+- [x] [`muller2010hpv`](./muller2010hpv.yaml): Muller and Bauch (2010). "When Do Sexual Partnerships Need to Be Accounted for in Transmission Models of Human Papillomavirus?" *International Journal of Environmental Research and Public Health*. https://doi.org/10.3390/ijerph7020635
+    - `kretzschmar1998recovery`
+- [x] [`kretzschmar1998recovery`](./kretzschmar1998recovery.yaml)
+    - ... and some older refs.
+- [x] [`saldana2019behavioral`](./saldana2019behavioral.yaml): Saldaña and Barradas(2019). "The role of behavioral changes and prompt treatment in the control of STIs." *Infectious Disease Modelling*. https://doi.org/10.1016/j.idm.2018.12.001
+    - ...
+- [x] [`chen2008gap`](./chen2008gap.yaml): Chen et al. (2008). "Mind the Gap: The Role of Time Between Sex With Two Consecutive Partners on the Transmission Dynamics of Gonorrhea." *Sexually Transmitted Diseases*. https://doi.org/10.1097/OLQ.0b013e318162c8e1
+    - `garnett1999nj`
+- [x] [`gurski2025partnership`](./gurski2025partnership.yaml): Gurski and Hoffman (2025). "Modeling HIV and HSV-2 Using Partnership Models." *Mathematical Biosciences and Engineering*. https://doi.org/10.3934/mbe.2025007
+    - ...
+- [x] [`heijne2013reproduction`](./heijne2013reproduction.yaml): Heijne et al. (2013). "Case and partnership reproduction numbers for a curable sexually transmitted infection." *Journal of Theoretical Biology*. https://doi.org/10.1016/j.jtbi.2013.04.010
+    - ...
+- [x] [`miller2012edge`](./miller2012edge.yaml): Miller et al. (2012). "Edge-based compartmental modelling for infectious disease spread." *Journal of the Royal Society Interface*. https://doi.org/10.1098/rsif.2011.0403
+    - This has slightly different focus on modeling dynamics on edges rather than pair formation.
+- [x] [`punyacharoensin2015uk`](./punyacharoensin2015uk.yaml): Punyacharoensin et al. (2015). "Modelling the HIV epidemic among MSM in the United Kingdom: quantifying the contributions to HIV transmission to better inform prevention initiatives." *AIDS*. https://doi.org/10.1097/QAD.0000000000000525
+- [x] [`xiridou2004primary`](./xiridou2004primary.yaml): Xiridou et al. (2004). "Primary HIV infection as source of HIV transmission within steady and casual partnerships among homosexual men." *AIDS*. https://doi.org/10.1097/01.aids.0000131330.60429.db
+- [x] [`garnett1999nj`](./garnett1999nj.yaml): Garnett et al. (1999). "The transmission dynamics of gonorrhoea: modelling the reported behaviour of infected patients from Newark, New Jersey." *Philosophical Transactions of the Royal Society B*. https://doi.org/10.1098/rstb.1999.0433
+- [x] [`kretzschmar1998recovery`](./kretzschmar1998recovery.yaml): Kretzschmar and Dietz (1998). "The effect of pair formation and variable infectivity on the spread of an infection without recovery." *Mathematical Biosciences*. https://doi.org/10.1016/S0025-5564(97)10008-6
+- [x] [`morris2000uganda`](./morris2000uganda.yaml): Morris and Kretzschmar (2000). "A microsimulation study of the effect of concurrent partnerships on the spread of HIV in Uganda." *Mathematical Population Studies*. https://doi.org/10.1080/08898480009525478
+- [x] [`kretzschmar1996stochastic`](./kretzschmar1996stochastic.yaml): Kretzschmar et al. (1996). "Modeling Prevention Strategies for Gonorrhea and Chlamydia Using Stochastic Network Simulations." *American Journal of Epidemiology*. https://doi.org/10.1093/oxfordjournals.aje.a008912
+- [x] [`kretzschmar2001comparative`](./kretzschmar2001comparative.yaml): Kretzschmar et al. (2001). "Comparative Model-based Analysis of Screening Programs for Chlamydia trachomatis Infections." *American Journal of Epidemiology*. https://doi.org/10.1093/aje/153.1.90
+- [x] [`enns2011inferring`](./enns2011inferring.yaml): Enns and Brandeau (2011). "Inferring model parameters in network-based disease simulation." *Working Paper, Stanford University*.
+    - `morris2000uganda`
+    - ...
+- [x] [`leung2012concurrent`](./leung2012concurrent.yaml): Leung, Kretzschmar, and Diekmann (2012). "Dynamic concurrent partnership networks incorporating demography." *Mathematical Biosciences*.
+- [x] [`luo1992limit`](./luo1992limit.yaml): Luo, Busenberg, and Castillo-Chavez (1992). "Limit Behavior of Pair Formation for A Large Dissolution Rate." *Mathematical Biosciences*.
+- [x] [`mattie2025review`](./mattie2025review.yaml): Mattie et al. (2025). "A Review of Network Models for HIV Spread."
+    - `kretzschmar1995concurrency`
+    - `morris1997concurent`
+- [x] [`mei2010amsterdam`](./mei2010amsterdam.yaml): Mei et al. (2010). "Complex agent networks explaining the HIV epidemic among homosexual men in Amsterdam." *Mathematical and Computer Modelling*.
+- [x] [`nelson2010seattlesurvey`](./nelson2010seattlesurvey.yaml): Nelson et al. (2010). "Age- and Gender-Specific Estimates of Partnership Formation and Dissolution Rates in the Seattle Sex Survey." *Sexually Transmitted Diseases*.
+- [x] [`powers2011malawi`](./powers2011malawi.yaml): Powers et al. (2011). "The role of acute and early HIV infection in the spread of HIV and implications for transmission prevention strategies in Lilongwe, Malawi: a modelling study." *The Lancet*.
+    - `kretzschmar1998pairformation`
+    - `xiridou2004primary`
+- [x] [`saldana2025hpv`](./saldana2025hpv.yaml): Saldaña et al. (2025). "Vaccination strategies in a pair formation model for human papillomavirus infection: An optimal control approach."
+    - `dietz1988models`
+    - `kretzschmar2017primer`
+    - `muller2010hpv`
+    - `hadeler2012pairformation`
+- [x] [`gurski2025partnership`](./gurski2025partnership.yaml)
+    - `kretzschmar2017primer`
+    - `dietz1988models`
+    - `kretzschmar1994twotypes`
+    - `leng2018concurrency`
+    - `kretzschmar1998pairformation`
+- [x] [`hadeler2012pairformation`](./hadeler2012pairformation.yaml)
+- [x] [`sloot2008complex`](./sloot2008complex.yaml): Sloot et al. (2008). "Stochastic simulation of HIV population dynamics through complex network modelling." *Mathematical and Computer Modelling*.
+    - ... mostly scale-free stuff
+- [x] [`spicknall2022mpox`](./spicknall2022mpox.yaml): Spicknall et al. (2022). "Modeling the Impact of Sexual Networks in the Transmission of Monkeypox virus Among Gay, Bisexual, and Other Men Who Have Sex With Men – United States, 2022." *Morbidity and Mortality Weekly Report*.
+- [x] [`turner2006chlaymdia`](./turner2006chlaymdia.yaml): Turner et al. (2006). "Developing a realistic sexual network model of chlamydia transmission in Britain." *Sexually Transmitted Infections*.
+    - `kretzschmar1996prevention`
+    - `ghani1997role`
+    - `garnett1996std`
+- [x] [`weiss2020artnet`](./weiss2020artnet.yaml): Weiss et al. (2020). "Egocentric sexual networks of men who have sex with men in the United States: Results from the ARTnet study." *Epidemics*.
+- [x] [`welte2020screening`](./welte2020screening.yaml): Welte et al. (2020). "Cost-Effectiveness of Screening Programs for Chlamydia trachomatis: A Population-Based Dynamic Approach." *Sexually Transmitted Diseases*.
+    - `kretzschmar1996prevention`
+- [x] [`xiridou2022covid`](./xiridou2022covid.yaml): Xiridou et al. (2022). "How the Disruption in Sexually Transmitted Infection Care Due to the COVID-19 Pandemic Could Lead to Increased Sexually Transmitted Infection Transmission Among Men Who Have Sex With Men in The Netherlands: A Mathematical Modeling Study." *Sexually Transmitted Diseases*.
+    - `xiridou2003amsterdam`
+    - `punyacharoensin2015uk`
+
+## Notes
+
+- We primarily focus on unimodal networks without population structure (e.g., age).
+- We focus on agent-based/simulation models, not (T)ERGMs.
+
+## Possibly relevant for data (and other bits)
+
+- `anderson2021potential`: temporal ERGMS
+- `almutiry2019uncertainty`: ABC in contact networks
+
+- https://gh.bmj.com/content/10/1/e016906
+- https://academic.oup.com/ofid/advance-article/doi/10.1093/ofid/ofaf320/8155338#google_vignette
+- interesting but temporal ergms: https://academic.oup.com/ofid/article/10/4/ofad165/7086654
+- https://www.mdpi.com/2036-7449/16/3/32
+- https://academic.oup.com/ofid/article/10/4/ofad165/7086654
+- https://www.degruyterbrill.com/document/doi/10.1515/ijb-2017-0092/html
+Sullivan PS, Rosenberg ES, Sanchez TH, et al. Explaining racial disparities in HIV incidence in black and white men who have sex with men in Atlanta, GA: a prospective observational cohort study. Ann Epidemiol 2015; 25: 445–54.
+13	Grey JA, Rothenberg RB, Sullivan PS, et al. Disassortative Age-Mixing Does Not Explain Differences in HIV Prevalence between Young White and Black MSM: Findings from Four Studies. PLoS One 2015; 10: e0129877.
+- cite separable/temporal ergms as contrast, e.g., epimodel (https://www.jstatsoft.org/article/view/v084i08/0)

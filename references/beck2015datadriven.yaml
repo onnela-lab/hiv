@@ -1,0 +1,135 @@
+confidence: 4
+description: 'The model simulates partnership formation and dissolution among a population
+  of YMSM (Young Men who have Sex with Men). It is a discrete-time, stochastic, agent-based
+  model.
+
+  Partnership Types:
+
+  1.  ''Within-partnerships'': Between two YMSM agents in the simulation. These are
+  modeled as explicit ties in a dynamic network.
+
+  2.  ''Outside-partnerships'': Between a YMSM agent and an external partner (older
+  MSM or female). These are modeled as attributes of the YMSM agent, not explicit
+  network ties with external agents. Their characteristics (e.g., HIV status) are
+  based on prevalence data.
+
+  3.  ''One-night partnerships'': Casual, short-term partnerships. Also modeled as
+  attributes of the YMSM agent.
+
+  Both ''outside'' and ''one-night'' partnerships depend on individual YMSM attributes
+  and their current number of ''within-partnerships'' (sexual momentary degree).
+
+
+  Formation:
+
+  - YMSM agents have a sexual tendency (based on sexual orientation, desired sex role,
+  desired sex frequency) influencing partner choice. Sexual orientation affects whether
+  partners are male or female.
+
+  - Partnership formation rates are parameterized using multivariate regression models
+  based on data from the Crew 450 longitudinal study of YMSM.
+
+  - Upon formation, partnership attributes (e.g., seriousness, oral-sex only, mean
+  length, propensity for unprotected intercourse, race/sex of outside/one-night partners)
+  are assigned based on probability estimates derived from regression models using
+  Crew 450 data.
+
+
+  Dissolution:
+
+  - ''Within-'' and ''outside-'' partnerships dissolve at each time step based on
+  a probability. This probability is determined by the mean duration specific to that
+  partnership type.
+
+  - ''One-night partnerships'' are implicitly short-lived by definition.
+
+
+  The model is parameterized using empirical data from the Crew 450 study, with specific
+  values for formation rates, mean durations, and attribute probabilities detailed
+  in the manuscript''s Supplemental Digital Content. Actual sexual behavior within
+  partnerships is modeled as a function of the sexual tendencies of both partners
+  and overall cohort behavior.'
+infection_model: Simultaneous HIV, gonorrhea (NG), and chlamydia (CT) spread. Transmission
+  via penile-vaginal or anal intercourse. Oral sex transmission not modeled. HIV infectiousness
+  varies by time since infection, ART use, viral suppression, and race. NG/CT infections
+  (urethral or rectal) increase HIV susceptibility/transmissibility. NG/CT infections
+  are independent of each other and HIV/ART.
+network_type: unimodal
+parameters:
+- description: Mean duration for each extended partnership type (outside- and within-partnerships),
+    used to determine the probability of dissolution at each time step.
+  estimate: unknown
+  location: Page 3, 'Partnership Formation and Dissolution Model'
+  symbol: not specified
+- description: Partnership formation rates for different types of partnerships.
+  estimate: unknown
+  location: Page 3, 'Model Parameterization'
+  symbol: not specified
+- description: Probabilities of specific partnership attributes (e.g., seriousness,
+    oral-sex only, mean length of partnership, propensity of unprotected intercourse),
+    derived from multivariate regression.
+  estimate: unknown
+  location: Page 3, 'Partnership Formation and Dissolution Model' and 'Model Parameterization'
+  symbol: not specified
+- description: Partner mixing probabilities by race and sex for one-night partnerships
+    and outside-partnerships.
+  estimate: unknown
+  location: Page 3, 'Model Parameterization'
+  symbol: not specified
+population_structure: Structured by age (YMSM 16-21.8 years at baseline, with aging-in,
+  aging-out, and death processes) and race/ethnicity (Black, Latino, White, Other).
+  Model includes 'outside partners' who can be older MSM or female, characterized
+  by age and sex.
+references:
+- doi: unknown
+  formatted: Krivitsky P, Handock M. A separable model for dynamic networks. J R Stat
+    Soc Series B Stat Methodol. 2014;76:29-46.
+  reason: Cited in relation to the partnership dissolution mechanism, which is a core
+    component of pair formation models. Separable models for dynamic networks directly
+    address how ties (partnerships) form and dissolve over time (Ref 31).
+- doi: 10.1371/journal.pone.0050522
+  formatted: Goodreau SM, Carnegie NB, Vittinghoff E, et al. What drives the US and
+    Peruvian HIV epidemics in men who have sex with men (MSM)? PLoS One. 2012;7:e50522.
+  reason: This is an HIV modeling study among MSM, likely employing or discussing
+    pair formation dynamics, and is cited for model details related to disease transmission
+    parameters and outside partner characteristics, suggesting its relevance to the
+    overall agent-based modeling approach including partnership structures (Ref 30).
+- doi: 10.1073/pnas.012399499
+  formatted: 'Bonabeau E. Agent-based modeling: methods and techniques for simulating
+    human systems. Proc Natl Acad Sci U S A. 2002;99:7280–7287.'
+  reason: Cited as a general reference for agent-based modeling, the methodology used
+    for the pair formation model in this manuscript (Ref 26).
+- doi: unknown
+  formatted: 'Grimm V, Railsback SF. Individual-Based Modeling and Ecology. Princeton,
+    NJ: Princeton University Press; 2005.'
+  reason: Cited as a general reference for individual-based modeling (often synonymous
+    with agent-based modeling), the methodology used for the pair formation model
+    (Ref 27).
+simulation_type: discrete
+summaries:
+- description: Percentage of all new HIV infections among YMSM occurring in within-partnerships
+    over 15 years.
+  location: Page 5, 'Age and Race Mixing'
+  value: 44.4
+- description: Percentage of all new HIV infections among YMSM occurring in outside-partnerships
+    over 15 years.
+  location: Page 5, 'Age and Race Mixing'
+  value: 34.5
+- description: Percentage of all new HIV infections among YMSM occurring in one-night
+    partnerships over 15 years.
+  location: Page 5, 'Age and Race Mixing'
+  value: 21.1
+- description: Simulated rate of new HIV infections in one-night partnerships per
+    100 person-years among YMSM (overall average).
+  location: Page 5, Figure 2 and text 'Age and Race Mixing'
+  value: 1.1
+- description: Simulated rate of new HIV infections in outside-partnerships per 100
+    person-years among YMSM (overall average).
+  location: Page 5, Figure 2 and text 'Age and Race Mixing'
+  value: 1.8
+- description: Simulated rate of new HIV infections in within-partnerships per 100
+    person-years among YMSM (overall average).
+  location: Page 5, Figure 2 and text 'Age and Race Mixing'
+  value: 2.3
+title: 'A Data-Driven Simulation of HIV Spread Among Young Men Who Have Sex With Men:
+  Role of Age and Race Mixing and STIs'

@@ -1,0 +1,232 @@
+confidence: 4
+description: 'The manuscript describes an agent-based model called TANGO (Transient
+  Attachment Network alGOrithm) to simulate sexual pair formation in the European
+  MSM population. The model is executed in discrete time-steps (Δt).
+
+
+  In the model:
+
+  1.  Each agent ''i'' has individual-specific rates for seeking new partners (αi)
+  and for seeking encounters with previous partners (βi).
+
+  2.  The rates αi are drawn from an ''a-distribution'', described as a power-law
+  with exponent γ, and upper/lower bounds b_u and b_l. The manuscript also lists a
+  parameter β₀ as the ''mean rate of seeking new encounters''.
+
+  3.  The rates βi are drawn from a ''β-distribution'' with a shape parameter k_β.
+
+  4.  In each time-step Δt, an agent ''i'' seeks a first-time encounter with probability
+  αi*Δt and a network encounter (with a known partner) with probability βi*Δt.
+
+  5.  When a first-time encounter occurs between agents i and j, an edge is formed
+  with an initial weight (o_ij = 1).
+
+  6.  Subsequent network encounters between i and j increment the weight o_ij by 1.
+
+  7.  The rate of encounters between connected individuals i and j is proportional
+  to the connection weight o_ij.
+
+  8.  Connection weights o_ij decay over time. The manuscript provides two descriptions
+  for this decay: Page 7 states ''connections decay at rate o_ij Δt/M'', while the
+  Fig 2A caption states ''Connections decay at the rate 1/M''. M is a ''memory'' parameter.
+
+  9.  For network encounters, edges are chosen with a probability proportional to
+  their weight o_ij.
+
+  10. Steady partnerships are not explicitly built-in but are defined heuristically:
+  a partnership between i and j is considered steady if o_ij > 1, and for both partners,
+  the weight o_ij is greater than the sum of weights of their other connections (o_ij
+  > Σ_{k≠j} o_ik and o_ij > Σ_{k≠i} o_jk).
+
+
+  The model parameters (related to network structure) are first fitted to reproduce
+  observations from the Danish Project SEXUS survey data (e.g., 1-year degree distribution,
+  encounter rates, partnership dynamics). Subsequently, the mpox transmission dynamics
+  are incorporated, and a secondary attack rate (p) and the upper bound for new partner
+  acquisition rate (b_u) are fitted to reproduce epidemic characteristics (e.g., activity
+  of cases, reproduction number).'
+infection_model: 'The mpox infection model is of SEIR type (Susceptible, Exposed,
+  Infectious, Recovered).
+
+  - The mean latent period (T_E) is set to 5 days.
+
+  - The effective infectious period (T_I) is dynamic and changes over time, reflecting
+  responsive behavioral changes (e.g., self-isolation upon symptom awareness). T_I(t)
+  is calculated from the time-varying mean serial interval T_S(t) using the formula
+  T_I(t) = 2 * (T_S(t) - T_E). The serial interval T_S(t) is modeled by a sigmoid
+  function, decreasing from an initial T_S,max of 14 days to T_S,min of 6.5 days.
+  This results in T_I decreasing from approximately 18 days to 3 days.
+
+  - State transitions (e.g., from E to I, I to R) are modeled as a two-step Poisson
+  process, meaning the duration in each state follows an Erlang distribution with
+  a shape factor of 2.
+
+  - A secondary attack rate (p) is a biological parameter adjusted during the fitting
+  process for epidemic trajectories.'
+network_type: unimodal
+parameters:
+- description: Upper bound to the distribution of rates for seeking new partners (αi),
+    fitted to epidemic curves.
+  estimate: 250.0
+  location: Page 7, Materials and Methods; Fig 2B caption
+  symbol: b_u
+- description: Lower bound to the distribution of rates for seeking new partners (αi).
+  estimate: unknown
+  location: Page 7, Materials and Methods
+  symbol: b_l
+- description: Power-law exponent for the distribution of rates for seeking new partners
+    (αi).
+  estimate: unknown
+  location: Page 7, Materials and Methods
+  symbol: γ
+- description: Mean rate of seeking new encounters. This parameter is related to the
+    distribution from which individual rates αi are drawn.
+  estimate: unknown
+  location: Page 7, Materials and Methods
+  symbol: β₀
+- description: Shape parameter for the β-distribution from which rates of seeking
+    encounters with previous partners (βi) are drawn.
+  estimate: unknown
+  location: Page 7, Materials and Methods
+  symbol: k_β
+- description: Memory parameter related to connection decay. Page 7 states 'connections
+    decay at rate o_ij Δt/M'. Fig 2A caption states 'Connections decay at the rate
+    1/M'.
+  estimate: unknown
+  location: Page 7, Materials and Methods; Fig 2A caption
+  symbol: M
+- description: Maximum mean serial interval for mpox.
+  estimate: 14.0
+  location: Page 2, Eq. 1
+  symbol: T_S,max
+- description: Minimum mean serial interval for mpox.
+  estimate: 6.5
+  location: Page 2, Eq. 1
+  symbol: T_S,min
+- description: Characteristic rate of change in the sigmoid function describing the
+    serial interval over time.
+  estimate: 2.45
+  location: Page 2, Eq. 1
+  symbol: k
+- description: Day of steepest descent for serial interval change, fitted to June
+    6.
+  estimate: unknown
+  location: Page 2, Eq. 1
+  symbol: t_0
+- description: Mean latent period for mpox infection.
+  estimate: 5.0
+  location: Page 7, Materials and Methods
+  symbol: T_E
+- description: Secondary attack rate for mpox infection, adjusted to fit epidemic
+    data.
+  estimate: unknown
+  location: Page 7, Materials and Methods
+  symbol: p
+- description: Effective population size used in epidemic simulations.
+  estimate: 100000.0
+  location: Page 7, Materials and Methods
+  symbol: N_eff
+population_structure: The model simulates a highly heterogeneous European MSM (men
+  who have sex with men) population. Heterogeneity is primarily driven by individual-specific
+  rates of seeking new partners (αi) and existing partners (βi), which are drawn from
+  distributions. This results in a highly skewed (power-law like) degree distribution,
+  consistent with observed sexual behavior and the concept of a 'core group' with
+  high-risk sexual lifestyles that disproportionately drives transmission. The model
+  uses an effective population size (N_eff) of 100,000, stated to correspond to twice
+  the Danish population of MSM. Observational data for fitting network parameters
+  come from the Danish Project SEXUS survey.
+references:
+- doi: 10.1006/mabio.1996.0038
+  formatted: Kretzschmar, M Morris, Measures of concurrency in networks and the spread
+    of infectious disease. Math. Biosci. 133, 165-195 (1996).
+  reason: Cited as a seminal article for addressing concurrent partnerships, a key
+    aspect of pair formation and network structure relevant to STI transmission, including
+    mpox in this manuscript. The TANGO model accounts for overlapping relationships
+    implicitly through its mechanism of forming and maintaining connections over time
+    based on encounter history, which relates to concurrency concepts.
+- doi: 10.1371/journal.pcbi.1006748
+  formatted: Whittles, LK, White, PJ, Didelot, X, A dynamic power-law sexual network
+    model of gonorrhoea outbreaks. PLOS Comput. Biol. 15, e1006748 (2019).
+  reason: This reference is cited in the context of the 1-year degree distribution
+    exponent and general STI patient questionnaire data. It explicitly describes a
+    'dynamic power-law sexual network model', suggesting it's highly relevant to pair-formation
+    modeling approaches in sexual networks similar to what the manuscript attempts
+    for mpox.
+- doi: 10.1126/science.add4507
+  formatted: Endo, A, et al., Heavy-tailed sexual contact networks and monkeypox epidemiology
+    in the global outbreak, 2022. Science 378, 90-94 (2022).
+  reason: Cited for the power-law exponent of the 1-year degree distribution in MSM
+    sexual contact networks, which is a critical structural feature that pair-formation
+    models often aim to reproduce. Understanding this distribution informs the heterogeneity
+    in partnerships which the TANGO model incorporates.
+simulation_type: discrete
+summaries:
+- description: Power-law exponent of the 1-year degree distribution in the Danish
+    MSM group (Project SEXUS data).
+  location: Page 2, Fig 2B
+  value: 1.8
+- description: Hard cutoff for the number of partners per year in the TANGO model
+    simulations.
+  location: Page 2
+  value: 80.0
+- description: Mean number of sexual encounters per week reported in Project SEXUS.
+  location: Fig 2C
+  value: 0.74
+- description: Median number of sexual encounters per week reported in Project SEXUS.
+  location: Fig 2C
+  value: 0.5
+- description: Mean number of partners per year for individuals with a steady partner,
+    reported in Project SEXUS.
+  location: Fig 2C
+  value: 5.0
+- description: Mean number of partners per year for individuals without a steady partner,
+    reported in Project SEXUS.
+  location: Fig 2C
+  value: 5.8
+- description: Fraction of individuals in a steady partnership, reported in Project
+    SEXUS.
+  location: Fig 2C
+  value: 0.26
+- description: Probability of a partnership lasting a year, reported in Project SEXUS.
+  location: Fig 2C
+  value: 0.33
+- description: Mean number of sexual encounters per week produced by the TANGO model.
+  location: Fig 2C
+  value: 0.78
+- description: Median number of sexual encounters per week produced by the TANGO model.
+  location: Fig 2C
+  value: 0.4
+- description: Mean number of partners per year for individuals with a steady partner,
+    produced by the TANGO model.
+  location: Fig 2C
+  value: 4.9
+- description: Mean number of partners per year for individuals without a steady partner,
+    produced by the TANGO model.
+  location: Fig 2C
+  value: 5.8
+- description: Fraction of individuals in a steady partnership, produced by the TANGO
+    model.
+  location: Fig 2C
+  value: 0.3
+- description: Probability of a partnership lasting a year, produced by the TANGO
+    model.
+  location: Fig 2C
+  value: 0.18
+- description: Fraction of male respondents in Project SEXUS survey identified as
+    MSM.
+  location: Page 2
+  value: 0.022
+- description: Mean final size of mpox infected individuals per million population,
+    predicted by the model without mitigation.
+  location: Page 2 (Results section)
+  value: 900.0
+- description: Initial effective infectious period (T_I) for mpox in May, inferred
+    from serial interval data.
+  location: Page 3, Fig 4A
+  value: 18.0
+- description: Final effective infectious period (T_I) for mpox in September, inferred
+    from serial interval data.
+  location: Page 3, Fig 4A
+  value: 3.0
+title: Relationship dynamics and behavioral adaptations in the control of the 2022
+  mpox epidemic

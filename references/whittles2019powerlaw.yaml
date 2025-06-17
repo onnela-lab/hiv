@@ -1,0 +1,125 @@
+confidence: 4
+description: 'The manuscript presents a dynamic sexual network model where partnerships
+  form and dissolve over time based on individuals'' intrinsic propensities (λj).
+  Each individual ''j'' has a propensity λj, drawn from a distribution f(λ), to form
+  and break partnerships. Partnership formation between individuals j and l (if not
+  already partnered) occurs as a Poisson process with rate α(λj, λl). Partnership
+  dissolution also occurs as a Poisson process with rate d(λj, λl).
+
+  The model is specifically designed so that the cumulative number of distinct partners
+  an individual has over a one-year period follows a pre-specified power-law distribution
+  p(κ) ∝ κ^(-γ), where γ is a key input parameter. The probability q(λj, λl) that
+  individuals j and l have been in a partnership at some point over the last year
+  is mathematically defined (Eq 3 on page 13). This definition uses the stationary
+  probability of them being in a partnership at any given time, qo(λj, λl) = α(λj,
+  λl) / (α(λj, λl) + d(λj, λl)), and the formation rate α(λj, λl).
+
+  The functions α(λj, λl) and d(λj, λl) are derived to meet these requirements. The
+  model assumes q(λj, λl) = g(λj)g(λl) (Eq 11, page 14), and that the dissolution
+  rate is proportional to the formation rate, d(λj, λl) = φ * α(λj, λl) (page 14),
+  where φ is a constant influencing partnership duration and concurrency. The function
+  g(λ) is derived (Eq 15, page 14) to ensure the target power-law degree distribution
+  (characterized by γ and a lower degree cutoff k0).
+
+  A constraint is applied to the partnership breakup rates: the minimum breakup rate
+  d_min(λj, λl) is set to 1/(50φ), ensuring that the longest partnerships (those with
+  the smallest breakup rates) are exponentially distributed with a mean duration of
+  50 years (page 15). This constraint, combined with the derived q(λj, λl) needed
+  for the power-law degree distribution, determines the formation rate α(λj, λl) (Eq
+  17, page 15).
+
+  The actual dynamics of partnership formation and dissolution events are simulated
+  using a Gillespie algorithm, which is a continuous-time stochastic simulation method
+  (details in S2 Appendix, referenced on page 15). The model''s key input parameters
+  that define the network structure are γ (power-law exponent), k0 (related to the
+  proportion of individuals with zero partners), and φ (related to average partnership
+  duration).'
+infection_model: A stochastic individual-based model for gonorrhoea transmission is
+  used, adapted from reference [33]. Individuals are initially uninfected (U). Upon
+  contact with a contagious individual (I, S, or A) through the sexual network, they
+  can become infected at a rate β. Infected individuals enter an incubation period
+  (I) and leave this state at a rate σ. A proportion ψ of these individuals develop
+  symptoms (S), while the remaining (1-ψ) become asymptomatic (A). Symptomatic individuals
+  (S) seek treatment at a rate μ. Asymptomatic individuals (A) can be screened and
+  treated at a rate η, or they may recover (naturally or due to unrelated antibiotic
+  treatment) at a rate ν. Individuals who receive treatment enter a treated state
+  (T) and subsequently recover to the uninfected state (U) at a rate ρ. The contagious
+  states are I, S, and A. This is illustrated in Fig 3B (page 6) and described on
+  page 15.
+network_type: unimodal
+parameters:
+- description: Exponent of the power-law distribution for the number of partners over
+    a one-year period. This is a user-specified input parameter for the network generation
+    model.
+  estimate: 1.8
+  location: Page 4 (Fig 2 caption), Page 5 (description of Fig 2), Page 10 (Discussion),
+    Page 13 (Eq 7)
+  symbol: γ
+- description: Lower bound for the number of partners in the power-law degree distribution
+    (κ) over a one-year period. This input parameter is used to calibrate the proportion
+    of individuals reporting zero partners over the year.
+  estimate: 0.55
+  location: Page 4 (Fig 2 caption), Page 5 (description of Fig 2), Page 10 (Discussion),
+    Page 13 (Eq 8 for definition of k_o)
+  symbol: k0
+- description: Parameter determining the rate of partnership breakdown relative to
+    formation (d(λj, λl) = φ*α(λj, λl)). It influences average partnership duration
+    and concurrency. This parameter is set such that the longest partnerships in the
+    network have an average duration of 50 years.
+  estimate: unknown
+  location: Page 5 (description), Page 10 (Discussion), Page 14 (definition d=φα),
+    Page 15 (link to 50 years mean duration)
+  symbol: φ
+population_structure: The model simulates a population of N Men who have Sex with
+  Men (MSM). Heterogeneity among individuals is incorporated through an intrinsic
+  propensity, λj, for each individual 'j' to form and break partnerships. This λj
+  is drawn from a probability distribution f(λ), which is itself mathematically derived
+  to ensure that the network exhibits the desired power-law distribution of partners
+  over a one-year period. The manuscript mentions simulations for N=10,000 MSM, representing
+  those aged between 15 and 65 in a UK city (page 4), although age is not an explicit
+  dynamic variable in the model beyond defining the baseline population.
+references:
+- doi: 10.1103/PhysRevE.70.056126
+  formatted: 'Servedio VDP, Caldarelli G, Buttà P. Vertex intrinsic fitness: how to
+    produce arbitrary scale-free net-works. Physical Review E. 2004; 70(5):056126.'
+  reason: 'This paper (related to [18]) introduces the concept of vertex intrinsic
+    fitness for generating scale-free networks. This concept of an intrinsic property
+    (λj) is adapted by the manuscript to introduce heterogeneity in the dynamic model
+    for partnership formation and dissolution propensities. Location: Cited on page
+    4 and page 14 (within citation of [19]).'
+- doi: 10.1097/OLQ.0b013e3181612d33
+  formatted: 'Chen MI, Ghani AC, Edmunds J. Mind the gap: the role of time between
+    sex with two consecutive partners on the transmission dynamics of gonorrhea. Sexually
+    Transmitted Diseases. 2008; 35(5):435-444.'
+  reason: Cited on page 3 as an example of a dynamic algorithm where relationships
+    are formed and dissolved over time, relevant to modeling sexual partnership dynamics,
+    although not explicitly aiming for a power-law degree distribution over a year.
+- doi: 10.1098/rsif.2011.0403
+  formatted: Miller JC, Slim AC, Volz EM. Edge-based compartmental modelling for infectious
+    disease spread. Journal of the Royal Society Interface. 2012; 9(49):890-906.
+  reason: 'Cited on page 3 as an example of a dynamic algorithm for relationship formation/dissolution.
+    Furthermore, page 10 highlights it: "While other models may be able to produce
+    a power law distribution over time with the right choice of formation and breakdown
+    partnership functions [24], we are the first to focus on this property...". This
+    makes it a key reference for contextualizing the manuscript''s contribution to
+    dynamic network modeling.'
+simulation_type: continuous
+summaries:
+- description: Exponent (γ) of the power-law distribution of the number of sexual
+    partners reported over one year by Men who have Sex with Men (MSM) in the Natsal-3
+    survey (UK, 2010-2012).
+  location: Page 3, Results section ('Analysis of survey data on number of partners')
+  value: 1.81
+- description: Proportion of Men who have Sex with Men (MSM) in the Natsal-3 survey
+    (UK, 2010-2012) reporting zero same-sex partners in the past year.
+  location: Page 3, Results section & Page 12, Materials and methods section
+  value: 0.154
+- description: Inferred scale-parameter (γ) of the power-law distribution of sexual
+    partners for gonorrhoea infected Men who have Sex with Men (MSM) in London (GRASP
+    data, 2004).
+  location: Page 4, Results section ('Analysis of survey data on number of partners')
+  value: 1.6
+- description: Simulated network size (N), representing MSM aged 15-65 in a UK city.
+  location: Page 4, 'Simulation of dynamic network model' section
+  value: 10000.0
+title: A dynamic power-law sexual network model of gonorrhoea outbreaks

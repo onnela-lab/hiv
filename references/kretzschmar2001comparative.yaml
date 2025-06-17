@@ -1,0 +1,85 @@
+confidence: 4
+description: "The manuscript describes a stochastic, individual-based simulation model\
+  \ of Chlamydia trachomatis transmission within a heterosexual population. The pair-formation\
+  \ aspects of this model, with full details stated to be in Kretzschmar et al. (1996,\
+  \ Ref 24), are summarized in this manuscript as follows:\nThe population is structured\
+  \ by gender, age (15-64 years), and two sexual activity levels (low and high).\n\
+  Individuals can form 'steady' and 'casual' partnerships, which differ in their mean\
+  \ durations (exponentially distributed) and frequency of sexual intercourse. \n\
+  - Low-activity individuals: Can have at most one partnership at a time. They have\
+  \ a low probability of forming casual partnerships.\n- High-activity individuals\
+  \ (forming a 'core group'): Can have at most one steady partner and concurrently\
+  \ form casual partnerships. They have a higher probability of forming casual partnerships.\n\
+  Partnership dissolution is governed by the mean durations. Age mixing in partnerships\
+  \ is determined by an age-mixing matrix (details in Ref 24). The parameters for\
+  \ sexual behavior and partnerships, including aspects of formation and separation\
+  \ processes, are based on a 1989 Dutch survey (Ref 25).\nThis manuscript does not\
+  \ provide the explicit rules or rates for partner selection and new partnership\
+  \ formation beyond stating mean durations for existing partnerships, the existence\
+  \ of an age-mixing matrix, and different tendencies for casual partnership formation\
+  \ by activity group. Full details required to reproduce the pair-formation implementation\
+  \ are stated to be in the cited Ref 24."
+infection_model: 'Stochastic individual-based model of Chlamydia trachomatis. Infection
+  progresses from susceptible to latent, then to infectious (either asymptomatic or
+  symptomatic, with sex-specific probabilities and durations). Transmission occurs
+  per sexual contact with a defined probability (tc=0.11, derived from per-partnership
+  probability). Infected individuals recover naturally (with different rates for symptomatic/asymptomatic,
+  men/women as per Table 2) or can be treated if symptomatic or detected via screening.
+  Key parameters include incubation times (men: 12 days, women: 10 days), fraction
+  asymptomatic (men: 50%, women: 70%), and patient delay before treatment for symptomatic
+  cases (men: 11 days total until effective treatment, women: 14 days).'
+network_type: bimodal
+parameters:
+- description: Mean duration of steady partnerships (exponentially distributed)
+  estimate: 6.9
+  location: Table 1, page 3
+  symbol: unknown
+- description: Mean duration of casual partnerships (exponentially distributed)
+  estimate: 10.0
+  location: Table 1, page 3
+  symbol: unknown
+- description: Frequency of sexual intercourse in steady partnerships
+  estimate: 0.25
+  location: Table 1, page 3
+  symbol: unknown
+- description: Frequency of sexual intercourse in casual partnerships
+  estimate: 1.0
+  location: Table 1, page 3
+  symbol: unknown
+population_structure: Structured by gender, age (15-64 years, with a uniform distribution
+  over this range), and two sexual activity classes (low and high). The high-activity
+  class forms a 'core group' (estimated at 2% of the total population, concentrated
+  in ages 15-34 years). Mixing between age classes for partnerships is defined by
+  an age-mixing matrix (details in Ref 24). Low activity individuals have at most
+  one partner at a time; high activity individuals can have one steady partner and
+  concurrent casual partners.
+references:
+- doi: unknown
+  formatted: Kretzschmar M, van Duynhoven YTHP, Severijnen AJ. Modeling prevention
+    strategies for gonorrhea and Chlamydia using stochastic network simulations. Am
+    J Epidemiol 1996;144:306-17.
+  reason: This reference is cited as describing the stochastic simulation model, including
+    detailed partnership dynamics, sexual activity levels, and age mixing, in detail
+    (page 2, page 3, page 10).
+- doi: unknown
+  formatted: 'Zessen G van, Sandfort TGM. Seksualiteit in Nederland: Seksueel gedrag,
+    risico en preventie van AIDS. (In Dutch). Amsterdam, The Netherlands: Swets &
+    Zeitlinger, 1991.'
+  reason: This reference is cited as the source of survey data from 1989 used to estimate
+    model parameters describing sexual behavior, partnership formation, and separation
+    processes (page 10).
+- doi: unknown
+  formatted: 'Blower SM, Boe C. Sex acts, sex partners, and sex budgets: implications
+    for risk factor analysis and estimation of HIV transmission probabilities. J AIDS
+    1993;6:1347-52.'
+  reason: This reference is mentioned in the context of analyzing the relation between
+    the number of sex acts and sex partners, particularly for longer-lasting partnerships,
+    which is relevant for detailed pair formation modeling (page 3).
+simulation_type: discrete
+summaries:
+- description: Percentage of the total population defined as the highly sexually active
+    core group.
+  location: page 10
+  value: 2.0
+title: Comparative Model-based Analysis of Screening Programs for Chlamydia trachomatis
+  Infections

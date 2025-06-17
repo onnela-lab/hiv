@@ -1,0 +1,78 @@
+confidence: 5
+description: "The manuscript describes a stochastic, discrete-time Markov model for\
+  \ pair formation and dissolution. At each time step (1 day), new partnerships are\
+  \ formed and existing partnerships are dissolved. The total number of partnerships\
+  \ in the population fluctuates randomly around a constant average, which is the\
+  \ same for all scenarios. New partnerships form with a rate rho (p), which depends\
+  \ on the number of partnerships already present. Existing partnerships separate\
+  \ with a constant rate sigma (o).\n\nThe momentary distribution of partnerships\
+  \ is varied to represent different scenarios: \n1. Sequential monogamy: Individuals\
+  \ have at most one partner at a time. The attraction function for pair formation\
+  \ is 0 if either of the two randomly chosen nodes is already linked.\n2. Concurrent\
+  \ partnerships: The momentary number of partners per individual is randomly distributed,\
+  \ up to a maximum. The attraction function varies with the degree homophily bias.\
+  \ If a link is not formed between two chosen nodes, new nodes are drawn until a\
+  \ pair is formed. This continues until the required number of new partnerships (calculated\
+  \ based on preserving the mean degree) is formed.\n\nMixing patterns (degree-based\
+  \ homophily bias) are also explored: random, assortative (similar degrees partner),\
+  \ and disassortative (different degrees partner)."
+infection_model: Disease transmission occurs within discordant pairs (one susceptible,
+  one infected) at a constant rate per day (infectivity). One person is randomly infected
+  at t=0. There is no recovery or disease-related mortality.
+network_type: bimodal
+parameters:
+- description: Pair formation rate per day. This rate depends on the number of partnerships
+    already present.
+  estimate: 0.01
+  location: Table 1, page 304
+  symbol: p
+- description: Pair separation rate per day.
+  estimate: 0.001
+  location: Table 1, page 304
+  symbol: o
+- description: Maximum number of concurrent partners.
+  estimate: 10.0
+  location: Table 1, page 304
+  symbol: unknown
+- description: Probability that infection is transmitted once a partnership between
+    an infected and a susceptible is made (per day).
+  estimate: 0.1
+  location: Table 1, page 304 and page 305
+  symbol: unknown
+population_structure: The population consists of 2000 individuals, half male and half
+  female. All partnerships are heterosexual. The population size is constant. The
+  model explores variations based on degree and degree-based homophily (mixing patterns).
+references:
+- doi: unknown
+  formatted: 'Watts, C.H. and R.M. May 1992 "The influence of concurrent partnerships
+    on the dynamics of HIV/AIDS." Mathematical Biosciences 108: 89-104.'
+  reason: This reference is cited in the introduction (page 300) in the context of
+    mathematical models of disease transmission suggesting dramatic effects of concurrency,
+    which implies pair-formation modeling.
+- doi: unknown
+  formatted: Kretzschmar, M. and M. Morris 1995 "Measures of concurrency in sexual
+    networks and the spread of STD." Mathematical Biosciences, in press.
+  reason: This reference (page 303, page 318) by the same authors is about measures
+    of concurrency, which is a key concept in the manuscript's pair-formation model
+    and its analysis.
+- doi: unknown
+  formatted: 'May, R.M. and R.M. Anderson 1987 "Transmission dynamics of HIV infection."
+    Nature 326: 137-142.'
+  reason: Cited on page 303 in relation to an approximation for the 'effective' mean
+    contact rate, relevant to partnership dynamics.
+simulation_type: discrete
+summaries:
+- description: Population size
+  location: Table 1, page 304
+  value: 2000.0
+- description: Simulation runtime in days
+  location: Table 1, page 304
+  value: 1095.0
+- description: Cumulative mean of partnerships per person during the simulation period
+    (approximate).
+  location: Page 305
+  value: 2.0
+- description: Momentary mean of partnerships per person (approximate).
+  location: Page 304, paragraph 3
+  value: 1.0
+title: Concurrent partnerships and transmission dynamics in networks

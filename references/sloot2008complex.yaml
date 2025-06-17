@@ -1,0 +1,160 @@
+confidence: 4
+description: 'The manuscript describes a stochastic simulation model for HIV population
+  dynamics using complex networks. The pair-formation aspect, central to sexual transmission,
+  is modeled differently for various risk groups:
+
+  1.  **MSM and Heterosexual Populations**: These are modeled using dynamic scale-free
+  networks. The network structure is regenerated at each discrete time step (implicitly
+  yearly). This regeneration uses a configuration model: links are formed between
+  nodes based on a degree sequence drawn from a power-law distribution P(k) ~ k^-γ
+  (where k is the number of partners), up to a maximum k_max. The heterosexual network
+  is specifically a bipartite graph. The parameters γ (power-law exponent) and k_max
+  (maximum degree) define the network topology and are specific to MSM and heterosexual
+  groups. This network regeneration (evolutionary operator Γ2) represents the dynamic
+  nature of sexual partnerships.
+
+  2.  **IDU Population**: For injection drug users, the model assumes homogeneous
+  mixing within the group, rather than a specific network-based pair-formation mechanism.
+
+
+  The overall model is defined by {G, Γ}, where G=(V,E) is the graph and Γ is the
+  evolutionary operator governing changes in discrete time steps: (V,E)t+1 = Γ(V,E)t.
+  The operator Γ is a composition of sub-operators for infection spreading (Γ1), network
+  link dynamics (Γ2 - the pair formation aspect), demographic changes (Γ3), and HIV
+  disease progression/removal (Γ4).'
+infection_model: 'HIV infection progression is modeled as a multi-stage Markov process.
+  Infected individuals transition through states defined by their CD4 T-lymphocyte
+  counts (four stages: >500, 350-499, 200-349, <200 cells/microliter). Individuals
+  reaching the final stage (AIDS, CD4 < 200) are considered ''removed'' from the network
+  in terms of transmission. HIV transmission occurs from an infected node to a susceptible
+  connected neighbor with a probability λ (lambda) per link, per year. This parameter
+  λ is tuned for different risk groups (MSM, heterosexual, IDU). For heterosexual
+  transmission, the probability from males to females is assumed to be twice that
+  from females to males. The infection spreading process itself is represented by
+  operator Γ1.'
+network_type: other
+parameters:
+- description: Power-law exponent for degree distribution P(k) ~ k^-γ in the MSM (men
+    who have sex with men) network.
+  estimate: 1.6
+  location: Section 3.1 (p. 1180), Figure 4 caption (p. 1183)
+  symbol: γ (MSM)
+- description: Maximum number of sexual partners per year (cut-off for power-law distribution)
+    in the MSM network.
+  estimate: 250.0
+  location: Section 3.1 (p. 1180), Figure 4 caption (p. 1183)
+  symbol: k_max (MSM)
+- description: Power-law exponent for degree distribution P(k) ~ k^-γ in the heterosexual
+    network.
+  estimate: 2.7
+  location: Section 3.1 (p. 1180), Figure 4 caption (p. 1183)
+  symbol: γ (HET)
+- description: Maximum number of sexual partners per year (cut-off for power-law distribution)
+    in the heterosexual network.
+  estimate: 60.0
+  location: Section 3.1 (p. 1180), Figure 4 caption (p. 1183)
+  symbol: k_max (HET)
+- description: Probability of infection per link per year for the MSM population.
+    Tunable parameter.
+  estimate: 0.44
+  location: Figure 4 caption (p. 1183); general USA value in Section 3.4 (p.1182)
+  symbol: λ (MSM)
+- description: Probability of infection per link per year for the heterosexual population.
+    Tunable parameter.
+  estimate: 0.28
+  location: Figure 4 caption (p. 1183)
+  symbol: λ (HET)
+- description: Effective probability of infection per year for the IDU (injection
+    drug user) population (homogeneous mixing context). Tunable parameter.
+  estimate: 0.72
+  location: Figure 4 caption (p. 1183)
+  symbol: λ (IDU)
+- description: Annual removal rate from infective state (progression to AIDS and removal
+    from network) for infected individuals without treatment.
+  estimate: 0.15
+  location: Section 2.2 (p. 1178)
+  symbol: μ (no treatment)
+- description: Annual removal rate from infective state (progression to AIDS and removal
+    from network) for infected individuals with treatment.
+  estimate: 0.08
+  location: Section 2.2 (p. 1178)
+  symbol: μ (with treatment)
+- description: Net demographic coefficient (turnover rate, d = d1 = d2) for the MSM
+    population. Tunable parameter.
+  estimate: 0.04
+  location: Figure 4 caption (p. 1183); general discussion in Section 3.3 (p. 1181-1182)
+  symbol: d (MSM)
+- description: Net demographic coefficient (turnover rate, d = d1 = d2) for the heterosexual
+    population. Tunable parameter.
+  estimate: 0.05
+  location: Figure 4 caption (p. 1183); general discussion in Section 3.3 (p. 1181-1182)
+  symbol: d (HET)
+- description: Net demographic coefficient (turnover rate, d = d1 = d2) for the IDU
+    population. Tunable parameter.
+  estimate: 0.025
+  location: Figure 4 caption (p. 1183); general discussion in Section 3.3 (p. 1181-1182)
+  symbol: d (IDU)
+- description: Initial proportion of infected individuals in the MSM population in
+    1975 (p0). Tunable parameter, denoted I0 in Fig 4.
+  estimate: 0.0032
+  location: Figure 4 caption (p. 1183, as I0=0.32%); general p0 in Section 3.4 (p.1182)
+  symbol: p0 (MSM)
+- description: Initial proportion of infected individuals in the heterosexual population
+    in 1975 (p0). Tunable parameter, denoted I0 in Fig 4.
+  estimate: 0.002
+  location: Figure 4 caption (p. 1183, as I0=0.2%); general p0 in Section 3.4 (p.1182)
+  symbol: p0 (HET)
+- description: Initial proportion of infected individuals in the IDU population in
+    1975 (p0). Tunable parameter, denoted I0 in Fig 4.
+  estimate: 0.0016
+  location: Figure 4 caption (p. 1183, as I0=0.16%); general p0 in Section 3.4 (p.1182)
+  symbol: p0 (IDU)
+population_structure: 'The population is structured into three main risk groups: men
+  who have sex with men (MSM), heterosexual population, and injection drug users (IDU).
+  These groups are modeled independently. Demographic changes (births/deaths or entry/exit
+  from risk group) are incorporated via demographic coefficients (d1, d2). Age structure
+  is implicitly considered, for instance, when discussing demographic coefficients
+  for the 15-39 age group (Section 3.3).'
+references:
+- doi: 10.1140/epjb/e2006-00023-x
+  formatted: J. Benoit, A. Nunes, and M.T. da Gama, Pair approximation for models
+    of disease spread, Eur. Phys. J. B50(1–2) (2006), pp. 177-181.
+  reason: Discusses pair approximation, a relevant theoretical method for network-based
+    epidemic models which can be related to pair formation dynamics on networks in
+    a broader sense, although this paper uses it for static networks primarily a more
+    complex network model is described in the manuscript using dynamic networks
+- doi: 10.1038/35082001
+  formatted: F. Liljeros et al., The web of human sexual contacts, Nature 411(6840)
+    (2001), pp. 907-908.
+  reason: A seminal empirical study on the structure of sexual contact networks, often
+    cited in the context of network generation and pair formation characteristics
+    like degree distributions, which this manuscript's model uses (scale-free property).
+- doi: 10.1103/PhysRevLett.86.3200
+  formatted: R. Pastor-Satorras and A. Vespignani, Epidemic spreading in scale-free
+    networks, Phys. Rev. Lett. 86 (2001), p. 3200.
+  reason: Foundational work on epidemic spreading in scale-free networks. The manuscript
+    explicitly models sexual contact networks (MSM, heterosexual) as scale-free, making
+    this reference highly relevant to the underlying network assumptions influencing
+    pair interactions and disease spread dynamics
+- doi: 10.1136/sti.2003.008678
+  formatted: 'A. Schneeberger et al., Scale-free networks and sexually transmitted
+    diseases; a description of observed patterns of sexual contacts in Britain and
+    Zimbabwe, Sex Transm. Dis. 6 (2004), pp. 380–387. (Note: Journal likely Sex Transm
+    Infect as per DOI and content).'
+  reason: Cited in the manuscript (as [28]) as evidence for the scale-free properties
+    of sexual contact networks, which is a core assumption for the MSM and heterosexual
+    network generation (and thus pair formation) in the described model.
+simulation_type: discrete
+summaries:
+- description: Median HIV incubation time assumed in the model.
+  location: Section 3.2 (p. 1181)
+  value: 8.6
+- description: Mean HIV incubation time assumed in the model.
+  location: Section 3.2 (p. 1181)
+  value: 10.5
+- description: CD4 T-lymphocyte count threshold below which an individual is considered
+    to have AIDS and is removed from the network (in cells x 10^6/l, equivalent to
+    cells/µL).
+  location: Section 3.2 (p. 1181, 'below 200')
+  value: 200.0
+title: Stochastic simulation of HIV population dynamics through complex network modelling

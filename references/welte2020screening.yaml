@@ -1,0 +1,96 @@
+confidence: 4
+description: "The manuscript describes a stochastic, dynamic, population-based simulation\
+  \ model for the formation and separation of partnerships in a heterosexual population\
+  \ to study Chlamydia trachomatis (CT) transmission and screening. The model population\
+  \ consists of 10,000 individuals (1:1 sex ratio) aged 15-64 years, with a uniform\
+  \ age distribution. Individuals exit at 65 and are replaced by 15-year-olds. The\
+  \ model stratifies by sex, 5-year age groups, sexual activity level (high/low),\
+  \ partnership type (steady/casual), and CT infection status (asymptomatic/symptomatic).\
+  \ \nIndividuals in the 'high sexual activity' (core) group, comprising 5% of the\
+  \ 15-34 age group, can have multiple casual partners alongside at most one steady\
+  \ partner and exhibit a higher propensity for forming casual partnerships. Those\
+  \ not in the core group maintain at most one partner (steady or casual) at any time.\
+  \ \nPartnership dynamics are characterized by average durations: 6.9 years for steady\
+  \ partnerships and 10 days for casual partnerships. Sexual intercourse frequency\
+  \ also varies by partnership type: 0.25 times per day in steady partnerships and\
+  \ 1.0 time per day in casual partnerships. \nThe underlying parameters for sexual\
+  \ behavior and partnership characteristics are primarily drawn from a 1989 Dutch\
+  \ survey (Ref 20), with some modifications (Ref 19). The detailed structure of this\
+  \ epidemiologic model, including the pair formation aspects, is referenced to Kretzschmar\
+  \ et al., 1996 (Ref 56). Full reproduction of the model implementation would likely\
+  \ require consulting these primary references."
+infection_model: Chlamydia trachomatis (CT) transmission model. Key aspects include
+  a CT transmission probability per sexual contact, differentiation between asymptomatic
+  and symptomatic infection, and an average infectious period of 1 year for CT. The
+  model simulates the spread of CT through the explicitly modeled sexual contact network.
+network_type: bimodal
+parameters:
+- description: Average duration of steady partnerships.
+  estimate: 6.9
+  location: Page 21, Appendix, "Epidemiologic Model"
+  symbol: D_steady
+- description: Average duration of casual partnerships (in days).
+  estimate: 10.0
+  location: Page 21, Appendix, "Epidemiologic Model"
+  symbol: D_casual
+- description: Frequency of sexual intercourse in steady partnerships (per day).
+  estimate: 0.25
+  location: Page 21, Appendix, "Epidemiologic Model"
+  symbol: f_steady
+- description: Frequency of sexual intercourse in casual partnerships (per day).
+  estimate: 1.0
+  location: Page 21, Appendix, "Epidemiologic Model"
+  symbol: f_casual
+- description: CT transmission probability per sexual contact.
+  estimate: 0.1
+  location: Table 1, Page 6
+  symbol: p_transmit
+population_structure: Structured by sex (male, female), age (5-year age groups from
+  15 to 64), sexual activity level (high activity 'core group' and low activity 'non-core
+  group'), and type of partnership (steady, casual). The core group is defined as
+  5% of the 15-34 year age group.
+references:
+- doi: unknown
+  formatted: Kretzschmar M, Welte R, Van den Hoek JAR, Postma MJ. A comparative model-based
+    analysis of screening programs for Chlamydia trachomatis infections. Am J Epidemiol
+    2000, in press.
+  reason: Cited as a source for the epidemiologic model (page 5) and for adjustments
+    to parameter values (page 21). This model includes pair formation dynamics.
+- doi: unknown
+  formatted: Kretzschmar M, van Duynhoven THP, Severijnen AJ. Modeling prevention
+    strategies for gonorrhea and chlamydia using stochastic network simulations. Am
+    J Epidemiol 1996; 144:306-317.
+  reason: Cited on page 21 as providing the detailed description of the epidemiologic
+    model, which explicitly includes formation and separation of partnerships.
+- doi: unknown
+  formatted: 'Zessen G van, Sandfort TGM. Seksualiteit in Nederland: Seksueel Gedrag,
+    Risico en Preventie van AIDS. Amsterdam: Swets & Zeitlinger, 1991.'
+  reason: Cited on page 21 as the source for sexual behavior survey data that informed
+    the parameters of the pair formation model (e.g., partnership durations, intercourse
+    frequencies).
+simulation_type: continuous
+summaries:
+- description: Prescreening total Chlamydia trachomatis prevalence in the model population
+    (15-64 years age range).
+  location: 'Page 7, "Epidemiologic Model: the Population-Based Stochastic Simulation
+    Model" and Abstract (page 3)'
+  value: 0.041
+- description: Proportion of the 15 to 34 years age group comprising the 'core group'
+    with high sexual activity.
+  location: 'Page 7, "Epidemiologic Model: the Population-Based Stochastic Simulation
+    Model"'
+  value: 0.05
+- description: Average duration of steady partnerships, in years.
+  location: Page 21, Appendix, "Epidemiologic Model"
+  value: 6.9
+- description: Average duration of casual partnerships, in days.
+  location: Page 21, Appendix, "Epidemiologic Model"
+  value: 10.0
+- description: Frequency of sexual intercourse in steady partnerships, per day.
+  location: Page 21, Appendix, "Epidemiologic Model"
+  value: 0.25
+- description: Frequency of sexual intercourse in casual partnerships, per day.
+  location: Page 21, Appendix, "Epidemiologic Model"
+  value: 1.0
+title: 'Cost-Effectiveness of Screening Programs for Chlamydia trachomatis: A Population-Based
+  Dynamic Approach'

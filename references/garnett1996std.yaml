@@ -1,0 +1,115 @@
+confidence: 4
+description: 'The manuscript primarily uses deterministic compartmental Ordinary Differential
+  Equation (ODE) models to represent pair formation and dissolution implicitly through
+  rates of partner change and mixing matrices in a structured population. The main
+  model for this purpose is detailed in Appendix C (page S161).
+
+  The population is heterosexual and stratified by sex (k) and sexual activity class
+  (i). Individuals in sex k, activity class i, acquire new partners at a rate c_ki.
+  Partner choice is governed by a mixing matrix P_kij, which defines the probability
+  that an individual of sex k in group i forms a partnership with an individual of
+  the opposite sex (k'') in activity class j. The rate of new infections is proportional
+  to c_ki * X_ki * (sum over j of P_kij * Y_k''j / N_k''j), representing new partnerships
+  formed between susceptible individuals and infected individuals from different groups.
+
+  Partnership duration is not explicitly tracked per pair but is implicitly handled
+  through the partner change rates (c_ki) and recovery rates (ν).
+
+  Different mixing patterns for P_kij are discussed, including fully assortative,
+  random (P_ij = N_jc_j / Σ(N_ucu_u)), and a parameterized form P_ij = (1-ε)δ_ij +
+  ε(N_jc_j / Σ(N_ucu_u)) (Equation 7, page S154), where ε controls the degree of assortative
+  mixing (ε=0 for fully assortative, ε=1 for random within this formulation).
+
+  Appendix A (page S160) also describes a simpler homogeneous model where partnerships
+  form at rate ''c'' and dissolve at rate ''v'' (Greek nu in Appendix A, distinct
+  from recovery rate nu in Appendix C), with transmission occurring within partnerships,
+  extending the work of Watts and May [6].'
+infection_model: Compartmental model (SIS-like for gonorrhea as in Appendix A and
+  C, with extensions for an immune class Z in Appendix D) where individuals can be
+  susceptible, infected, and can recover. Transmission occurs within sexual partnerships.
+network_type: bimodal
+parameters:
+- description: Average rate of new sex partner acquisition per unit of time. For heterogeneous
+    models (Appendix C), c_ki is the rate for sex k in activity group i.
+  estimate: unknown
+  location: Page S151 (c), Appendix C (c_ki), Fig 1, Fig 3 legends.
+  symbol: c (or c_ki)
+- description: Parameter determining the pattern of mixing between sexual activity
+    groups, ranging from fully assortative (ε=0 in Eq. 7 context) to random mixing
+    (ε=1 in Eq. 7 context).
+  estimate: unknown
+  location: Page S154, Eq. (7); Figure 3.
+  symbol: ε
+- description: Average duration of time a person is infectious. In compartmental models
+    (Appendix C), this is 1/ν where ν is the recovery rate.
+  estimate: unknown
+  location: Page S151 (D), Appendix C (ν), Fig 1 & 3 legends.
+  symbol: D (or 1/ν)
+- description: Probability of transmission of infection occurring within a sexual
+    partnership. For heterogeneous models (Appendix C), β_k'k is from sex k' to sex
+    k.
+  estimate: unknown
+  location: Page S151 (β), Appendix C (β_k'k), Fig 3 & 4 legends.
+  symbol: β (or β_k'k)
+- description: Per capita rate of entry into and exit from the sexually active population,
+    assuming constant population size.
+  estimate: 0.05
+  location: Appendix A, p.S160; Appendix C, p.S161; Fig 1, 3, 4 legends.
+  symbol: μ
+- description: 'Mixing matrix: probability that an individual from sex k, activity
+    group i forms a sexual partnership with an individual of the opposite sex in activity
+    group j.'
+  estimate: unknown
+  location: Page S154, Appendix C page S161.
+  symbol: P_kij
+population_structure: Population is structured by sex and sexual activity level (defined
+  by rate of sex partner acquisition). For example, models in Fig 3 & 4 use 3 or 4
+  discrete activity classes for each sex, with specified proportions and activity
+  ratios.
+references:
+- doi: 10.1016/0025-5564(92)90005-2
+  formatted: Watts CH, May RM. The influence of concurrent partnerships on the dynamics
+    of HIV/AIDS. Math Biosci 1992; 108:89-104.
+  reason: Discusses concurrent partnerships, which are a key element of sexual network
+    structure and pair formation dynamics. Appendix A of the manuscript explicitly
+    builds upon this work related to pair dynamics over time (formation and dissolution).
+- doi: 10.1097/00002030-198912000-00002
+  formatted: 'Gupta S, Anderson RM, May RM. Networks of sexual contacts: implications
+    for the pattern of spread of HIV. AIDS 1989;3:807-17.'
+  reason: Directly addresses networks of sexual contacts and their implications for
+    disease spread, which are macroscopic outcomes of pair formation processes and
+    mixing patterns discussed in the manuscript (e.g. P_kij).
+- doi: unknown
+  formatted: 'Jacquez JA, Simon CP, Koopman J. Structured mixing: heterogeneous mixing
+    by definition of activity groups. Lecture Notes Biomath 1989; 83:301-15.'
+  reason: Focuses on 'structured mixing' and 'activity groups,' which are fundamental
+    concepts in defining how partnerships are formed in heterogeneous populations,
+    a core theme of the manuscript's models (e.g. Appendix C).
+- doi: unknown
+  formatted: Castillo-Chavez C, Blyth SP. Mixing framework for social/sexual behaviour.
+    Lecture Notes Biomath 1989;83:275-88.
+  reason: Describes a 'Mixing framework for social/sexual behaviour,' which is central
+    to specifying pair formation rules (like the mixing matrix P_kij) in epidemiological
+    models, as discussed extensively in the manuscript (e.g. page S154).
+- doi: 10.1016/0025-5564(91)90069-M
+  formatted: Morris M. A log-linear modeling framework for selective mixing. Math
+    Biosci 1991; 107:349-77.
+  reason: Details a statistical 'framework for selective mixing,' relevant for understanding
+    and parameterizing partnership choice patterns (P_kij) in pair-formation models
+    from empirical data.
+simulation_type: continuous
+summaries:
+- description: Proportion of population in highest sexual activity group (for model
+    simulations in Figs 3 & 4).
+  location: Page S155, Fig 3 & 4 legends.
+  value: 0.05
+- description: Ratio of sexual activity rate of highest to lowest activity group (for
+    model simulations in Figs 3 & 4, e.g., 20:5:3:1 implies a ratio of 20).
+  location: Page S155, Fig 3 & 4 legends.
+  value: 20.0
+- description: Example overall mean rate of partner acquisition per year used in model
+    simulations (Figure 3).
+  location: Page S155, Fig 3 legend.
+  value: 2.0
+title: 'Sexually Transmitted Diseases and Sexual Behavior: Insights from Mathematical
+  Models'

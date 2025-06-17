@@ -1,0 +1,100 @@
+confidence: 5
+description: 'The manuscript presents a deterministic pair-formation model for HPV
+  transmission using ordinary differential equations (ODEs). The model tracks populations
+  of single females (x_i) and single males (y_j) in susceptible (S), infected (I),
+  or recovered (R) states, as well as monogamous pairs (P_ij) between females of state
+  i and males of state j (i,j ∈ {S,I,R}).
+
+
+  Pair Formation:
+
+  Single individuals form new partnerships. The rate of formation of a new pair between
+  a female of type i and a male of type j (Φ_ij) is given by Equation (13): Φ_ij =
+  ρ * (x_i * y_j) / (x_S + x_I + x_R + y_S + y_I + y_R). Here, ρ is the pair formation
+  rate parameter, and the denominator represents the total number of single individuals
+  currently in the population. This formulation implies that partnership formation
+  depends on the product of the densities of available single individuals of specific
+  types, with ρ scaling the overall rate.
+
+
+  Partnership Dissolution:
+
+  Existing partnerships (P_ij) dissolve due to two main processes:
+
+  1.  Relationship break-up: Pairs dissolve at a constant per-pair rate σ.
+
+  2.  Departure from the sexually active population: Individuals leave the peak sexual
+  activity age group (e.g., die or age out) at a per-capita rate μ. When either partner
+  in a P_ij pair departs, the pair is dissolved. This is represented by a term -2μ*P_ij
+  in the differential equations for each pair type P_ij (see Equations 5-12).
+
+
+  Individuals are recruited into the single (unpartnered) state at a rate κ. The model
+  equations (1-12) describe the dynamics of all single and paired states over time.'
+infection_model: SIRS model. Susceptible (S) individuals can become Infected (I) with
+  HPV through sexual contact within a partnership. Transmission from an infected to
+  a susceptible partner within a pair occurs at a rate h*β, where 'h' is the number
+  of sexual acts per year and 'β' is the transmission probability per sexual act.
+  Infected individuals (I) recover to a temporary immune state (R) at a rate γ. This
+  acquired immunity wanes over time, and recovered individuals (R) return to the susceptible
+  state (S) at a rate δ. Susceptible females can also be vaccinated at a rate ω, moving
+  them directly to the recovered (immune) state.
+network_type: bimodal
+parameters:
+- description: Parameter controlling the rate of partnership formation per unit time
+    per capita.
+  estimate: 33.66
+  location: Table 1 (page 646) and page 645
+  symbol: ρ
+- description: Pair break-up rate per year.
+  estimate: 2.0
+  location: Table 1 (page 646) and Section 2 (page 638)
+  symbol: σ
+- description: Rate per year at which individuals leave the age group of peak sexual
+    activity. This departure also results in the dissolution of their partnerships.
+  estimate: 0.06666666666666667
+  location: Table 1 (page 646) and Section 2 (page 638)
+  symbol: μ
+population_structure: structured by sex (males and females) and infection status (Susceptible,
+  Infected, Recovered)
+references:
+- doi: unknown
+  formatted: Dietz, K.; Hadeler, K. Epidemiological models for sexually transmitted
+    diseases. J. Mathematical Biol. 1988, 26, 1-25.
+  reason: Section 1.4 states this reference developed a simple SIS model with pair
+    dynamics, directly relevant to pair formation models research line discussed in
+    the manuscript. The current manuscript builds upon such models by using an SIRS
+    model with explicit pair dynamics (formation and dissolution).
+- doi: unknown
+  formatted: Kretzschmar, M.; Dietz, K. The effect of pair formation and variable
+    infectivity on the spread of an infection without recovery. Math. Biosci. 1998,
+    148, 83-113.
+  reason: 'Section 1.4 explicitly states that ''Kretzschmar and Dietz discuss several
+    variations on a pair model [39]''. This reference is central to the concept of
+    pair models for STIs which is the core of the manuscript''s model. The manuscript
+    directly refers to its findings regarding partnership duration and infection dynamics
+    within pairs. '
+- doi: unknown
+  formatted: Bauch, C. A versatile ODE approximation to a network model for the spread
+    of sexually transmitted diseases. J. Math. Biol. 2002, 45, 375-395.
+  reason: Listed as an example of methods to incorporate sexual partnerships in STI
+    models ([35] in Section 1.4). The manuscript's model is an ODE-based pair model,
+    making this reference relevant to the methodological approach of modeling pair
+    dynamics.
+simulation_type: continuous
+summaries:
+- description: 'Baseline pair break-up rate, considered a realistic value for σ in
+    younger age classes. Units: per year.'
+  location: Page 640, Page 642, Table 1 (page 646)
+  value: 2.0
+- description: 'Average number of sex acts per year within a partnership. Units: acts
+    per year.'
+  location: Table 1 (page 646), Section 2 (page 638)
+  value: 130.0
+- description: 'Equilibrium total number of pairs in the model for the 3% prevalence
+    baseline scenario (P*). Units: pairs.'
+  location: Figure 4 caption (page 642), Figure 5 caption (page 643), Equation (14)
+    (page 645)
+  value: 8875.0
+title: When Do Sexual Partnerships Need to Be Accounted for in Transmission Models
+  of Human Papillomavirus?

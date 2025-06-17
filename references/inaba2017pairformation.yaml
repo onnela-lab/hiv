@@ -1,0 +1,179 @@
+confidence: 5
+description: "The manuscript describes continuous-time pair formation models used\
+  \ in demography, which are also relevant to epidemiology. Two main classes of models\
+  \ are presented:\n\n1.  **Non-age-structured models (e.g., Kendall's model, Section\
+  \ 4.2):** These are systems of Ordinary Differential Equations (ODEs) that track\
+  \ the populations of single females `x(t)`, single males `y(t)`, and pairs `p(t)`.\
+  \ The core dynamics (Eq 4.4) are:\n    *   `dx/dt = (k_x + mu_y + sigma)p - mu_x*x\
+  \ - psi(x,y)`\n    *   `dy/dt = (k_y + mu_x + sigma)p - mu_y*y - psi(x,y)`\n   \
+  \ *   `dp/dt = -(mu_x + mu_y + sigma)p + psi(x,y)`\n    (Note: The manuscript's\
+  \ equations for `dx/dt` and `dy/dt` on page 5, Eq 4.4, represent new individuals\
+  \ entering single populations due to widowhood/divorce from the term `(k_birth_of_sex\
+  \ + mu_death_of_partner_sex + sigma)p` and individuals leaving single population\
+  \ due to their own death `mu_own_sex*own_sex_singles` and pair formation `psi(x,y)`.\
+  \ Births `k_x*p` and `k_y*p` are into the categories of children, who then mature\
+  \ into singles, which is simplified in this formulation where `k_x` and `k_y` in\
+  \ `dp/dt` for example, are birth rates *of new singles of the respective sex from\
+  \ couples dissolving or producing new adults directly*. More typically, `k_x` and\
+  \ `k_y` are birth rates of new individuals, and `p` would reduce due to death of\
+  \ its members. The formulation `(k_x + mu_y + sigma)p` for `dx/dt` implies that\
+  \ `k_x*p` are new female singles born from existing pairs (or it's a typo and should\
+  \ refer to females returning to single state). Page 5 states `k_x` and `k_y` are\
+  \ birth rates of females/males *per couple*. The equations imply these newborns\
+  \ immediately become singles or that `k_x` and `k_y` are rates at which existing\
+  \ couples contribute to the single population pool directly, perhaps after maturation\
+  \ which is not explicitly modeled here. The term `(mu_y + sigma)p` (for `dx/dt`)\
+  \ accounts for females becoming single due to partner death or divorce. Symmetrically\
+  \ for `dy/dt`. The term `psi(x,y)` is the marriage function, representing the rate\
+  \ of new pair formation from the pools of `x` single females and `y` single males.\
+  \ Various functional forms for `psi(x,y)` are discussed (e.g., harmonic mean, geometric\
+  \ mean, minimum function), often assumed to be homogeneous of degree one, signifying\
+  \ that the per-capita chance of marriage depends on the relative frequency of the\
+  \ other sex.\n\n2.  **Age-structured models (e.g., Fredrickson's model, Section\
+  \ 4.3):** These are systems of Partial Differential Equations (PDEs) incorporating\
+  \ age. Populations are densities like `x(t,a)` (female singles of age `a`), `y(t,a)`\
+  \ (male singles of age `a`), and `p(t,a,b)` (pairs with female age `a`, male age\
+  \ `b`). The dynamics (Eq 4.27) include:\n    *   `dx(t,a)/dt + dx(t,a)/da = -mu_x(a)x(t,a)\
+  \ - integral(rho(t,a,z)dz) + integral(p(t,a,z)[sigma(a,z) + mu_y(z)]dz)` (and similar\
+  \ for `y(t,a)`).\n    *   `dp(t,a,b)/dt + dp(t,a,b)/da + dp(t,a,b)/db = rho(t,a,b)\
+  \ - (sigma(a,b) + mu_x(a) + mu_y(b))p(t,a,b)`.\n    *   Boundary conditions for\
+  \ `x(t,0)` and `y(t,0)` involve fertility `beta(a,b)` from pairs. `p(t,0,b)=p(t,a,0)=0`.\n\
+  \    Here, `rho(t,a,b)` is the density of newly formed (a,b) couples, given by a\
+  \ marriage function `Psi(x(t,.), y(t,.))(a,b)`. These models consider age-specific\
+  \ rates for death, divorce (`sigma(a,b)`), and fertility (`beta(a,b)`). Extensions\
+  \ further incorporate pair duration (e.g., Staroverov-Hadeler model `p(t,a,b,c)`\
+  \ and Inaba's model `p(t,c; a,b)` for couples formed at ages `a,b` with duration\
+  \ `c`). Marriage functions `Psi` for age-structured models can take forms like proportionate\
+  \ mixing or generalized means.\n\nThe manuscript focuses on the demographic aspects\
+  \ and mathematical analysis (existence and stability of solutions, Malthusian growth)\
+  \ of these models in continuous time. While their relevance to STD transmission\
+  \ is noted, the presented models do not explicitly include infection dynamics."
+infection_model: none
+network_type: bimodal
+parameters:
+- description: Birth rate of females per unit time per couple (Kendall's model).
+  estimate: unknown
+  location: Page 5, Eq 4.4
+  symbol: k_x
+- description: Birth rate of males per unit time per couple (Kendall's model).
+  estimate: unknown
+  location: Page 5, Eq 4.4
+  symbol: k_y
+- description: Death rate of single females (Kendall's model).
+  estimate: unknown
+  location: Page 5, Eq 4.4
+  symbol: mu_x
+- description: Death rate of single males (Kendall's model).
+  estimate: unknown
+  location: Page 5, Eq 4.4
+  symbol: mu_y
+- description: Divorce rate of couples (Kendall's model).
+  estimate: unknown
+  location: Page 5, Eq 4.4
+  symbol: sigma
+- description: Marriage function (pair formation rate) in non-age-structured models.
+    Specific forms (e.g., harmonic mean, geometric mean, CES) have additional parameters
+    (rho, beta, alpha).
+  estimate: unknown
+  location: Page 5, Eq 4.4 and Page 6
+  symbol: psi(x,y)
+- description: Age-specific death rate of female singles (Fredrickson's model).
+  estimate: unknown
+  location: Page 17, Eq 4.27
+  symbol: mu_x(a)
+- description: Age-specific death rate of male singles. In couple (a,b), mu_y(b) is
+    used (Fredrickson's model).
+  estimate: unknown
+  location: Page 17, Eq 4.27
+  symbol: mu_y(a) or mu_y(b)
+- description: Age-specific divorce rate of couples (female age a, male age b) (Fredrickson's
+    model).
+  estimate: unknown
+  location: Page 17, Eq 4.27
+  symbol: sigma(a,b)
+- description: Age-specific marital fertility rate of couples (female age a, male
+    age b) (Fredrickson's model).
+  estimate: unknown
+  location: Page 17, Eq 4.27
+  symbol: beta(a,b)
+- description: Ratio of female newborns at birth (Fredrickson's model).
+  estimate: unknown
+  location: Page 17, Eq 4.27
+  symbol: gamma
+- description: Marriage function in age-structured models, representing density of
+    newly produced couples of specified ages. Denoted as rho(t,a,b) or Psi(x(t,.),
+    y(t,.))(a,b). Specific forms (e.g., proportionate mixing, generalized mean) have
+    their own parameters.
+  estimate: unknown
+  location: Page 17, Eq 4.27 & Page 19
+  symbol: Psi(u,v)(a,b) or rho(t,a,b)
+- description: Divorce rate of couples (bride age a, groom age b at formation) at
+    duration c (Inaba's model).
+  estimate: unknown
+  location: Page 18, Eq 4.29
+  symbol: sigma(c; a,b)
+- description: Marital fertility rate of couples (bride age a, groom age b at formation)
+    at duration c (Inaba's model).
+  estimate: unknown
+  location: Page 18, Eq 4.29
+  symbol: beta(c; a,b)
+population_structure: The models described range from unstructured by age (ODEs, e.g.,
+  Kendall's basic model considering only counts of singles of each sex and pairs)
+  to structured by age and sex (PDEs, e.g., Fredrickson's model), and further by pair
+  duration (e.g., Staroverov-Hadeler, Inaba models). All models differentiate by sex
+  and partnership status.
+references:
+- doi: unknown
+  formatted: 'Castillo-Chavez, C. (ed.): Mathematical and Statistical Approaches to
+    AIDS Epidemiology. Lecture Notes in Biomathematics, vol. 83. Springer, Berlin
+    (1989)'
+  reason: AIDS epidemiology often involves modeling sexual networks and pair formation,
+    making this a relevant foundational text although the chapter itself is demographic.
+    (Ref [2])
+- doi: unknown
+  formatted: 'Fredrickson, A.G.: A mathematical theory of age structure in sexual
+    populations: random mating and monogamous marriage models. Math. Biosci. 10, 117-143
+    (1971)'
+  reason: This is a seminal paper introducing an age-structured monogamous marriage
+    (pair formation) model, extensively discussed in Section 4.3 of the manuscript.
+    (Ref [4])
+- doi: unknown
+  formatted: 'Hadeler, K.P., Waldstätter, R., Wörz-Busekros, A.: Models for pair formation
+    in bisexual populations. J. Math. Biol. 26, 635-649 (1988)'
+  reason: This paper is cited for models of pair formation and is central to the analysis
+    of Kendall's model discussed in Section 4.2. (Ref [5])
+- doi: unknown
+  formatted: 'Hadeler, K.P.: Pair formation in age-structured populations. Acta. Applic.
+    Math. 14, 91-102 (1989)'
+  reason: Directly addresses pair formation in age-structured populations, relevant
+    to Section 4.3. (Ref [6])
+- doi: unknown
+  formatted: 'Inaba, H.: An age-structured two-sex model for human population reproduction
+    by first marriage, Working Paper Series 15, Institute of Population Problems,
+    Tokyo (1993)'
+  reason: Introduces an age-duration-structured pair formation model discussed in
+    Section 4.3 (page 18). (Ref [13])
+- doi: unknown
+  formatted: 'Kendall, D.G.: Stochastic processes and population growth. J. Roy. Stat.
+    Soc. B 11, 230-264 (1949)'
+  reason: This paper proposed the foundational non-age-structured pair formation model
+    (Kendall's marriage model) detailed in Section 4.2. (Ref [16])
+- doi: unknown
+  formatted: 'Staroverov, O.V.: Reproduction of the structure of the population and
+    marriage. [Russian] Ekonomika i matematiceskije metody 13, 72-82 (1977)'
+  reason: Referenced for the Staroverov-Hadeler model (page 17), an extension of Fredrickson's
+    model to include pair duration. (Ref [28])
+- doi: unknown
+  formatted: 'Waldstätter, R.: Models for pair formation with applications to demography
+    and epidemiology, Ph.D. Thesis, University of Tübingen (1990)'
+  reason: A PhD thesis focused on pair formation models, cited in the manuscript and
+    likely comprehensive. (Ref [29])
+simulation_type: continuous
+summaries:
+- description: Net reproduction rate of French males, 1920-1923.
+  location: Page 1
+  value: 1.194
+- description: Net reproduction rate of French females, 1920-1923.
+  location: Page 1
+  value: 0.977
+title: Chapter 4 Pair Formation Models

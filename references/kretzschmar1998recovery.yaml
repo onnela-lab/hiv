@@ -1,0 +1,142 @@
+confidence: 5
+description: "The manuscript presents and compares two types of models for the spread\
+  \ of an infection without recovery: \n1. Model M(0/c) and M(0/v): A model with instantaneous\
+  \ contacts (no partnership duration), where every contact is with a new partner.\
+  \ This is a standard S-I type model.\n2. Model M(+/c) and M(+/v): A model with explicit\
+  \ pair formation and partnership duration. Contacts leading to transmission occur\
+  \ within partnerships. \n\nThe manuscript first analyzes these models assuming constant\
+  \ infectivity (denoted with /c) and then extends them to incorporate variable infectivity\
+  \ with two stages (denoted with /v).\n\n**Model M(0/c) (Constant Infectivity, No\
+  \ Pair Formation):**\nDescribed by the equations (Eq. 1):\ndS/dt = nu - (mu + beta*h*I/N)S\n\
+  dI/dt = (beta*h*S/N - mu)I\nwhere S is the number of susceptibles, I is the number\
+  \ of infecteds, N is the total population size (N = nu/mu), nu is the recruitment\
+  \ rate, mu is the rate of leaving the sexually active population, beta is the contact\
+  \ rate, and h is the transmission probability per contact.\n\n**Model M(+/c) (Constant\
+  \ Infectivity, With Pair Formation):**\nThis model tracks uninfected singles (X0),\
+  \ infected singles (X1), pairs of two susceptibles (P00), pairs with one susceptible\
+  \ and one infected (P01), and pairs with two infecteds (P11).\nPair formation occurs\
+  \ according to phi(Xi, Xj) = rho * (Xi*Xj)/(X0+X1) (Eq. 2).\nThe full model is a\
+  \ system of ODEs (Eq. 3):\ndX0/dt = nu + (sigma + mu)(2P00 + P01) - (mu + rho)X0\n\
+  dX1/dt = (sigma + mu)(2P11 + P01) - (mu + rho)X1\ndP00/dt = 1/2 * rho * X0^2/X -\
+  \ (sigma + 2mu)P00\ndP01/dt = rho*(1-h)*X0*X1/X - (sigma + phi*h + 2mu)P01\ndP11/dt\
+  \ = 1/2 * rho * X1^2/X + phi*h*X0*X1/X + phi*h*P01 - (sigma + 2mu)P11 \n(Note: The\
+  \ equation for dP11/dt in the paper has a typo, it should be rho*X0*X1/X for new\
+  \ S-I pairs, and the term with P01 should reflect infections within S-I pairs. The\
+  \ provided system in Eq. 3 seems to include the infection within P01 pairs in the\
+  \ last term for dP11/dt. The manuscript later simplifies this to a 3-dimensional\
+  \ system (Eq. 6) assuming the pair formation process is at equilibrium: X1, P01,\
+  \ and total prevalence I = X1 + P01 + 2P11.\ndX1/dt = (sigma + mu)I - (2mu + rho\
+  \ + sigma)X1\ndP01/dt = rho*(1-h)*X1*(1-X1/X*) - (sigma + phi*h + 2mu)P01\ndI/dt\
+  \ = phi*h*X1*(1-X1/X*) + phi*h*P01 - mu*I\n\n**Model M(0/v) (Variable Infectivity,\
+  \ No Pair Formation):**\nTwo stages of infection, I1 and I2, with transmission probabilities\
+  \ h1 and h2 respectively. Transition from stage 1 to stage 2 occurs at rate gamma.\n\
+  Equations (Eq. 20):\ndI1/dt = beta*(h1*I1 + h2*I2)*S/N - (gamma + mu)*I1\ndI2/dt\
+  \ = gamma*I1 - mu*I2\n\n**Model M(+/v) (Variable Infectivity, With Pair Formation):**\n\
+  This model is an extension of M(+/c) to include two stages of infection for infected\
+  \ singles (Xi), pairs of a susceptible with an infected of stage i (P0i), and total\
+  \ infecteds in stage i (Ii).\nThe final formulation involves 6 equations for X1,\
+  \ X2, P01, P02, I1, I2 (Eq. 22):\ndX1/dt = (sigma + mu)I1 - (2mu + rho + sigma +\
+  \ gamma)X1\ndX2/dt = (sigma + mu)I2 + gamma*X1 - (2mu + rho + sigma)X2\ndP01/dt\
+  \ = (1-h1)*rho*X1*(1-(X1+X2)/X*) - (2mu + sigma + h1*phi + gamma)P01\ndP02/dt =\
+  \ (1-h2)*rho*X2*(1-(X1+X2)/X*) + gamma*P01 - (2mu + sigma + h2*phi)P02\ndI1/dt =\
+  \ phi*(h1*P01 + h2*P02) + rho*(h1*X1 + h2*X2)*(1-(X1+X2)/X*) - (mu+gamma)I1\ndI2/dt\
+  \ = gamma*I1 - mu*I2\n\nDemographic process: Constant recruitment (nu) into the\
+  \ population, and time spent in the population is exponentially distributed with\
+  \ a constant mean (1/mu). No additional mortality due to disease. Being infected\
+  \ does not influence propensity to form partnerships or have sexual contact within\
+  \ a partnership."
+infection_model: S-I model without recovery. It is extended to include two stages
+  of infection with different infectivity levels (S-I1-I2).
+network_type: unimodal
+parameters:
+- description: Recruitment rate into the sexually active population.
+  estimate: unknown
+  location: Page 85 (M(0/c)), Page 86 (M(+/c))
+  symbol: v (nu)
+- description: Rate of leaving the sexually active population (inverse of average
+    time in population).
+  estimate: unknown
+  location: Page 85 (M(0/c)), Page 86 (M(+/c))
+  symbol: μ (mu)
+- description: Contact rate for model M(0/c) and M(0/v).
+  estimate: unknown
+  location: Page 85 (M(0/c))
+  symbol: β (beta)
+- description: Transmission probability per contact.
+  estimate: unknown
+  location: Page 85 (M(0/c)), Page 86 (M(+/c))
+  symbol: h
+- description: Rate of pair formation for singles.
+  estimate: unknown
+  location: Page 86 (M(+/c))
+  symbol: ρ (rho)
+- description: Rate of pair separation.
+  estimate: unknown
+  location: Page 86 (M(+/c))
+  symbol: σ (sigma)
+- description: Contact frequency within partnerships.
+  estimate: unknown
+  location: Page 86 (M(+/c))
+  symbol: φ (phi)
+- description: Equilibrium total population size.
+  estimate: unknown
+  location: Page 85 (N = nu/mu)
+  symbol: N
+- description: Equilibrium number of singles in model M(+/c).
+  estimate: unknown
+  location: Page 86, Eq. 4
+  symbol: X*
+- description: Equilibrium number of pairs in model M(+/c).
+  estimate: unknown
+  location: Page 86, Eq. 4
+  symbol: P*
+- description: Transmission probability per contact for stage 1 infected individual
+    (variable infectivity model).
+  estimate: unknown
+  location: Page 97 (M(0/v))
+  symbol: h1
+- description: Transmission probability per contact for stage 2 infected individual
+    (variable infectivity model).
+  estimate: unknown
+  location: Page 97 (M(0/v))
+  symbol: h2
+- description: Rate of transition from stage 1 to stage 2 of infection.
+  estimate: unknown
+  location: Page 97
+  symbol: γ (gamma)
+population_structure: unstructured
+references:
+- doi: unknown
+  formatted: Dietz, K., Hadeler, K.P., 1988. Epidemiological models for sexually transmitted
+    diseases. J. Math. Biol. 26, 1–25.
+  reason: Cited as a source for pair formation models (Ref [5] on page 84).
+- doi: unknown
+  formatted: Kretzschmar, M., Jager, J.C., Reinking, D.P., van Zessen, G., Brouwers,
+    H., 1994. The basic reproduction ratio Ro for a sexually transmitted disease in
+    a pair formation model with two types of pairs. Math. Biosci. 124, 181–206.
+  reason: This is a previous work by the authors on pair formation models (Ref [8]
+    on page 84 and used in text on page 87).
+- doi: unknown
+  formatted: 'Waldstätter, R., 1989. Pair formation in sexually transmitted diseases.
+    In: Castillo-Chavez, C. (Ed.), Mathematical and Statistical Approaches to AIDS
+    Epidemiology, Lecture Notes Biomathmatics, vol. 83. Springer, Berlin, pp. 260–274.'
+  reason: Cited as incorporating pair formation (Ref [9] on page 84).
+- doi: unknown
+  formatted: 'Hadeler, K.P., 1992. Structured population models for HIV infection:
+    pair formation and non-constant infectivity. In: Jewell, N.P., Dietz, K., Farewell,
+    V.T. (Eds.), AIDS Epidemiology: Methodological Issues. Birkhäuser, Boston, pp.
+    156–172.'
+  reason: Cited for work on pair formation models with variable infectivity (Ref [7]
+    on page 84).
+- doi: unknown
+  formatted: Altmann, M., 1995. Susceptible-infected-removed epidemic models with
+    dynamic partnerships. J. Math. Biol. 33, 661–675.
+  reason: Cited for models with dynamic partnerships (Ref [15] on page 85).
+- doi: unknown
+  formatted: Kretzschmar, M., Morris, M., 1996. Measures of concurrency in networks
+    and the spread of infectious disease. Math. Biosci. 133, 165–195.
+  reason: Cited for models considering concurrent partnerships (Ref [16] on page 85).
+simulation_type: continuous
+summaries: []
+title: The effect of pair formation and variable infectivity on the spread of an infection
+  without recovery

@@ -1,0 +1,156 @@
+confidence: 5
+description: 'The manuscript presents a deterministic compartmental model (PSI model:
+  PrEP-treated, Susceptible, Infected) using a system of ordinary differential equations
+  (ODEs) to study the effect of Pre-Exposure Prophylaxis (PrEP) on HIV transmission
+  among men who have sex with men (MSM). The total population (N0) is assumed constant.
+  Individuals are recruited at a rate π, with a fraction α starting PrEP. Susceptible
+  individuals (S) can start PrEP (rate θ) moving to state P, or get infected (rate
+  λ) moving to I. PrEP users (P) can stop PrEP (rate σ) moving to S, or get infected
+  at a reduced rate (1-qr)λ, where q is adherence and r is PrEP effectiveness. All
+  individuals are removed from the population at a rate μ. The model does not distinguish
+  acute/chronic HIV stages.
+
+  Three partnership scenarios are considered for calculating the infection rate λ:
+
+  1. Casual-only partnerships: λ = λz = z*β*i, where z is the rate of casual partner
+  acquisition, β is transmission probability per act, and i is the proportion of infected
+  individuals.
+
+  2. Monogamous long-term partnerships: The infection rate λ = λp is derived using
+  a linearized expected value for the nonlocal effects of long-term partnerships.
+  It is given by λp = (χ*(1+μ*τ)*i) / (1 + χ*τ*(s + (1-q*r)*v)), where χ is the effective
+  transmission rate for long-term partnerships (defined as (p/τ)*(1-(1-c*β)^n) on
+  p.13, where p/τ is the long-term partner acquisition rate ''p'' from Table 2), τ
+  is mean duration of long-term partnerships, s is proportion of susceptible, and
+  v is proportion on PrEP.
+
+  3. Non-monogamous long-term partnerships (combination of casual and long-term):
+  The infection rate λ is given by λ = ((z*β + χ*(1+μ*τ))*i) / (1 + χ*τ*(s + (1-q*r)*v)).
+
+  The model equations are presented as proportions of the total population (v=P/N0,
+  s=S/N0, i=I/N0). Stability of disease-free and endemic equilibria is analyzed.'
+infection_model: 'HIV transmission model with three compartments: PrEP-users (P),
+  Susceptible (S), and Infected (I). PrEP treatment reduces the probability of infection
+  by a factor (1-qr), where q is adherence and r is PrEP effectiveness. Only one stage
+  of HIV infection is considered.'
+network_type: unimodal
+parameters:
+- description: Total population
+  estimate: 7100000.0
+  location: Table 1, p.5
+  symbol: N0
+- description: Population removal rate (per year)
+  estimate: 0.0163934426
+  location: Table 1, p.5 (Value 1/61)
+  symbol: μ
+- description: Recruitment rate (per year)
+  estimate: unknown
+  location: Table 1, p.5 (Value μN0)
+  symbol: π
+- description: Fraction of newly recruited PrEP users
+  estimate: 0.1
+  location: Table 1, p.5
+  symbol: α
+- description: Rate of starting PrEP (per year)
+  estimate: 0.1
+  location: Table 1, p.5
+  symbol: θ
+- description: Rate of stopping PrEP (per year)
+  estimate: 0.01
+  location: Table 1, p.5
+  symbol: σ
+- description: Level of adherence to PrEP treatment
+  estimate: 0.7
+  location: Table 1, p.5
+  symbol: q
+- description: PrEP effectiveness
+  estimate: 0.9
+  location: Table 1, p.5
+  symbol: r
+- description: Average number of casual partners per year
+  estimate: 7.31
+  location: Table 2, p.6
+  symbol: z
+- description: Transmission probability per sexual act (casual)
+  estimate: 0.0075
+  location: Table 2, p.6
+  symbol: β
+- description: Mean duration of long-term partnership (years)
+  estimate: 3.57
+  location: Table 2, p.6
+  symbol: τ
+- description: Average number of long-term partners per year (this is the p/τ rate)
+  estimate: 0.203
+  location: Table 2, p.6
+  symbol: p
+- description: Number of sexual acts over the duration of long-term partnership
+  estimate: unknown
+  location: Table 2, p.6 (Value 104τ)
+  symbol: n
+- description: Condom effectiveness
+  estimate: 0.87
+  location: Table 2, p.6
+  symbol: ceff
+- description: Condom usage by infected long-term partners
+  estimate: 0.85
+  location: Table 2, p.6
+  symbol: cu
+- description: Transmission rate adjustment factor due to condom use in long-term
+    partnerships
+  estimate: unknown
+  location: Table 2, p.6 (Value 1-cu*ceff)
+  symbol: c
+- description: Effective transmission rate constant for long-term partnerships (per
+    year per infected individual), used in λp equations. Defined as (p_table2/τ_table2)*(1-(1-c*β)^n)
+    which simplifies to p_table2*(1-(1-c*β)^n) since p_table2 is the rate p/τ.
+  estimate: 0.1047
+  location: Text p.13 (definition for χ used in equations), components from Table
+    2 (p,c,β,n,τ)
+  symbol: χ
+population_structure: unstructured
+references:
+- doi: 10.1136/bmjopen-2019-033852
+  formatted: '17. D. Hansson, S. Strömdahl, K. Y. Leung, T. Britton, Introducing pre-exposure
+    prophylaxis to prevent HIV acquisition among men who have sex with men in Sweden:
+    Insights from a mathematical pair formation model, BMJ Open, 10 (2020), e033852.'
+  reason: This reference explicitly uses a mathematical pair formation model for HIV
+    among MSM, which is directly relevant to the manuscript's topic and methods comparison
+    (p.3, p.7).
+- doi: 10.1016/j.idm.2017.07.002
+  formatted: '22. M. Kretzschmar, J. C. Heijne, Pair formation models for sexually
+    transmitted infections: a primer, Infect. Dis. Modell., 2 (2017), 368–378.'
+  reason: This reference is cited as a primer on pair formation models for STIs (p.12,
+    p.13) and is used in the derivation of the long-term partnership infection rate,
+    indicating foundational concepts for the model presented in the manuscript..
+- doi: 10.1007/s00285-011-0454-0
+  formatted: 21. K. P. Hadeler, Pair formation, J. Math. Biol., 64 (2012), 613–645.
+  reason: Cited as a general reference for pair-formation models in the context of
+    studying sexually transmitted diseases (p.7).
+- doi: 10.1007/s00285-014-0808-5
+  formatted: '23. K. Y. Leung, M. Kretzschmar, O. Diekmann, SI infection on a dynamic
+    partnership network: characterization of Ro, J. Math. Biol., 71 (2015), 1–56.'
+  reason: Cited in the context of pair-formation models for studying sexually transmitted
+    diseases (p.7).
+- doi: 10.1142/12639
+  formatted: 19. K. F. Gurski, K. A. Hoffman, S. J. Gutowska, B. Batista, Modeling
+    HIV and HSV-2 using partnership models, in Contemporary Research in Mathematical
+    Biology.
+  reason: This is the authors' previous work, cited for comparing pair formation models
+    with long-term partnership models (p.6, p.12, p.28), directly relevant to the
+    methods used.
+simulation_type: continuous
+summaries:
+- description: Total MSM population in the USA (estimate used for N0)
+  location: Table 1, p.5 (value derived from Ref [2] on p.2)
+  value: 7100000.0
+- description: Average number of casual partners per year per individual
+  location: Table 2, p.6
+  value: 7.31
+- description: Mean duration of a long-term partnership in years
+  location: Table 2, p.6
+  value: 3.57
+- description: Average number of long-term partners acquired per year per individual
+  location: Table 2, p.6
+  value: 0.203
+title: The effect of PrEP uptake and adherence on the spread of HIV in the presence
+  of casual and long-term partnerships

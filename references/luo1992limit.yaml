@@ -1,0 +1,103 @@
+confidence: 4
+description: "The manuscript describes a stochastic, continuous-time Markov process\
+  \ model for pair formation and dissolution, coupled with an SI (Susceptible-Infective)\
+  \ epidemic model. The population is structured into L distinct groups of males (m_1,\
+  \ ..., m_L) and N distinct groups of females (f_1, ..., f_N). Individuals are characterized\
+  \ by their group and infection status (0 for susceptible, 1 for infective).\n\n\
+  The state of the system at time t, denoted by ξ_t, is a vector where each component\
+  \ ξ_t(s) represents the number of entities of type 's'. An entity 's' can be a single\
+  \ individual or a pair. Types of singles include (m_i, μ) or (f_j, μ) representing\
+  \ a single male from group m_i or female from group f_j with infection status μ.\
+  \ Types of pairs include heterosexual (m_i, μ; f_j, ν), homosexual male (m_i, μ;\
+  \ m_k, ν), and homosexual female (f_j, μ; f_k, ν), where μ and ν are the infection\
+  \ statuses of the partners.\n\nThe model dynamics are defined by the following transition\
+  \ rates (from the 'Epidemic Model with Pairing', pages 8-9):\n\n1.  **Pair Formation\
+  \ from Singles (g,μ) and (h,ν)**:\n    Let g and h represent distinct individual\
+  \ types (e.g., g is (group_1, status_μ) and h is (group_2, status_ν)). Singles of\
+  \ type (g,μ) and (h,ν) form pairs. β_{g,h} is the rate constant for pair formation\
+  \ attempts between individuals from general groups g and h.\n    *   **Discordant\
+  \ Pairing (μ ≠ ν) with Transmission**: Susceptible becomes infective. Rate = β_{g,h}\
+  \ * α_{g,h} * ξ((g,μ)) * ξ((h,ν)). This results in a pair where both partners are\
+  \ effectively infective (or the initially susceptible one becomes infective, status\
+  \ μ∨ν for both in the new pair contextually means the susceptible partner adopts\
+  \ the infective status).\n    *   **Discordant Pairing (μ ≠ ν) without Transmission**:\
+  \ Susceptible remains susceptible. Rate = β_{g,h} * (1 - α_{g,h}) * ξ((g,μ)) * ξ((h,ν)).\
+  \ This results in a pair (g,μ; h,ν).\n    *   **Concordant Pairing (μ = ν)**: Both\
+  \ susceptible or both infective. Rate = β_{g,h} * ξ((g,μ)) * ξ((h,ν)). This results\
+  \ in a pair (g,μ; h,ν).\n\n2.  **Pair Dissolution**: A pair of type (g,μ; h,ν) dissolves\
+  \ into two single individuals (g,μ) and (h,ν).\n    Rate = σ_{g,h} * ξ((g,μ;h,ν)),\
+  \ where σ_{g,h} is the per-pair dissolution rate.\n\n3.  **Death of Infective Individuals**:\n\
+  \    *   **Single Infective Male**: A single male of type (m_i,1) dies. Rate = δ_{m_i}\
+  \ * ξ((m_i,1)).\n    *   **Single Infective Female**: A single female of type (f_j,1)\
+  \ dies. Rate = δ_{f_j} * ξ((f_j,1)).\n    *   **Infective Male in a Pair**: An infective\
+  \ male (m_i,1) in a pair (m_i,1; h,ν) dies. The pair dissolves, and the partner\
+  \ (h,ν) becomes single. Rate = δ_{m_i} * ξ((m_i,1; h,ν)).\n    *   **Infective Female\
+  \ in a Pair**: An infective female (f_j,1) in a pair (g,μ; f_j,1) dies. The pair\
+  \ dissolves, and the partner (g,μ) becomes single. Rate = δ_{f_j} * ξ((g,μ; f_j,1)).\n\
+  \nThe manuscript uses c(ξ,η) to denote the rate of transition from state ξ to state\
+  \ η. The model aims to generalize classical epidemic models by explicitly incorporating\
+  \ pair dynamics. The primary focus of the paper is the limit behavior of this pair\
+  \ formation model when dissolution rates are large."
+infection_model: SI model. Individuals are either susceptible (status 0) or infective
+  (status 1). Infection transmission primarily occurs at the point of pair formation
+  between a susceptible and an infective individual, with probability α_{g,h}. Infective
+  individuals may die from the disease at rates δ_{m_i} or δ_{f_j}.
+network_type: other
+parameters:
+- description: Per-capita disease-induced death rate for infective males from group
+    m_i (applies whether single or in a pair).
+  estimate: unknown
+  location: Page 8
+  symbol: δ_{m_i}
+- description: Per-capita disease-induced death rate for infective females from group
+    f_j (applies whether single or in a pair).
+  estimate: unknown
+  location: Page 8
+  symbol: δ_{f_j}
+- description: Rate constant for pair formation attempts between an individual from
+    group g and an individual from group h. The overall rate for specific types (g,μ)
+    and (h,ν) forming a pair is β_{g,h} multiplied by the product of their counts.
+  estimate: unknown
+  location: Page 8
+  symbol: β_{g,h}
+- description: Conditional probability of infection transmission to the susceptible
+    partner when a discordant pair (one susceptible, one infective) is formed between
+    individuals from groups g and h.
+  estimate: unknown
+  location: Page 8
+  symbol: α_{g,h}
+- description: Per-pair dissolution (divorce) rate for pairs formed between individuals
+    from group g and group h.
+  estimate: unknown
+  location: Page 8 (text), Page 9 (equation for c(ξ,η))
+  symbol: σ_{g,h}
+population_structure: Population is structured into L homogeneous groups of males
+  (m_1, ..., m_L) and N homogeneous groups of females (f_1, ..., f_N).
+references:
+- doi: unknown
+  formatted: Dietz, K. (1988b) On the transmission dynamics of HIV Math. Biosci. 90,
+    397-414
+  reason: Cited on pages 3 and 8 as providing a deterministic analog and context for
+    epidemic models with pairing.
+- doi: unknown
+  formatted: 'Blythe, S.P., Castillo-Chavez, C., Palmer J.S. and Cheng, M. (1991)
+    Towards a unified theory of mixing and pair formation, Math. Biosci. 107: 379-405'
+  reason: The title explicitly mentions 'pair formation' and it's by one of the manuscript's
+    authors, suggesting relevance to pair formation modeling.
+- doi: unknown
+  formatted: Busenberg, S. and Castillo-Chavez, C. (1989) Interaction, pair formation
+    and force of infection terms in sexually-transmitted diseases, Mathematical and
+    Statistical Approaches to AIDS Epidemiology, C. Castillo-Chavez (ed.), Lecture
+    Notes in Biomathematics 83, 289-300. Springer-Verlag.
+  reason: The title explicitly mentions 'pair formation' and it is work by one of
+    the manuscript's authors.
+- doi: unknown
+  formatted: 'Castillo-Chavez, C., Busenberg, S. and Gerow, K. (1991) Pair formation
+    in structured populations, Differential Equations with Applications in Biology,
+    Physics and Engineering, J. Goldstein, F. Kappel and W. Schappacher (eds.), 47-65.
+    New York: Marcel Dekker'
+  reason: The title explicitly mentions 'pair formation' and it is work by one of
+    the manuscript's authors.
+simulation_type: continuous
+summaries: []
+title: Limit Behavior of Pair Formation for A Large Dissolution Rate

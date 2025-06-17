@@ -1,0 +1,207 @@
+confidence: 5
+description: "The manuscript describes a dynamic pair-formation model for a same-sex\
+  \ (Men who Sex with Men - MSM) population in Sweden to study the impact of PrEP.\
+  \ Individuals are categorized into two sexual activity groups: high active and low\
+  \ active. Individuals can have at most one steady (long-term) sex partner at a time;\
+  \ steady partnerships end by separation or death. Concurrently with steady partnerships,\
+  \ or when single, individuals can form casual (one-off/occasional) sex partnerships.\
+  \ The rate of forming casual partnerships is higher for single individuals compared\
+  \ to those in a steady partnership. The model defines 16 specific rates for forming\
+  \ casual partnerships, denoted α_rq^(i,j), where 'r' and 'q' are the activity degrees\
+  \ (high/low) of the two individuals involved, and 'i' and 'j' are their respective\
+  \ steady partnership statuses (0 for single, 1 for partnered). \nThree mixing patterns\
+  \ for casual partnerships between activity groups are considered: (1) Proportionate\
+  \ mixing (partners chosen randomly based on overall sexual activity in the population).\
+  \ (2) Complete assortativity (high actives only partner with high actives, low actives\
+  \ only with low actives). (3) Fitted assortativity, where mixing is calibrated based\
+  \ on a proxy question about partners' sexual activity from survey data; this resulted\
+  \ in an estimated assortativity coefficient of 0.14, indicating moderate assortativity.\
+  \ For casual encounters, mixing between single individuals and those in a steady\
+  \ partnership is assumed to be random (proportionate). PrEP is offered to high-active\
+  \ individuals in the model."
+infection_model: 'The model incorporates an HIV infection component. It is a compartmental
+  model (Susceptible -> Infectious -> Removed-like, where ''Removed'' includes individuals
+  on ART). There are two stages of infectiousness: an early acute stage and a subsequent
+  chronic stage. The per-act probability of HIV transmission via anal intercourse
+  is higher in the acute stage (p_a) than in the chronic stage (p_c). Condom use,
+  with an assumed efficacy, reduces this transmission probability. Individuals who
+  initiate ART are assumed to be virally suppressed and non-infectious. Pre-Exposure
+  Prophylaxis (PrEP), when taken by high-active susceptible individuals, reduces their
+  susceptibility to HIV infection by 86%. Individuals on PrEP are also assumed to
+  undergo HIV testing every third month.'
+network_type: unimodal
+parameters:
+- description: Mean duration of a steady partnership.
+  estimate: 271.5
+  location: Table 1, Part 1
+  symbol: 1/(σ + 2μ_s)
+- description: Mean time an individual is single (not in a steady partnership).
+  estimate: 152.8
+  location: Table 1, Part 1
+  symbol: 1/(ρP_0)
+- description: Mean time between anal intercourse acts within a steady partnership.
+  estimate: 12.3
+  location: Table 1, Part 1
+  symbol: 1/λ
+- description: Fraction of individuals without a steady partner (single).
+  estimate: 0.36
+  location: Table 1, Part 1
+  symbol: P_0
+- description: Fraction of individuals with a steady partner.
+  estimate: 0.64
+  location: Table 1, Part 1
+  symbol: P_1
+- description: Fraction of the population that are high active.
+  estimate: 0.337
+  location: Table 1, Part 1
+  symbol: π_h
+- description: Fraction of the population that are low active.
+  estimate: 0.663
+  location: Table 1, Part 1
+  symbol: π_l
+- description: Mean condom use proportion with steady partners.
+  estimate: 0.541
+  location: Table 1, Part 2
+  symbol: q_s
+- description: Mean condom use proportion with casual partners.
+  estimate: 0.629
+  location: Table 1, Part 2
+  symbol: q_c
+- description: Rate for a high active individual to start taking PrEP.
+  estimate: unknown
+  location: Table 1, Part 2 (Calibrated to achieve different PrEP coverages)
+  symbol: ξ
+- description: Mean time from HIV infection to successful antiretroviral treatment
+    for a high active individual on PrEP.
+  estimate: 0.25
+  location: Table 1, Part 2
+  symbol: 1/γ_PrEP
+- description: Mean time from HIV infection to successful antiretroviral treatment
+    for a high active individual not on PrEP (calibrated value for fitted assortativity
+    model).
+  estimate: 1.77
+  location: Table 1, Part 2 & Page 5
+  symbol: 1/γ_h
+- description: Mean time from HIV infection to successful antiretroviral treatment
+    for a low active individual (calibrated as 2.35 * 1/γ_h for fitted assortativity
+    model).
+  estimate: 4.1595
+  location: Table 1, Part 2 & Page 5
+  symbol: 1/γ_l
+- description: Mean time until a high active, single MSM forms a casual partnership
+    with a high active MSM.
+  estimate: 14.1
+  location: Table 1, Part 4
+  symbol: 1/α_0^(hh)
+- description: Mean time until a high active, single MSM forms a casual partnership
+    with a low active MSM.
+  estimate: 43.7
+  location: Table 1, Part 4
+  symbol: 1/α_0^(hl)
+- description: Mean time until a high active MSM in a steady partnership forms a casual
+    partnership with a high active MSM.
+  estimate: 15.4
+  location: Table 1, Part 4
+  symbol: 1/α_1^(hh)
+- description: Mean time until a high active MSM in a steady partnership forms a casual
+    partnership with a low active MSM.
+  estimate: 66.4
+  location: Table 1, Part 4
+  symbol: 1/α_1^(hl)
+- description: Mean time until a low active, single MSM forms a casual partnership
+    with a high active MSM.
+  estimate: 109.3
+  location: Table 1, Part 4
+  symbol: 1/α_0^(lh)
+- description: Mean time until a low active, single MSM forms a casual partnership
+    with a low active MSM.
+  estimate: 169.6
+  location: Table 1, Part 4
+  symbol: 1/α_0^(ll)
+- description: Mean time until a low active MSM in a steady partnership forms a casual
+    partnership with a high active MSM.
+  estimate: 136.1
+  location: Table 1, Part 4
+  symbol: 1/α_1^(lh)
+- description: Mean time until a low active MSM in a steady partnership forms a casual
+    partnership with a low active MSM.
+  estimate: 348.9
+  location: Table 1, Part 4
+  symbol: 1/α_1^(ll)
+- description: Condom efficiency against HIV transmission.
+  estimate: 0.7
+  location: Table 1, Part 5
+  symbol: Condom_efficiency
+- description: Mean duration of the acute stage of HIV infection.
+  estimate: 0.24
+  location: Table 1, Part 5
+  symbol: 1/δ_a
+- description: Sexually active lifespan.
+  estimate: 60.0
+  location: Table 1, Part 5
+  symbol: 1/μ
+- description: Per-act HIV transmission probability during unprotected receptive anal
+    intercourse (URAI) in the acute infection stage.
+  estimate: 0.1835
+  location: Table 1, Part 5 (Continued)
+  symbol: p_a
+- description: Per-act HIV transmission probability during unprotected receptive anal
+    intercourse (URAI) in the chronic infection stage.
+  estimate: 0.0138
+  location: Table 1, Part 5 (Continued)
+  symbol: p_c
+population_structure: 'The population is structured into two groups based on sexual
+  activity level: ''sexually high active MSM'' and ''sexually low active MSM''. Individuals
+  are assumed to belong to one of these groups throughout their sexually active life
+  in the primary model, though an extension explores switching between groups.'
+references:
+- doi: 10.1016/j.epidemics.2019.02.002
+  formatted: Hansson D, Leung KY, Britton T, et al. A dynamic network model to disentangle
+    the roles of steady and casual partners for HIV transmission among MSM. Epidemics
+    2019;27:66-76.
+  reason: This is the authors' previous work, which the current model elaborates upon,
+    focusing on pair formation for HIV transmission among MSM. It directly discusses
+    a dynamic network model with steady and casual partners for this population prior
+    to the PrEP analysis presented in the current manuscript, thus foundational for
+    the pair-formation aspects of the current model.
+simulation_type: continuous
+summaries:
+- description: Baseline HIV prevalence among the 368 MSM participants in the study
+    sample.
+  location: Page 3, ANALYSIS AND RESULTS
+  value: 0.05
+- description: Measured assortativity coefficient regarding sexual activity degree
+    for casual partnerships.
+  location: Page 3, ANALYSIS AND RESULTS
+  value: 0.14
+- description: Mean number of sexual partners in the last year for high active MSM
+    in the sample.
+  location: Page 3, Data and calibration
+  value: 33.2
+- description: Mean number of sexual partners in the last year for low active MSM
+    in the sample.
+  location: Page 3, Data and calibration
+  value: 6.0
+- description: Fraction of MSM in the sample classified as high active (based on having
+    >15 partners per year).
+  location: Page 3, Data and calibration (also Table 1, π_h)
+  value: 0.337
+- description: Model-estimated percentage of individuals with HIV who are on ART when
+    the model is calibrated to 5% HIV prevalence (fitted assortativity).
+  location: Page 5, Prior to the introduction of PrEP
+  value: 0.958
+- description: Model-estimated percentage of HIV transmissions occurring within a
+    steady partnership (fitted assortativity model, 5% overall prevalence).
+  location: Page 5, Table 2
+  value: 0.35
+- description: Required PrEP coverage of the total MSM population (targeting only
+    high actives, representing 10.4% of high actives) to reduce long-term HIV prevalence
+    to close to 0%.
+  location: Page 1, Results & Page 5, Effect of introducing PrEP
+  value: 0.035
+- description: Required PrEP coverage of the total MSM population if targeting only
+    low active MSM to reduce long-term HIV prevalence to close to 0%.
+  location: Page 7, DISCUSSION
+  value: 0.344
+title: 'Introducing pre-exposure prophylaxis to prevent HIV acquisition among men
+  who have sex with men in Sweden: insights from a mathematical pair formation model'

@@ -1,0 +1,160 @@
+confidence: 4
+description: 'The manuscript describes a deterministic compartment model for pair
+  formation and separation in a closed, homosexual population, which can be extended
+  to heterosexual populations. The model distinguishes two types of partnerships:
+  ''steady'' (P) and ''casual'' (Q), based on their average duration. A fraction ''f''
+  of newly formed pairs are steady, and the remaining (1-f) are casual. Individuals
+  are categorized as uninfected singles (X0), infected singles (X1), and pairs. Pairs
+  can be of three types based on the infection status of partners: susceptible-susceptible
+  (P00, Q00), susceptible-infected (P01, Q01), and infected-infected (P11, Q11).
+
+
+  Pair formation occurs between single individuals. The rate of pair formation between
+  individuals of type i and type j is given by the function φ(Xi, Xj) = ρ * Xi * Xj
+  / (X0 + X1), where ρ is the overall rate of pair formation for singles, and X0 and
+  X1 are the total numbers of uninfected and infected singles, respectively (Equation
+  2, page 187). For example, the rate of formation of X0-X0 pairs is ρ * X0^2 / (X0
+  + X1), and X0-X1 pairs is ρ * X0*X1 / (X0 + X1).
+
+
+  The dynamics of the system are described by a set of ordinary differential equations
+  (Equations 3-10, pages 187-188):
+
+  - dX0/dt = κ - μX0 - ρX0 + σ1(2P00 + P01) + σ2(2Q00 + Q01) + μ(2P00 + P01 + 2Q00
+  + Q01) + γX1
+
+  - dX1/dt = -μX1 - ρX1 + σ1(2P11 + P01) + σ2(2Q11 + Q01) + μ(2P11 + P01 + 2Q11 +
+  Q01) - γX1
+
+  - dP00/dt = (1/2) * f * ρ * X0^2/(X0+X1) - σ1*P00 - 2μ*P00 + γ*P01
+
+  - dP01/dt = f * ρ * X0*X1/(X0+X1) - σ1*P01 - 2μ*P01 - λ1*P01 - γ*P01 + 2γ*P11
+
+  - dP11/dt = (1/2) * f * ρ * X1^2/(X0+X1) - σ1*P11 - 2μ*P11 + λ1*P01 - 2γ*P11
+
+  - dQ00/dt = (1/2) * (1-f) * ρ * X0^2/(X0+X1) - σ2*Q00 - 2μ*Q00 + γ*Q01
+
+  - dQ01/dt = (1-f) * ρ * X0*X1/(X0+X1) - σ2*Q01 - 2μ*Q01 - λ2*Q01 - γ*Q01 + 2γ*Q11
+
+  - dQ11/dt = (1/2) * (1-f) * ρ * X1^2/(X0+X1) - σ2*Q11 - 2μ*Q11 + λ2*Q01 - 2γ*Q11
+
+
+  Here, κ is recruitment rate, μ is departure rate from sexual activity, σ1 and σ2
+  are separation rates for steady and casual pairs, λ1 and λ2 are transmission rates
+  in steady and casual S-I pairs, and γ is the recovery rate. The term ρX0 in dX0/dt
+  implies that all X0 individuals form pairs at rate ρ (the specific pairing depends
+  on partners available). The factor of 1/2 for X0^2 and X1^2 terms in P00, P11, Q00,
+  Q11 equations accounts for each pair involving two individuals. The model assumes
+  that the pair formation process is at equilibrium when studying disease dynamics.'
+infection_model: The manuscript describes a Susceptible-Infected-Susceptible (SIS)
+  type infection model. Transmission of the sexually transmitted disease can occur
+  within discordant pairs (S-I), i.e., P01 and Q01. The transmission rate in steady
+  S-I pairs is λ1, and in casual S-I pairs is λ2. Upon infection, a susceptible individual
+  in an S-I pair transitions the pair to an I-I type (e.g., P01 becomes P11). Infected
+  individuals recover at a rate γ, returning to the susceptible state. If an infected
+  partner in an S-I pair recovers, the pair becomes S-S (e.g., P01 becomes P00). If
+  one partner in an I-I pair recovers, the pair becomes S-I (e.g., P11 becomes P01).
+  There is no disease-induced mortality. The model allows for continuous reinfection
+  of partners within a partnership if one recovers and the other is still infectious,
+  followed by re-transmission.
+network_type: unimodal
+parameters:
+- description: Constant recruitment rate into the sexually active population.
+  estimate: unknown
+  location: Page 188
+  symbol: κ
+- description: Rate of leaving the sexually active population (e.g., due to death
+    or aging out).
+  estimate: unknown
+  location: Page 188
+  symbol: μ
+- description: Rate of pair formation for single individuals.
+  estimate: 0.00268
+  location: Page 199 (estimated for 18-year-olds from survey data and eq. 46)
+  symbol: ρ
+- description: Fraction of newly formed pairs which are steady.
+  estimate: 0.725145
+  location: Page 198 (from fit to 18-year-old partnership survival curve)
+  symbol: f
+- description: Separation rate for steady partnerships.
+  estimate: 0.002712
+  location: Page 198 (from fit to 18-year-old partnership survival curve, per day)
+  symbol: σ1
+- description: Separation rate for casual partnerships.
+  estimate: 0.805311
+  location: Page 198 (from fit to 18-year-old partnership survival curve, per day)
+  symbol: σ2
+- description: Transmission rate of the disease in steady susceptible-infected (S-I)
+    partnerships.
+  estimate: unknown
+  location: Page 188
+  symbol: λ1
+- description: Transmission rate of the disease in casual susceptible-infected (S-I)
+    partnerships.
+  estimate: unknown
+  location: Page 188
+  symbol: λ2
+- description: Recovery rate from infection, after which individuals become susceptible
+    again.
+  estimate: unknown
+  location: Page 188
+  symbol: γ
+population_structure: The model assumes a homosexual population. The population is
+  structured by infection status (susceptible, infected) and partnership status (single,
+  in a steady pair, in a casual pair). It is also implicitly structured by the type
+  of pair (steady or casual) individuals are in. The population is otherwise considered
+  homogeneous with respect to the propensity to form partnerships (governed by a single
+  rate ρ for all singles).
+references:
+- doi: 10.1007/BF00276272
+  formatted: Dietz K. and K. P. Hadeler, Epidemiological models for sexually transmitted
+    diseases, J. Math. Biol. 26:1-25 (1988).
+  reason: The current model is described as an extension of the model by Dietz and
+    Hadeler (page 181, 185). This reference introduced pair formation models for STDs
+    dividing population into male/female, susceptible/infected, single/paired (page
+    182).
+- doi: 10.1111/j.2517-6161.1949.tb00030.x
+  formatted: Kendall D. G., Stochastic processes and population growth, Roy. Stat.
+    Soc. Ser. B 2:230-264 (1949).
+  reason: Described as the first to introduce a model where the population was subdivided
+    into single females, single males, and pairs, using a pair formation function
+    (page 182). Foundational for demographic pair formation models
+- doi: 10.1073/pnas.71.7.2813
+  formatted: Yellin J. and P. A. Samuelson, A dynamical model for human populations,
+    Proc. Nat. Acad. Sci. USA 71(7):2813-2817 (1974).
+  reason: Introduced a more general model than Kendall's that could also take into
+    account the separation of pairs (page 182).
+simulation_type: continuous
+summaries:
+- description: Fraction of steady partnerships (f) based on fitting a bi-exponential
+    model to partnership survival data for 18-year-olds.
+  location: Page 198
+  value: 0.725145
+- description: Separation rate of steady partnerships (σ1) for 18-year-olds, per day.
+  location: Page 198
+  value: 0.002712
+- description: Average duration of steady partnerships (1/σ1) for 18-year-olds, in
+    days.
+  location: Page 198 (calculated from σ1)
+  value: 368.73
+- description: Separation rate of casual partnerships (σ2) for 18-year-olds, per day.
+  location: Page 198
+  value: 0.805311
+- description: Average duration of casual partnerships (1/σ2) for 18-year-olds, in
+    days.
+  location: Page 198 (calculated from σ2)
+  value: 1.242
+- description: Rate of pair formation (ρ) estimated for 18-year-olds using survey
+    data on singles (53%) and those in steady partnerships (38%), per day.
+  location: Pages 198-199
+  value: 0.00268
+- description: Fraction of 18-year-old survey respondents who were single at the time
+    of the survey.
+  location: Page 198
+  value: 0.53
+- description: Fraction of 18-year-old survey respondents who were in a steady partnership
+    at the time of the survey.
+  location: Page 198
+  value: 0.38
+title: The Basic Reproduction Ratio R0 for a Sexually Transmitted Disease in a Pair
+  Formation Model with Two Types of Pairs

@@ -1,0 +1,181 @@
+confidence: 5
+description: "The manuscript describes a network modeling framework for simulating\
+  \ the spread of disease through dynamic heterosexual contact networks. The model\
+  \ features an open population, where individuals (men and women) enter through maturation\
+  \ and exit through aging out or death. Each individual has characteristics like\
+  \ age, gender, and disease state.\n\nPartnerships:\n- The model accommodates K different\
+  \ types of partnerships (e.g., spousal, non-spousal in the HIV example).\n- The\
+  \ state of partnerships at time t is represented by an adjacency matrix A^t.\n-\
+  \ Individuals are initialized with a number and type of partnerships drawn from\
+  \ empirical gender-specific joint distributions, d_m(k) and d_f(k), where k is a\
+  \ vector representing the number of partners of each type. These distributions are\
+  \ derived from overall degree distributions (m(p), f(p) - proportion with p total\
+  \ partners) and other data (e.g., marriage rates s_m, s_f).\n- Network Initialization:\
+  \ A generalized random graph is created using the configuration model. Individuals\
+  \ are assigned desired partnership types. Men and women seeking partners of a specific\
+  \ type are randomly matched. Duplicate partnerships are avoided by exchanging one\
+  \ partner with another random partnered individual until no duplicates remain, preserving\
+  \ individual degrees.\n\nNetwork Dynamics (at discrete time steps):\n1. Partnership\
+  \ Dissolution:\n   - Each existing partnership of type i has a constant probability,\
+  \ sigma_i, of dissolving at each time step. The average duration of a type i partnership\
+  \ is 1/sigma_i.\n   - The probability of an individual in state k (defined by the\
+  \ vector of partnership counts) transitioning to state k_i- (loss of one partnership\
+  \ of type i, and no other changes) is given by P_k->k_i- = k_i * sigma_i * (1-sigma_i)^(k_i-1)\
+  \ * PRODUCT_{j != i} ( (1-sigma_j)^k_j ), where k_x is the number of partners of\
+  \ type x.\n\n2. Partnership Formation:\n   - Formation probabilities are calculated\
+  \ to maintain the target degree distributions (d_m(k), d_f(k)) in a steady state,\
+  \ balancing dissolution, the influx of new unpartnered individuals (entering at\
+  \ rates r_m for men and r_f for women into the 0-partner state), and partnership\
+  \ loss due to death (though the model simplifies this by assuming mortality doesn't\
+  \ differentially affect partnership states for the calculation of formation probabilities).\n\
+  \   - A Markov model of partnership dynamics at the population level is used. The\
+  \ states are the allowed partnership combinations (k). The unknown transition probabilities\
+  \ for gaining a partnership (P_m(k->k_i+) for men, P_f(k->k_i+) for women, representing\
+  \ gaining a type i partnership when in state k) are found by solving a convex quadratic\
+  \ optimization problem (P, defined by Eq. 10-17).\n   - This optimization minimizes\
+  \ the mean squared error between the achieved steady-state degree distributions\
+  \ (u_m(k), u_f(k)) and the target distributions (d_m(k), d_f(k)). Constraints ensure\
+  \ valid probabilities and that, on average, men and women gain the same number of\
+  \ new partnerships of each type.\n\nSimulation of Formation:\n   - The calculated\
+  \ formation probabilities P_m(k->k_i+) and P_f(k->k_i+) are used.\n   - For each\
+  \ partnership type i: First, apply P_m(k->k_i+) to male individuals to determine\
+  \ the total number of new type i partnerships to be formed by men.\n   - Then, randomly\
+  \ select an equal number of women to gain a new type i partnership. These women\
+  \ are chosen proportionally to their individual probabilities of gaining such a\
+  \ partnership (derived from P_f(k->k_i+)).\n   - Finally, the selected men and women\
+  \ are randomly paired to form new partnerships, ensuring no duplicate existing partnerships\
+  \ are formed."
+infection_model: 'The framework is general. The manuscript details an application
+  to HIV in sub-Saharan Africa. This HIV model includes:
+
+  - Discrete disease states: Uninfected (D0), Acute HIV infection, Chronic HIV infection,
+  Treatment-eligible state.
+
+  - States have different infectivities and HIV-related mortality risks.
+
+  - HIV treatment is included, which extends life and reduces infectivity of treated
+  individuals.
+
+  - Continuous CD4 cell counts are modeled for each individual, influencing disease
+  progression, mortality risk (HIV-related and opportunistic infections), and eligibility
+  for treatment (e.g., CD4 < 200 cells/uL). Progression of CD4 counts differs for
+  untreated and treated individuals.
+
+  - Transmission occurs from infected individuals to their sexual partners, with per-act
+  transmission probabilities varying by disease state (e.g., higher in acute phase).'
+network_type: bimodal
+parameters:
+- description: Constant probability of dissolution per time step for a spousal partnership.
+    Derived from average duration.
+  estimate: 0.008333333333333333
+  location: Table 1 (page 13, as 1/120 months); Text on page 5 (sigma_i)
+  symbol: sigma_1 (spousal)
+- description: Constant probability of dissolution per time step for a non-spousal
+    partnership. Derived from average duration.
+  estimate: 0.05555555555555555
+  location: Table 1 (page 13, as 1/18 months); Text on page 5 (sigma_i)
+  symbol: sigma_2 (non-spousal)
+- description: Rate at which men enter the sexually active population (maturation
+    rate).
+  estimate: 0.055
+  location: Table 1 (page 13, 'Annual maturation rate, rm and rf (%)'); Page 2 & 6
+  symbol: r_m
+- description: Rate at which women enter the sexually active population (maturation
+    rate).
+  estimate: 0.055
+  location: Table 1 (page 13, 'Annual maturation rate, rm and rf (%)'); Page 2 & 6
+  symbol: r_f
+- description: Target degree distribution for men (proportion of men with p partners).
+    Used for initialization and deriving d_m(k).
+  estimate: unknown
+  location: 'Table 1 (page 13, provides example values for Tanzania: m(0)=28.5%, m(1)=50.9%,
+    etc.); Text on page 3'
+  symbol: m(p)
+- description: Target degree distribution for women (proportion of women with p partners).
+    Used for initialization and deriving d_f(k).
+  estimate: unknown
+  location: 'Table 1 (page 13, provides example values for Tanzania: f(0)=24.3%, f(1)=64.2%,
+    etc.); Text on page 3'
+  symbol: f(p)
+- description: Proportion of married men in the population. Used to infer joint distribution
+    d_m(k1,k2) in the 2-type example.
+  estimate: 0.52
+  location: Table 1 (page 13, '% Married (sm,sf)'); Text on page 4
+  symbol: s_m
+- description: Proportion of married women in the population. Used to infer joint
+    distribution d_f(k1,k2) in the 2-type example.
+  estimate: 0.47
+  location: Table 1 (page 13, '% Married (sm,sf)'); Text on page 4
+  symbol: s_f
+population_structure: Structured by age (e.g., 15-49 years in the example, with specific
+  entry age), gender, and partnership portfolio (number and type of current partners).
+  The model is designed to match country-specific demographic structures, including
+  age distributions and birth/death rates.
+references:
+- doi: unknown
+  formatted: Morris M, Kretzschmar M (2000) A microsimulation study of the effect
+    of concurrent partnerships on the spread of HIV in Uganda. Math Popul Stud 8(2):109-133
+  reason: Cited as a key example of network modeling for STDs, specifically addressing
+    concurrent partnerships, which is a feature of the described model. Likely contains
+    details on pair-formation mechanisms relevant to this manuscript's approach. (Ref
+    [25])
+- doi: unknown
+  formatted: Newman MEJ, Strogatz SH, Watts DJ (2001) Random graphs with arbitrary
+    degree distributions and their applications. Phys Rev E 64(2):026,118
+  reason: This paper describes the configuration model, which the manuscript explicitly
+    states is used for network initialization to match empirical degree distributions.
+    This is a fundamental part of the pair-formation setup. (Ref [27])
+- doi: unknown
+  formatted: Ghani AC, Swinton J, Garnett G (1997) The role of sexual partnership
+    networks in the epidemiology of gonorrhea. Sex Transm Dis 24(1):45-56
+  reason: Cited as an example of network models for STDs; these types of models inherently
+    involve pair-formation rules. (Ref [10])
+- doi: unknown
+  formatted: Kretzschmar M, van Duynhoven YTHP, Severijnen AJ (1996) Modeling prevention
+    strategies for gonorrhea and chlamydia using stochastic network simulations. Am
+    J Epidemiol 144(3):306-317
+  reason: Cited as an example of network models for STDs, which would include descriptions
+    or assumptions about how partnerships form and dissolve. (Ref [20])
+- doi: unknown
+  formatted: Enns EA, Brandeau ML, Igeme TK, Bendavid E (2011) Assessing effectiveness
+    and cost-effectiveness of concurrency reduction for HIV prevention. Working Paper,
+    Stanford University
+  reason: This is the working paper where the described modeling framework is applied.
+    It would contain a detailed implementation of the pair-formation model discussed
+    in the manuscript. (Ref [8])
+simulation_type: discrete
+summaries:
+- description: Average spousal partnership duration in months (Tanzania example).
+  location: Table 1 (page 13)
+  value: 120.0
+- description: Average non-spousal partnership duration in months (Tanzania example).
+  location: Table 1 (page 13)
+  value: 18.0
+- description: Proportion of men with 0 concurrent partners (Tanzania example).
+  location: Table 1 (page 13)
+  value: 0.285
+- description: Proportion of women with 0 concurrent partners (Tanzania example).
+  location: Table 1 (page 13)
+  value: 0.243
+- description: Proportion of men with 1 concurrent partner (Tanzania example).
+  location: Table 1 (page 13)
+  value: 0.509
+- description: Proportion of women with 1 concurrent partner (Tanzania example).
+  location: Table 1 (page 13)
+  value: 0.642
+- description: Proportion of men with 2 concurrent partners (Tanzania example).
+  location: Table 1 (page 13)
+  value: 0.162
+- description: Proportion of women with 2 concurrent partners (Tanzania example).
+  location: Table 1 (page 13)
+  value: 0.091
+- description: Proportion of married men (Tanzania example).
+  location: Table 1 (page 13)
+  value: 0.52
+- description: Proportion of married women (Tanzania example).
+  location: Table 1 (page 13)
+  value: 0.47
+- description: Modelled female-to-male population ratio for Tanzania simulation.
+  location: Table 1 (page 13, 'Model')
+  value: 1.09
+title: Inferring model parameters in network-based disease simulation

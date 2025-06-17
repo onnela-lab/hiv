@@ -1,0 +1,111 @@
+confidence: 4
+description: "The general pair formation model (Model 2) describes the transmission\
+  \ dynamics of STIs by accounting for both single individuals and pairs. The population\
+  \ is divided into singles based on disease state: X0 (susceptible), X1 (acutely\
+  \ infected), and X2 (chronically infected). Pairs are monogamous and denoted Pjk,\
+  \ where j and k (0,1,2) represent the disease status of each partner. Six types\
+  \ of pairs are considered: P00 (S-S), P10 (S-I1), P20 (S-I2), P11 (I1-I1), P12 (I1-I2),\
+  \ and P22 (I2-I2). \nIndividuals are recruited into the susceptible singles population\
+  \ (X0) at a rate π. Single individuals (Xi) form pairs at a per-capita rate ρ. The\
+  \ specific type of pair formed depends on the infection status of the two individuals\
+  \ forming the pair, e.g., an X0 and an X1 individual form a P10 pair. The rate of\
+  \ formation for a specific pair type X_i-X_j is ρ*Xi*Xj / (X0+X1+X2) (or half this\
+  \ for identical types like X0-X0). Pairs dissolve at a rate σ, returning individuals\
+  \ to their respective single state populations. All individuals are subject to a\
+  \ natural death rate μ. \nDisease transmission occurs only within discordant pairs.\
+  \ A susceptible individual in a pair with an acutely infected partner (P10) can\
+  \ become infected at a rate λ1, transitioning the pair to P11 (I1-I1, as new infection\
+  \ is acute). A susceptible in a pair with a chronically infected partner (P20) can\
+  \ become infected at a rate λ2, transitioning the pair to P12 (I1-I2, as new infection\
+  \ is acute). \nInfected individuals (both singles and those in pairs) can transition\
+  \ from the acute infection stage (I1) to the chronic stage (I2) at a rate γ. Transition\
+  \ from chronic (I2) back to acute (I1) can occur at a rate η (e.g., for HSV-2).\
+  \ \nThe model is described by a system of nine ordinary differential equations (Eq.\
+  \ (6) on page 10 and Figure 2 on page 9), tracking the population sizes of X0, X1,\
+  \ X2, P00, P10, P20, P11, P12, and P22. The model does not explicitly account for\
+  \ gender."
+infection_model: 'Two-stage SI model: Individuals can be Susceptible (S), Acutely
+  Infected (I1), or Chronically Infected (I2). New infections enter the I1 stage.
+  I1 individuals are typically more infectious. Individuals transition from I1 to
+  I2 at rate γ. For some diseases (like HSV-2), transition from I2 back to I1 can
+  occur at rate η. Individuals are recruited into S and experience natural death from
+  all states.'
+network_type: unimodal
+parameters:
+- description: Per-capita rate at which single individuals form pairs.
+  estimate: 5.0
+  location: Table 1, page 22; Eq (6), page 10
+  symbol: ρ
+- description: Intrinsic rate of pair dissolution (partnership breakup rate).
+  estimate: 2.11
+  location: Table 1, page 22; Eq (6), page 10
+  symbol: σ
+- description: Natural death rate.
+  estimate: unknown
+  location: Page 5, Fig 1; Table 1, page 22 (value listed as '/year')
+  symbol: μ
+- description: Recruitment rate of susceptible individuals into the population.
+  estimate: unknown
+  location: Page 4; dX0/dt equation in Eq (6), page 9
+  symbol: π
+- description: Rate of transition from acute (I1) to chronic (I2) infection.
+  estimate: 4.055555555555555
+  location: Page 4; Table 2, page 24 (value 365/90 /years for HIV)
+  symbol: γ
+- description: Rate of transition from chronic (I2) to acute (I1) infection.
+  estimate: 0.0
+  location: Page 4; Table 2, page 24 (value 0 for HIV)
+  symbol: η
+- description: Rate of transmission to a susceptible partner from an acutely infected
+    (I1) partner within a pair.
+  estimate: unknown
+  location: Page 9, Eq (6)
+  symbol: λ1
+- description: Rate of transmission to a susceptible partner from a chronically infected
+    (I2) partner within a pair (new infection is acute I1).
+  estimate: unknown
+  location: Page 9, Eq (6)
+  symbol: λ2
+population_structure: Structured by disease state (Susceptible, Acute I1, Chronic
+  I2) and partnership status (Singles Xj, Paired Pjk).
+references:
+- doi: 10.1016/j.idm.2017.07.002
+  formatted: 'M. Kretzschmar and J. Heijne, Pair formation models for sexually transmitted
+    infections: A primer, Infectious Disease Modelling. 2, 368–378 (2017).'
+  reason: Title explicitly mentions 'Pair formation models'. Manuscript states the
+    general pair model is inspired by Kretzschmar and Dietz (Ref 7 and 32).
+- doi: 10.1007/BF00280169
+  formatted: K. Dietz and K. P. Hadeler, Epidemiological Models for Sexually Transmitted
+    Diseases, Journal of Mathematical Biology. 26(1), 1–25 (1988).
+  reason: Classic paper on STD models, likely discusses pairing concepts and cited
+    by the manuscript in context of pair formation models via other Kretzschmar papers
+    referencing it implicitly or explicitly for foundations of pair models
+- doi: 10.1016/0025-5564(94)90042-6
+  formatted: M. Kretzschmar, J. C. Jager, R. D.P., G. Van Zessen, and H. Brouwers,
+    The Basic Reproduction Ratio R, for a Sexually Transmitted Disease in a Pair Formation
+    Model with Two Types of Pairs, Mathematical Biosciences. 124 (2), 181-205 (1994).
+  reason: Title explicitly mentions 'Pair Formation Model' and it's a Kretzschmar
+    paper, a key author for these models according to the manuscript's citations and
+    inspirations sections
+- doi: 10.1016/j.epidem.2018.05.003
+  formatted: T. Leng and M. J. Keeling, Concurrency of partnerships, consistency with
+    data, and control of sexually transmitted infections, Epidemics. 25, 35-46 (2018).
+  reason: Manuscript states the general pair model is inspired by Kretzschmar (Ref
+    7) and Leng (Ref 30). This paper discusses partnerships and concurrency relevant
+    to pair formation context
+- doi: 10.1016/0025-5564(98)10003-6
+  formatted: M. E. Kretzschmar and K. Dietz, The effect of pair formation and variable
+    infectivity on the spread of an infection without recovery., Mathematical Biosciences.
+    148 1, 83-113 (1998).
+  reason: Directly cited as inspiration for the general (Model 2) and reduced pair
+    models (Model 3) in the manuscript. Focuses on pair formation effects.
+simulation_type: continuous
+summaries:
+- description: Average number of sexual acts per year (within partnerships).
+  location: Table 1, page 22
+  value: 104.0
+- description: Equilibrium fraction of the population in pairs (at disease-free equilibrium
+    for the specific parameterization in Table 1).
+  location: Table 1, page 22 (value 0.7 for 2P*); Eq (11), page 13 defines P*
+  value: 0.7
+title: Modeling HIV and HSV-2 Using Partnership Models

@@ -1,0 +1,145 @@
+confidence: 5
+description: 'The manuscript describes a deterministic, compartmental mathematical
+  model of heterosexual HIV transmission that incorporates partnership formation and
+  dissolution. Sexual contact is assumed to occur at a constant frequency within steady
+  partnerships, as casual one-off contacts by paired individuals outside their steady
+  partnerships, and as casual one-off contacts by unpaired (single) individuals. The
+  model structure aims to capture occurrences relevant to time-varying HIV infectivity,
+  such as infection within a pair, or infection from outside contacts upon partnership
+  dissolution or if partners are not monogamous. While long-term concurrency is not
+  explicitly modeled, the framework allows for consecutive partnerships and sporadic
+  concurrency (one-off contacts outside a steady pair). Individuals enter the model
+  as sexually active single people and exit after an assumed sexual lifespan of 35
+  years, with additional AIDS-related mortality.
+
+  The population is stratified into two distinct sexual behavior risk groups (lower-risk
+  and higher-risk), and individuals remain in their assigned risk group throughout.
+  Steady partnerships are formed only between individuals within the same risk group.
+  However, one-off casual contacts can occur with partners from any risk group (chosen
+  without risk-group restrictions). The model allows for increased HIV transmission
+  probabilities for contacts involving higher-risk partners, reflecting an assumed
+  greater likelihood of transmission-amplifying cofactors (e.g., STIs, anal intercourse)
+  in this group. Sexual behaviour parameters (rates of pair formation, dissolution,
+  contact frequencies) are assumed to be constant across HIV infection status and
+  infection stage categories. The model equations were solved numerically using a
+  Runge-Kutta 4 algorithm.'
+infection_model: The model includes a detailed HIV infection progression, divided
+  into early infection, asymptomatic HIV, early AIDS, and late AIDS. Early HIV infection
+  (defined as the initial 1 to 6 months of raised infectivity) is further divided
+  into five intervals (first four are 1 week each, the fifth is variable) to capture
+  changes in transmission probabilities related to changing viral loads. The asymptomatic
+  period is represented by three equal intervals of 1.8 to 3.2 years each. Durations
+  for early AIDS (mean 0.75 years) and late AIDS (mean 0.83 years) are based on data
+  from Rakai, Uganda. Per-contact transmission probability during late AIDS is set
+  to zero.
+network_type: bimodal
+parameters:
+- description: Proportion of initial population in low-risk group
+  estimate: 0.6
+  location: Table, page 4 (page 259 of PDF)
+  symbol: π₀
+- description: Proportion of low-risk individuals in a steady partnership
+  estimate: 0.6
+  location: Table, page 4 (page 259 of PDF)
+  symbol: Q₀
+- description: Rate of steady pair formation by single individuals in low-risk group
+    (steady pairs formed per year)
+  estimate: 0.66
+  location: Table, page 4 (page 259 of PDF) and footnote § on page 5
+  symbol: γ₀
+- description: Rate of steady pair separation in low-risk group (separations per year)
+  estimate: 0.38
+  location: Table, page 4 (page 259 of PDF) and footnote § on page 5
+  symbol: σ₀
+- description: Unprotected contact frequency in low-risk pairs (contacts per year)
+  estimate: 33.1
+  location: Table, page 4 (page 259 of PDF)
+  symbol: c₀
+- description: Rate of low-risk single individuals having one-off, casual contacts
+    (casual partners per year)
+  estimate: 3.0
+  location: Table, page 4 (page 259 of PDF)
+  symbol: ε₀
+- description: Rate of low-risk paired individuals having one-off, casual contacts
+    (casual partners per year)
+  estimate: 2.4
+  location: Table, page 4 (page 259 of PDF)
+  symbol: χ₀
+- description: Proportion of high-risk individuals in a steady partnership
+  estimate: 0.79
+  location: Table, page 4 (page 259 of PDF)
+  symbol: Q₁
+- description: Rate of steady pair formation by single individuals in high-risk group
+    (steady pairs formed per year)
+  estimate: 33.7
+  location: Table, page 4 (page 259 of PDF) and footnote § on page 5
+  symbol: γ₁
+- description: Rate of steady pair separation in high-risk group (separations per
+    year)
+  estimate: 9.0
+  location: Table, page 4 (page 259 of PDF) and footnote § on page 5
+  symbol: σ₁
+- description: Unprotected contact frequency in high-risk pairs (contacts per year)
+  estimate: 33.5
+  location: Table, page 4 (page 259 of PDF)
+  symbol: c₁
+- description: Rate of high-risk single individuals having one-off, casual contacts
+    (casual partners per year)
+  estimate: 0.8
+  location: Table, page 4 (page 259 of PDF)
+  symbol: ε₁
+- description: Rate of high-risk paired individuals having one-off, casual contacts
+    (casual partners per year)
+  estimate: 2.1
+  location: Table, page 4 (page 259 of PDF)
+  symbol: χ₁
+population_structure: Population is stratified into two sexual behaviour risk groups
+  (lower-risk and higher-risk). Individuals remain in their assigned risk group. Steady
+  pairs form only within groups, but one-off casual contacts can occur between groups.
+references:
+- doi: 10.1016/S0025-5564(97)00100-8
+  formatted: 'Kretzschmar M, Dietz K. The effect of pair formation and variable infectivity
+    on the spread of an infection without recovery. Math Biosci 1998; 148: 83–113.'
+  reason: Cited in the manuscript as 'the classic pair-formation model' (page 2).
+- doi: 10.1097/00002030-200407020-00008
+  formatted: 'Xiridou M, Geskus R, de Wit J, Coutinho R, Kretzschmar M. Primary HIV
+    infection as source of HIV transmission within steady and casual partnerships
+    among homosexual men. AIDS 2004; 18: 1311–20.'
+  reason: Cited in the manuscript as a 'previous modification' on the classic pair-formation
+    model, discussing transmission within steady and casual partnerships (page 2).
+simulation_type: continuous
+summaries:
+- description: Percentage of HIV transmissions in Lilongwe attributable to sexual
+    contact with individuals with early infection in 2010.
+  location: Findings, page 1 and Results, page 8
+  value: 38.4
+- description: Peak HIV prevalence in Lilongwe's general adult population (%).
+  location: Results, page 6 (page 261 of PDF)
+  value: 24.7
+- description: HIV prevalence in Lilongwe's general adult population in 2005 (%).
+  location: Results, page 6 (page 261 of PDF)
+  value: 17.3
+- description: HIV prevalence in Lilongwe's general adult population in 2010 (%).
+  location: Results, page 6 (page 261 of PDF)
+  value: 14.3
+- description: Best-fitting partnership duration in the low-risk group (years).
+  location: Results, page 6 (page 261 of PDF) and Table footnote §, page 5
+  value: 2.5
+- description: Best-fitting duration between partnerships in the low-risk group (years).
+  location: Results, page 6 (page 261 of PDF) and Table footnote §, page 5
+  value: 1.5
+- description: Best-fitting partnership duration in the high-risk group (months).
+  location: Results, page 6 (page 261 of PDF) and Table footnote §, page 5
+  value: 1.3
+- description: Best-fitting duration between partnerships in the high-risk group (days).
+  location: Results, page 6 (page 261 of PDF) and Table footnote §, page 5
+  value: 11.0
+- description: Cumulative transmission probability during early infection in low-risk,
+    HIV-discordant pairs (%).
+  location: Results, page 8 (page 263 of PDF)
+  value: 26.0
+- description: Best-fitting early infection duration (months).
+  location: Results, page 8 (page 263 of PDF)
+  value: 4.8
+title: 'The role of acute and early HIV infection in the spread of HIV and implications
+  for transmission prevention strategies in Lilongwe, Malawi: a modelling study'

@@ -1,0 +1,253 @@
+confidence: 4
+description: 'The manuscript describes a deterministic compartmental model using a
+  system of ordinary differential equations (ODEs) to simulate HIV transmission among
+  young homosexual men in Amsterdam. The model is based on Kretzschmar and Dietz (1998)
+  [6] and tracks individuals based on their partnership status (single, or in a steady
+  pair) and HIV infection status (uninfected, primary infection stage 1, secondary
+  infection stage 2).
+
+
+  Pair formation aspects:
+
+  1.  **Steady Partnerships**: Individuals form steady, non-concurrent partnerships
+  at a rate ''p'' (rho) and these partnerships dissolve at a rate ''σ'' (sigma). Equations
+  track pairs of different HIV statuses (P00, P01, P02, P11, P12, P22, where 0=uninfected,
+  1=stage 1, 2=stage 2).
+
+  2.  **Casual Partnerships**: Individuals can also form casual partnerships, assumed
+  to involve only one sexual contact per partner. Singles acquire casual partners
+  at rate ''ps'', and men in steady partnerships acquire them at a lower rate ''pm''.
+
+  3.  **Negotiated Safety (NS)**: HIV-negative concordant steady partners may make
+  NS agreements, which reduces their risky behaviour with casual partners (parameter
+  ''θ'').
+
+
+  The model was extended from Kretzschmar and Dietz (1998) to include:
+
+  *   Earlier removal from the sexually active population for men developing AIDS.
+
+  *   Explicit modeling of casual partnerships alongside steady ones.
+
+  *   Effects of HIV diagnosis: a proportion ''δ'' of those in stage 2 know their
+  status, leading to a reduction ''fa'' in risky behaviour and uptake of HAART for
+  a proportion ''τ'' of those diagnosed.
+
+  *   Effects of HAART: reduces infectivity by ''fr'' and prolongs the time to AIDS.
+
+  *   Transmission risk dependent on UAI type (URAI/UIAI), HIV stage of the infected
+  partner, and HAART status.
+
+
+  The full system of differential equations is provided in the Appendix of the manuscript.'
+infection_model: 'The model incorporates a two-stage HIV infection process:
+
+  1.  **Primary Infection (Stage 1)**: Short duration (1/γ), characterized by high
+  infectivity.
+
+  2.  **Secondary Infection (Stage 2)**: Longer, asymptomatic period with lower infectivity.
+  Individuals may be diagnosed (''δ'') during this stage.
+
+
+  HIV transmission occurs via unprotected anal intercourse (UAI), with separate probabilities
+  for receptive (URAI) and insertive (UIAI) acts. These probabilities (P1a, P2a, P1b,
+  P2b) vary depending on whether the infectious partner is in stage 1 or stage 2 of
+  infection. Transmission probability from other sexual acts is considered negligible.
+
+
+  HAART''s effects on the infection model include:
+
+  *   Reduction in infectiousness/transmission probability (parameter ''fr'').
+
+  *   Prolongation of the time from infection to the development of AIDS for treated
+  individuals (1/(μ+μτ)) compared to untreated (1/(μ+μα)).
+
+
+  A proportion of diagnosed individuals (''τ'') are successfully treated. A reduction
+  in risky behaviour (''fa'') is also associated with HIV diagnosis.'
+network_type: unimodal
+parameters:
+- description: Rate at which singles acquire casual partners.
+  estimate: 22.0
+  location: Table 1, Page 1031
+  symbol: ps
+- description: Rate at which men with a steady partner acquire casual partners.
+  estimate: 8.0
+  location: Table 1, Page 1031
+  symbol: pm
+- description: Proportion of casual contacts that are URAI (unprotected receptive
+    anal intercourse).
+  estimate: 0.05
+  location: Table 1, Page 1031
+  symbol: aa
+- description: Proportion of casual contacts that are UIAI (unprotected insertive
+    anal intercourse).
+  estimate: 0.05
+  location: Table 1, Page 1031
+  symbol: ab
+- description: Reduction factor in risky behaviour with casual partners for uninfected
+    men with an uninfected steady partner as a result of NS (negotiated safety) agreements.
+  estimate: 0.84
+  location: Table 1, Page 1031 (calculated on Page 1032 from q1, θ0, θ1)
+  symbol: θ
+- description: Rate of acquiring steady partners.
+  estimate: 0.73
+  location: Table 1, Page 1031
+  symbol: p
+- description: Duration of steady partnerships (years).
+  estimate: 1.5
+  location: Table 1, Page 1031
+  symbol: 1/σ
+- description: Frequency of all types of sexual intercourse between steady partners
+    (per year).
+  estimate: 73.0
+  location: Table 1, Page 1031
+  symbol: Φ
+- description: Frequency of URAI between steady partners (per year).
+  estimate: 15.0
+  location: Table 1, Page 1031
+  symbol: Φa
+- description: Frequency of UIAI between steady partners (per year).
+  estimate: 15.0
+  location: Table 1, Page 1031
+  symbol: Φb
+- description: Proportion of infected individuals at stage 2 who know they are HIV
+    positive.
+  estimate: 0.42
+  location: Table 1, Page 1031
+  symbol: δ
+- description: Proportion of those diagnosed who are successfully treated with HAART.
+  estimate: 0.7
+  location: Table 1, Page 1031
+  symbol: τ
+- description: Reduction factor in risky behaviour as a result of HIV diagnosis (1-fa
+    is the actual reduction).
+  estimate: 0.75
+  location: Table 1, Page 1031
+  symbol: fa
+- description: Percentage reduction in transmission probabilities as a result of HAART
+    (1-fr is the actual reduction factor).
+  estimate: 0.745
+  location: Table 1, Page 1031
+  symbol: fr
+- description: Initial population size.
+  estimate: 20000.0
+  location: Table 1, Page 1031
+  symbol: n
+- description: Influx of uninfected singles (per year).
+  estimate: unknown
+  location: Table 1, Page 1031 (value not explicitly stated, linked to population
+    stability)
+  symbol: υ
+- description: Length of time during which men are sexually active (years).
+  estimate: 30.0
+  location: Table 1, Page 1031
+  symbol: 1/μ
+- description: Time from infection until development of AIDS for those untreated (years).
+  estimate: 13.0
+  location: Table 1, Page 1031
+  symbol: 1/(μ+μα)
+- description: Time from infection until development of AIDS for those treated with
+    HAART (years).
+  estimate: 22.5
+  location: Table 1, Page 1031
+  symbol: 1/(μ+μτ)
+- description: Duration of the first stage of HIV infection (years).
+  estimate: 0.25
+  location: Table 1, Page 1031 (3 months)
+  symbol: 1/γ
+- description: Probability of transmission per URAI act with infective at stage 1.
+  estimate: 0.22
+  location: Table 1, Page 1031
+  symbol: P1a
+- description: Probability of transmission per URAI act with infective at stage 2.
+  estimate: 0.011
+  location: Table 1, Page 1031
+  symbol: P2a
+- description: Probability of transmission per UIAI act with infective at stage 1.
+  estimate: 0.044
+  location: Table 1, Page 1031
+  symbol: P1b
+- description: Probability of transmission per UIAI act with infective at stage 2.
+  estimate: 0.0022
+  location: Table 1, Page 1031
+  symbol: P2b
+- description: Percentage change in risky behaviour with steady partners (scenario
+    parameter).
+  estimate: unknown
+  location: Table 1, Page 1031
+  symbol: Rs
+- description: Percentage change in risky behaviour with casual partners (scenario
+    parameter).
+  estimate: unknown
+  location: Table 1, Page 1031
+  symbol: Rc
+population_structure: 'The model population consists of young (≤ 30 years at recruitment)
+  homosexual men in Amsterdam. The population is structured by:
+
+  1.  **HIV infection status**: Uninfected (X0), infected stage 1 (primary infection,
+  X1), infected stage 2 (asymptomatic secondary infection, X2).
+
+  2.  **Partnership status**: Singles (X0, X1, X2) and individuals in steady partnerships
+  (P00, P01, P02, P11, P12, P22, where subscripts denote the HIV status of the partners).
+
+  3.  **Diagnosis status**: A proportion (''δ'') of those in stage 2 are aware of
+  their HIV infection.
+
+  4.  **Treatment status**: A proportion (''τ'') of diagnosed individuals receive
+  HAART.
+
+  Individuals are recruited into the sexually active population and are removed when
+  they cease sexual activity or (earlier) if they develop AIDS.'
+references:
+- doi: 10.1016/s0025-5564(97)10008-8
+  formatted: Kretzschmar M, Dietz K. The effect of pair formation and variable infectivity
+    on the spread of an infection without recovery. Math Biosci 1998, 148:83-113.
+  reason: This is cited as the base model upon which the current study's model is
+    built and extended (Page 1030).
+- doi: 10.1016/0025-5564(94)90044-x
+  formatted: Kretzschmar M, Jager J, Reinking D, Van Zessen G, Brouwers H. The basic
+    reproduction ration Ro for a sexually transmitted disease in a pair formation
+    model with two types of pairs. Math Biosci 1994, 124:181-205.
+  reason: Cited in relation to pair formation models and dynamics of STIs differing
+    by partnership type (Page 1030), relevant to modeling steady vs. casual partnerships
+    and their impact on HIV transmission dynamics explored in the manuscript (Page
+    1034).
+- doi: 10.1142/S021833909500052X
+  formatted: Kretzschmar M. Deterministic and stochastic pair formation models for
+    the spread of sexually transmitted diseases. J Biol Syst 1995, 3:789-801.
+  reason: Cited in the discussion (Page 1036) regarding the choice of a deterministic
+    model and its agreement with stochastic counterparts for networks without long-lasting
+    concurrent partnerships, which aligns with the model structure.
+simulation_type: continuous
+summaries:
+- description: Model-calculated HIV incidence before HAART introduction (infections
+    per 100 person-years).
+  location: Page 1033, Results section
+  value: 0.67
+- description: Model-calculated HIV prevalence before HAART introduction (percentage).
+  location: Page 1033, Results section
+  value: 8.84
+- description: Empirical HIV incidence among Amsterdam Cohort Study (ACS) participants,
+    first data wave (infections per 100 person-years).
+  location: Page 1033, Results section
+  value: 1.0
+- description: Empirical HIV prevalence among Amsterdam Cohort Study (ACS) participants,
+    first data wave (percentage).
+  location: Page 1033, Results section
+  value: 5.0
+- description: Fraction of new HIV infections attributed to steady partnerships (model
+    result, 'currently' reflecting post-HAART baseline scenario without increased
+    risky behavior).
+  location: Abstract, Page 1029 (also supported by Fig 2 discussion on Page 1033)
+  value: 0.86
+- description: Average number of Unprotected Anal Intercourse (UAI) acts with steady
+    partners per year.
+  location: Page 1033, Results section (calculated as Φa+Φb from Table 1)
+  value: 30.0
+- description: Average number of Unprotected Anal Intercourse (UAI) acts with casual
+    partners per year.
+  location: Page 1033, Results section (stated value, referring to Table 1 data)
+  value: 1.5
+title: The contribution of steady and casual partnerships to the incidence of HIV
+  infection among homosexual men in Amsterdam

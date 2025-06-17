@@ -1,0 +1,114 @@
+confidence: 4
+description: 'The manuscript is a comprehensive review of network models used to study
+  HIV spread over the past 44 years. It does not present a single, novel pair-formation
+  model with full implementation details. Instead, it categorizes and describes two
+  primary paradigms of network modeling for pair formation: statistical and mechanistic.
+
+  Statistical network models discussed include:
+
+  - Erdos-Renyi (ER) models: Edges (pairs) are formed randomly with a specified probability
+  between nodes.
+
+  - Stochastic Block Models (SBMs): Nodes are grouped into blocks, and pair formation
+  probability depends on the block membership of the two nodes.
+
+  - Exponential Random Graph Models (ERGMs): These models define the likelihood of
+  a network based on various network statistics or motifs (e.g., number of pairs,
+  homophilous pairs, concurrent pairs/triangles). Pair formation is implicitly defined
+  by the chosen statistics and their associated parameters.
+
+  Mechanistic network models discussed include:
+
+  - Barabasi-Albert (BA) models: Networks grow via preferential attachment, where
+  new nodes are more likely to form pairs with existing nodes that already have many
+  pairs (high degree).
+
+  - Watts-Strogatz (WS) models: Generate networks with small-world properties, affecting
+  pair formation by creating local clustering and short global path lengths for connections.
+
+  - Configuration Models (CMs): Generate random networks with a predefined degree
+  sequence (number of partners per individual). Pairs are formed by randomly connecting
+  available ''stubs'' (half-edges) from individuals.
+
+  - Agent-Based Models (ABMs): Individuals (agents) are assigned attributes and behavioral
+  rules. Pair formation and dissolution are governed by these rules, often probabilistic,
+  which can depend on agent characteristics (e.g., age, risk group, preferences for
+  certain partner types) and the current network state. These rules typically operate
+  over discrete time steps to simulate the dynamics of relationships.
+
+  The review highlights that these models are used to simulate interactions (including
+  pair formations and dissolutions) among individuals, upon which HIV transmission
+  dynamics are typically overlaid. The manuscript''s purpose is to summarize existing
+  work and guide future research, rather than providing a reproducible implementation
+  of one specific pair-formation model.'
+infection_model: The manuscript reviews network models specifically for understanding
+  HIV spread. It indicates that these network models are coupled with HIV transmission
+  dynamics. While not detailing a single universal infection model, the review implies
+  that the transmission components within these studies account for various biological
+  and behavioral factors influencing HIV transmission probability per contact. These
+  factors include antiretroviral therapy (ART) status and adherence, pre-exposure
+  prophylaxis (PrEP) use, condom use, co-infection with other STIs (which can affect
+  HIV susceptibility or infectivity), and implicitly viral load through treatment
+  effects. The specifics of the infection model (e.g., SI, SIS, SIR type dynamics,
+  per-act transmission probabilities) would vary depending on the particular study
+  being reviewed.
+network_type: other
+parameters:
+- description: 'For Erdos-Renyi models: the probability of an edge (pair) existing
+    between any two nodes. This parameter governs the overall density of the network.'
+  estimate: unknown
+  location: Page 4, discussion of ER models.
+  symbol: p (general symbol for probability)
+- description: 'For Agent-Based Models: various probabilities, rates, or rule-based
+    parameters defining agent behaviors for partnership formation (e.g., based on
+    homophily, partner preferences, opportunity structures) and dissolution (e.g.,
+    based on fixed duration, event-triggered separation, or changing agent states).
+    These are often a set of rules and conditional probabilities rather than a single
+    parameter value.'
+  estimate: unknown
+  location: 'Page 6, discussion of ABMs: ''individuals are assigned demographics and
+    probabilities of engaging in behaviors that govern their interaction with other
+    individuals in the network. Early ABMs used a small set of probabilistic rules
+    that encoded the behaviors of individuals; the rules specified the formation of
+    edges among unconnected node pairs and the dissolution of existing edges at each
+    time step.'''
+  symbol: Various (model-specific rules and probabilities)
+- description: 'For Stochastic Block Models: probabilities of edge (pair) formation
+    between nodes, conditional on the block (group) memberships of the nodes involved.
+    These parameters define the inter- and intra-block connection densities.'
+  estimate: unknown
+  location: 'Page 4, discussion of SBMs: ''Nodes are partitioned into blocks (groups)
+    and the probability of an edge existing between 2 nodes depends on their block
+    membership.'''
+  symbol: P_rs (conceptual, prob. of edge between block r and block s)
+- description: 'For Exponential Random Graph Models (ERGMs): A vector of coefficients
+    corresponding to various predefined network statistics or ''motifs'' (e.g., number
+    of edges, 2-stars, triangles, terms for homophily by attribute, terms for concurrency).
+    These parameters determine the relative importance (log-odds change) of these
+    statistics in the likelihood of observing such configurations in the network.'
+  estimate: unknown
+  location: 'Page 4, discussion of ERGMs: ''ERGMs enable the investigation of a broad
+    range of social processes, such as homophily and triadic closure, by allowing
+    the testing of hypotheses regarding the frequency of network motifs (such as triangles)
+    that influence network structure''.'
+  symbol: θ (vector of parameters)
+population_structure: 'The manuscript reviews models applied to various structured
+  populations. These structures are defined by characteristics such as:
+
+  - Sexual behavior and orientation (e.g., heterosexual adults (HetA), men who have
+  sex with men (MSM), homosexual adults (HoA), sex workers (SexW)).
+
+  - Risk behaviors (e.g., people who inject drugs/intravenous drug users (PWID/IDUs)).
+
+  - Demographic characteristics (e.g., age, such as heterosexual adolescents (HetAd),
+  adolescent sexual minority males (ASMM)).
+
+  - Social context or specific vulnerable groups (e.g., incarcerated individuals (II),
+  homeless youth (HY), children of HIV+ mothers (CH+M)).
+
+  Figure 1 on page 3 explicitly lists these diverse populations studied in the reviewed
+  literature.'
+references: []
+simulation_type: discrete
+summaries: []
+title: A Review of Network Models for HIV Spread

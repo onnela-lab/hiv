@@ -1,0 +1,123 @@
+confidence: 5
+description: "The manuscript presents a pair-formation model for dynamic concurrent\
+  \ partnership networks incorporating demography. \n1. Population: The model considers\
+  \ a population with demographic turnover, where individuals are born (recruited)\
+  \ at a rate that balances death, maintaining a constant population size. Individuals\
+  \ die at a rate μ. All individuals are initially assumed to have the same maximum\
+  \ partnership capacity 'n'. Individuals are born with zero partners.\n2. Individual\
+  \ State: The state of an individual is defined by 'k', the current number of partners\
+  \ (0 ≤ k ≤ n).\n3. Partnership Formation: Partnership formation is supply-driven.\
+  \ A free binding site (an individual in state 'k' has 'n-k' free sites) becomes\
+  \ occupied at a rate proportional to 'F', the population-level fraction of free\
+  \ binding sites. The rate for an individual to transition from state 'k' to 'k+1'\
+  \ is (n-k)ρF, where ρ is a rate constant for partnership formation.\n4. Partnership\
+  \ Dissolution: An existing partnership dissolves either due to separation (at rate\
+  \ σ per partnership) or due to the death of one of the partners. Since the partner's\
+  \ death rate is also μ, an occupied binding site becomes free at a rate (σ + μ).\
+  \ Thus, an individual in state 'k' transitions to 'k-1' at a rate k(σ+μ).\n5. Dynamics\
+  \ of F: The fraction of free binding sites, F(t), evolves according to the differential\
+  \ equation: dF/dt = μ + (σ + μ)(1-F) - ρF^2 - μF. The model analyzes the steady-state\
+  \ where F(t) converges to a constant F_bar, given by the non-negative solution to\
+  \ μ + (σ + μ)(1-F_bar) - ρ(F_bar)^2 - μF_bar = 0.\n6. Steady-State Partner Distribution:\
+  \ At steady state (with constant F_bar), the probability ε(a) that a specific binding\
+  \ site of an individual is occupied at age 'a' (given the individual is alive) is\
+  \ derived from dε/da = ρF_bar(1-ε) - (σ+μ)ε, with ε(0)=0. The solution is ε(a) =\
+  \ (ρF_bar / (ρF_bar + σ + μ)) * (1 - exp(-(ρF_bar + σ + μ)a)). The number of partners\
+  \ for an individual of age 'a', pk(a), follows a binomial distribution: pk(a) =\
+  \ (n choose k) * ε(a)^k * (1-ε(a))^(n-k). The overall stationary distribution of\
+  \ partners in the population, Pk, is obtained by averaging pk(a) over the exponential\
+  \ lifetime distribution (μ*exp(-μa)): Pk = μ ∫[0,∞] pk(a)exp(-μa)da.\n7. Network\
+  \ Type: The primary model focuses on a homosexual population (unimodal network),\
+  \ though generalizations to heterosexual populations are discussed.\n8. Time: The\
+  \ model is formulated in continuous time, using Markov chains at the individual\
+  \ level and ordinary differential equations for population-level quantities."
+infection_model: none
+network_type: unimodal
+parameters:
+- description: Maximum number of simultaneous partners an individual can have (partnership
+    capacity).
+  estimate: unknown
+  location: Section 2, page 230
+  symbol: n
+- description: Rate constant for partnership formation per free binding site, scaled
+    by the fraction of available free binding sites in the population.
+  estimate: unknown
+  location: Section 2, Eq (1), page 230
+  symbol: ρ
+- description: Rate of partnership dissolution due to separation (per partnership).
+  estimate: unknown
+  location: Section 2, Eq (1), page 230
+  symbol: σ
+- description: Individual death rate and recruitment rate. Also used as the rate at
+    which a partnership dissolves due to a partner's death.
+  estimate: unknown
+  location: Section 2, Eq (1), page 230
+  symbol: μ
+population_structure: The main model assumes a homogeneous population where all individuals
+  have the same partnership capacity 'n'. Demographic turnover (birth at rate μ, death
+  at rate μ) implies an age structure, but individuals are not explicitly stratified
+  by pre-defined groups like age or sexual activity level a priori.
+references:
+- doi: unknown
+  formatted: Dietz, K., Hadeler, K.P., 1988. Epidemiological models for sexually transmitted
+    diseases. J. Math. Biol. 26, 1-25.
+  reason: Introduced pair formation models for sequentially monogamous populations
+    into epidemiology, as stated on page 229, RHS column para 3
+- doi: unknown
+  formatted: Kretzschmar, M., Jager, J.C., Reinking, D.P., Zessen, G.V., Brouwers,
+    H., 1994. The basic reproduction ratio RO for a sexually transmitted disease in
+    a pair formation model with two types of pairs. Math. Biosci. 124, 181-205.
+  reason: Extended earlier pair formation models, as stated on page 229, RHS column
+    para 3
+- doi: unknown
+  formatted: Kretzschmar, M., Dietz, K., 1998. The effect of pair formation and variable
+    infectivity on the spread of an infection without recovery. Math. Biosci. 148,
+    83-113.
+  reason: Extended earlier pair formation models, as stated on page 229, RHS column
+    para 3
+- doi: unknown
+  formatted: Xiridou, M., Geskus, R., Wit, J.D., Coutinho, R., Kretzschmar, M., 2003.
+    The contribution of steady and casual partnerships to the incidence of HIV infection
+    among homosexual men in Amsterdam. AIDS 17, 1029-1038.
+  reason: Extended earlier pair formation models, as stated on page 229, RHS column
+    para 3
+- doi: unknown
+  formatted: Heijne, J.C., Althaus, C.L., Herzog, S.A., Kretzschmar, M., Low, N.,
+    2011. The role of reinfection and partner notification in the efficacy of Chlamydia
+    screening programs. J. Infect. Dis. 203, 372-377.
+  reason: Extended earlier pair formation models, as stated on page 229, RHS column
+    para 3
+- doi: unknown
+  formatted: 'Powers, K.A., Ghani, A.C., Miller, W.C., et al., 2011. The role of acute
+    and early HIV infection in the spread of HIV and implications for transmission
+    prevention strategies in Lilongwe, Malawi: a modelling study. Lancet 378, 256-268.'
+  reason: Extended earlier pair formation models, as stated on page 229, RHS column
+    para 3
+simulation_type: continuous
+summaries:
+- description: Mean number of partners for an individual in a population snapshot,
+    for parameters n=2, σ/ρ=1, σ/μ=1.
+  location: Table 1, column 'a', page 232
+  value: 0.41
+- description: Fraction of free binding sites (F_bar) in the population, for parameters
+    n=2, σ/ρ=1, σ/μ=1.
+  location: Table 1, column 'a', page 232
+  value: 0.79
+- description: Expected lifetime number of partners (θ) for a newborn, for parameters
+    n=2, σ/ρ=1, σ/μ=1.
+  location: Table 1, column 'a', page 232
+  value: 1.25
+- description: Individual-based concurrency index (KI), for parameters n=2, σ/ρ=1,
+    σ/μ=1.
+  location: Table 2, column 'a', page 234
+  value: 0.14
+- description: Partnership-based concurrency index (KP), for parameters n=2, σ/ρ=1,
+    σ/μ=1.
+  location: Table 2, column 'a', page 234
+  value: 0.24
+- description: Expected duration of a partnership (1/λ where λ=σ+2μ). For Fig1a parameters
+    (σ/μ=1 => σ=μ), this is 1/(μ+2μ) = 1/(3μ). The value of 1/μ (mean lifetime) is
+    not given directly but is implicit.
+  location: Section 4, page 231 (formula for λ) and Table 1 (for specific σ/μ ratios)
+  value: -1.0
+title: Dynamic concurrent partnership networks incorporating demography

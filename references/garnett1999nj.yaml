@@ -1,0 +1,241 @@
+confidence: 4
+description: 'The manuscript describes a deterministic, continuous-time compartmental
+  model for gonorrhoea transmission, adapted from Hethcote & Yorke (1984). The model
+  is defined by a system of Ordinary Differential Equations (ODEs) provided in Appendix
+  A.
+
+
+  Population Structure: The population is stratified by sex (k, where k=1 for men,
+  k=2 for women) and into four sexual activity classes (i=1 to 4) for each sex. These
+  activity classes are characterized by their mean rate of sex-partner change (Ck,i).
+  The proportion of individuals of sex k in activity group i is denoted φk,i, and
+  the total number of individuals in this subgroup is Nk,i.
+
+
+  Pair Formation: Pair formation is driven by the sex- and group-specific rates of
+  partner change, Ck,i. The choice of partners across different activity groups is
+  governed by a mixing matrix, Pk,ij, which specifies the probability that an individual
+  of sex k in activity group i forms a partnership with an individual of the opposite
+  sex k'' in activity group j.
+
+  The mixing pattern is controlled by a single parameter ε (epsilon), where ε=0 represents
+  random mixing and ε=1 represents fully assortative mixing (partnerships only with
+  individuals of the same activity level). The formula for Pk,ij is:
+
+  Pk,ij = ε * δi,j + (1 - ε) * (Nk'',j * Ck'',j / Σ_s Nk'',s * Ck'',s)
+
+  where δi,j is the Kronecker delta (1 if i=j, 0 otherwise). The term Nk'',j * Ck'',j
+  represents the total number of partnerships offered by group (k'',j), and the sum
+  in the denominator is over all activity groups ''s'' of the opposite sex k''.
+
+
+  Partnership Balance: The model ensures a balance in the total number of partnerships
+  formed by men and women. This is achieved by assuming the total partnerships supplied
+  by corresponding activity groups are equal (N1,i * C1,i = N2,i * C2,i). This allows
+  the rate of partner change for women (C2,i) to be derived from the rates for men
+  (C1,i) and the relative sizes of these groups (N1,i and N2,i, which depend on φ1,i
+  and φ2,i).
+
+
+  Force of Infection: The rate at which susceptible individuals in group (k,i), denoted
+  Xk,i, acquire infection (force of infection, Λk,i) is given by:
+
+  Λk,i = βk * Ck,i * Σ_j [Pk,ij * (Yk'',j + Ak'',j) / Nk'',j]
+
+  where βk is the transmission probability per partnership for an individual of sex
+  k, and (Yk'',j + Ak'',j) / Nk'',j is the prevalence of infectious individuals (symptomatic
+  Yk'',j and asymptomatic Ak'',j) in the partner group (k'',j). The term Nk'',j in
+  the denominator represents the total population size of partner group (k'',j).'
+infection_model: 'The model describes gonorrhoea transmission with three epidemiological
+  states for individuals in each sex and activity group: Susceptible (X), Symptomatically
+  Infected (Y), and Asymptomatically Infected (A).
+
+  Upon infection, susceptible individuals (X) transition to either state Y or A. According
+  to the equations and their description in Appendix A (page 795), a proportion θk
+  (specific to sex k) of new infections become symptomatic (Y), and the remaining
+  proportion (1-θk) become asymptomatic (A). It is important to note an inconsistency:
+  Appendix B (page 796, parameter table) and discussions in the main text (e.g., page
+  790, Figure 9 caption) define θk as the ''proportion asymptomatic''. The model equations
+  in Appendix A, however, use θk as the proportion becoming symptomatic.
+
+  Individuals in state Y recover at a rate σk, and those in state A recover at a rate
+  γk. Upon recovery, individuals return to the susceptible state X (i.e., no acquired
+  immunity is modelled).
+
+  New individuals enter the susceptible pool of each group (k,i) at a rate μ*Nk,i
+  (where Nk,i is the total size of that subgroup), and individuals leave all epidemiological
+  states at a per capita rate μ, maintaining a constant population size in each subgroup.'
+network_type: bimodal
+parameters:
+- description: Pattern of mixing (0=random, 1=fully assortative). ε=0.8 used in simulations.
+  estimate: 0.8
+  location: Appendix B, page 796; Appendix A, page 795
+  symbol: ε
+- description: Mean rate of sex-partner change per year for men (k=1), activity group
+    i.
+  estimate: unknown
+  location: Appendix B, page 796
+  symbol: C1,i
+- description: Mean rate of sex-partner change per year for men, group i=1 (highest
+    activity).
+  estimate: 40.0
+  location: Appendix B, page 796
+  symbol: C1,1
+- description: Mean rate of sex-partner change per year for men, group i=2.
+  estimate: 10.0
+  location: Appendix B, page 796
+  symbol: C1,2
+- description: Mean rate of sex-partner change per year for men, group i=3.
+  estimate: 2.4
+  location: Appendix B, page 796
+  symbol: C1,3
+- description: Mean rate of sex-partner change per year for men, group i=4 (lowest
+    activity).
+  estimate: 0.5
+  location: Appendix B, page 796
+  symbol: C1,4
+- description: Mean rate of sex-partner change per year for women (k=2), activity
+    group i (derived).
+  estimate: unknown
+  location: Appendix B, page 796; Appendix A, page 796
+  symbol: C2,i
+- description: Mean rate of sex-partner change per year for women, group i=1 (highest
+    activity).
+  estimate: 40.0
+  location: Appendix B, page 796
+  symbol: C2,1
+- description: Mean rate of sex-partner change per year for women, group i=2.
+  estimate: 30.7
+  location: Appendix B, page 796
+  symbol: C2,2
+- description: Mean rate of sex-partner change per year for women, group i=3.
+  estimate: 4.8
+  location: Appendix B, page 796
+  symbol: C2,3
+- description: Mean rate of sex-partner change per year for women, group i=4 (lowest
+    activity).
+  estimate: 0.43
+  location: Appendix B, page 796
+  symbol: C2,4
+- description: Proportion of men (k=1) in activity group i.
+  estimate: unknown
+  location: Appendix B, page 796
+  symbol: φ1,i
+- description: Proportion of men in activity group i=1 (highest).
+  estimate: 0.0055
+  location: Appendix B, page 796
+  symbol: φ1,1
+- description: Proportion of men in activity group i=2.
+  estimate: 0.0445
+  location: Appendix B, page 796
+  symbol: φ1,2
+- description: Proportion of men in activity group i=3.
+  estimate: 0.2
+  location: Appendix B, page 796
+  symbol: φ1,3
+- description: Proportion of men in activity group i=4 (lowest).
+  estimate: 0.75
+  location: Appendix B, page 796
+  symbol: φ1,4
+- description: Proportion of women (k=2) in activity group i.
+  estimate: unknown
+  location: Appendix B, page 796
+  symbol: φ2,i
+- description: Proportion of women in activity group i=1 (highest).
+  estimate: 0.0055
+  location: Appendix B, page 796
+  symbol: φ2,1
+- description: Proportion of women in activity group i=2.
+  estimate: 0.0145
+  location: Appendix B, page 796
+  symbol: φ2,2
+- description: Proportion of women in activity group i=3.
+  estimate: 0.1
+  location: Appendix B, page 796
+  symbol: φ2,3
+- description: Proportion of women in activity group i=4 (lowest).
+  estimate: 0.88
+  location: Appendix B, page 796
+  symbol: φ2,4
+- description: Transmission probability per partnership to men (from women).
+  estimate: 0.6
+  location: Appendix B, page 796 (as βk for women to men)
+  symbol: β_men (or β1 in ODEs if k=1 for men)
+- description: Transmission probability per partnership to women (from men).
+  estimate: 0.8
+  location: Appendix B, page 796 (as βk for men to women)
+  symbol: β_women (or β2 in ODEs if k=2 for women)
+population_structure: Population is structured by sex (men and women) and by sexual
+  activity level. For each sex, there are four sexual-activity groups defined by their
+  mean rates of sex-partner change.
+references:
+- doi: unknown
+  formatted: 'Hethcote, H. W. & Yorke, J. A. 1984 Gonorrhea transmission dynamics
+    and control. Lecture notes in biomathematics, no. 56. Berlin: Springer.'
+  reason: The presented model is based on and extends the Hethcote & Yorke (1984)
+    framework, particularly the division into susceptible, symptomatic, and asymptomatic
+    states and population stratification. (Page 788, Section 2a).
+- doi: unknown
+  formatted: 'Garnett, G. P. & Anderson, R. M. 1993 Contact tracing and the estimation
+    of sexual mixing patterns: the epidemiology of gonococcal infections. Sexually
+    Transmitted Dis. 20, 181-191.'
+  reason: Cited for work on mixing patterns in gonorrhoea transmission models, which
+    is a core component of pair formation. (Page 788, Section 2a).
+- doi: unknown
+  formatted: Kretzschmar, M., Van Duynhoven, Y. T. H. P. & Severijnen, A. J. 1996
+    Modeling prevention strategies for gonorrhea and chlamydia using stochastic network
+    simulations. Am. J. Epidemiol. 144, 306-317.
+  reason: Cited for models including stochastically derived sex-partner networks,
+    representing an advanced approach to pair formation. (Page 787, Introduction).
+- doi: unknown
+  formatted: Ghani, A. C., Swinton, J. & Garnett, G. P. 1997 The role of sexual partnership
+    networks in the epidemiology of gonorrhea. Sexually Transmitted Dis. 24, 45-56.
+  reason: Cited for models including stochastically derived sex-partner networks.
+    (Page 787, Introduction).
+- doi: unknown
+  formatted: 'Jacquez, J. A., Simon, C. P., Koopman, J., Sattenspiel, L. & Perry,
+    T. 1988 Modelling and analysing HIV transmission: the effect of contact patterns.
+    Math. Biosci. 92, 119-199.'
+  reason: Cited for exploring the influence of mixing patterns (contact patterns)
+    in disease transmission models, a key aspect of pair formation. (Page 788, Section
+    2a).
+simulation_type: continuous
+summaries:
+- description: Mean time from first noticing symptoms to attending STD clinic for
+    women with gonorrhoea in Newark (days).
+  location: Page 791, Section 3a(i)
+  value: 12.0
+- description: Median time from first noticing symptoms to attending STD clinic for
+    women with gonorrhoea in Newark (days).
+  location: Page 791, Section 3a(i)
+  value: 7.0
+- description: Mean time from first noticing symptoms to attending STD clinic for
+    men with gonorrhoea in Newark (days).
+  location: Page 791, Section 3a(i)
+  value: 5.0
+- description: Median time from first noticing symptoms to attending STD clinic for
+    men with gonorrhoea in Newark (days).
+  location: Page 791, Section 3a(i)
+  value: 3.0
+- description: Proportion of men attending Newark STD clinic with gonorrhoea reporting
+    5+ sexual partners in the last year.
+  location: Page 791, Section 3a(ii) and Figure 6a
+  value: 0.45
+- description: Proportion of women attending Newark STD clinic with gonorrhoea reporting
+    1 sexual partner in the last year.
+  location: Page 791, Section 3a(ii) and Figure 6b
+  value: 0.55
+- description: Total sexual partnerships reported by 214 men with gonorrhoea over
+    the last month in Newark.
+  location: Page 791, Section 3a(ii)
+  value: 463.0
+- description: Total sexual partnerships reported by 49 women with gonorrhoea over
+    the last month in Newark.
+  location: Page 791, Section 3a(ii)
+  value: 63.0
+- description: Proportion of male patients at Newark STD clinic with gonorrhoea reporting
+    having sex while symptomatic.
+  location: Page 791, Section 3a(iii)
+  value: 0.16
+title: 'The transmission dynamics of gonorrhoea: modelling the reported behaviour
+  of infected patients from Newark, New Jersey'

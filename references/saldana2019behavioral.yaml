@@ -1,0 +1,132 @@
+confidence: 4
+description: 'The manuscript presents a compartmental SIS (Susceptible-Infectious-Susceptible)
+  model for sexually transmitted infections (STIs) that explicitly incorporates pair
+  formation and dissolution. The primary analysis focuses on a reduced three-dimensional
+  system of ordinary differential equations (ODEs) (System 2 in the manuscript) tracking
+  the proportions of: single infected individuals (x₁), pairs with one susceptible
+  and one infected individual (p₀₁), and the total prevalence of infection (ī = I/N,
+  where N is total population size). This reduction assumes that the partnership dynamics
+  are at equilibrium, with X_bar representing the equilibrium proportion of single
+  individuals in the total population N, given by X_bar = (σ + 2μ) / (σ + 2μ + ρ).
+
+  Key processes modeled in System (2) are:
+
+  1.  Pair Formation: New pairs are formed from single individuals. The rate of formation
+  of new S-I pairs (p₀₁) without immediate transmission during formation is proportional
+  to ρ(1-h)x₁(X_bar - x₁), where ρ is the pair formation rate, h is the transmission
+  probability if a discordant pair forms, x₁ is the proportion of single infected
+  individuals, and (X_bar - x₁) represents the proportion of single susceptible individuals.
+
+  2.  Pair Dissolution: Partnerships dissolve at a rate σ.
+
+  3.  Infection Transmission: Occurs either upon formation of a new discordant pair
+  (contributing to dī/dt via ρhx₁(X_bar - x₁)) or within existing S-I pairs (p₀₁)
+  at a rate φhp₀₁, where φ is the contact rate within partnerships.
+
+  4.  Recovery: Infected individuals recover at a rate determined by a general, density-dependent
+  recovery function Φ(ī). Specific forms explored are a sigmoid function Φ(I) = M
+  / (1 + exp[-k(I - I₀)]) and a saturated function Φ(I) = γ / (1 + aI), where γ =
+  Φ(0) is the baseline recovery rate.
+
+  5.  Population Demographics: Individuals leave the sexually active population at
+  a rate μ (e.g., mortality, aging out). The total population size N is constant.
+
+  The system of ODEs for the reduced model (System 2) is:
+
+  dx₁/dt = (σ + μ)ī – (2μ + ρ + σ)x₁ – Φ(ī)x₁
+
+  dp₀₁/dt = ρ(1 – h)x₁(X_bar - x₁) - (σ + φh + 2μ)p₀₁ + Φ(ī)(ī – x₁ – 2p₀₁)
+
+  dī/dt = ρhx₁(X_bar - x₁) + φhp₀₁ – μī – Φ(ī)ī'
+infection_model: SIS (Susceptible-Infectious-Susceptible)
+network_type: unimodal
+parameters:
+- description: Rate of leaving the sexually active population
+  estimate: 1.0
+  location: Table 2, page 4
+  symbol: μ
+- description: Rate of pair formation
+  estimate: 5.0
+  location: Table 2, page 4
+  symbol: ρ
+- description: Separation rate (rate of pair dissolution)
+  estimate: 2.0
+  location: Table 2, page 4
+  symbol: σ
+- description: Contact frequency within partnerships (sex acts per unit of time)
+  estimate: 52.0
+  location: Table 2, page 4
+  symbol: φ
+- description: Transmission probability per contact
+  estimate: 0.073
+  location: Table 2, page 4
+  symbol: h
+- description: Baseline infection clearance rate (Φ(0))
+  estimate: unknown
+  location: Page 4, text (defined as Φ(0)); Page 5, sensitivity range [0.5, 2]; specific
+    values like 1.0 used in examples (e.g. Page 9). Not given as a single baseline
+    in Table 2.
+  symbol: γ
+- description: Maximum recovery rate in the sigmoid recovery function Φ(I) = M / (1
+    + exp[-k(I - I₀)])
+  estimate: 52.0
+  location: Page 7, for M=52 example analysis
+  symbol: M
+- description: Speed of resource allocation parameter in the sigmoid recovery function
+    Φ(I) = M / (1 + exp[-k(I - I₀)])
+  estimate: 6.74
+  location: Page 7, for k=6.74 example analysis
+  symbol: k
+- description: Alert level of prevalence parameter in the sigmoid recovery function
+    Φ(I) = M / (1 + exp[-k(I - I₀)])
+  estimate: unknown
+  location: Page 7, varied 0-1, specific bifurcation value 0.6006 for M=52, k=6.74
+  symbol: I₀
+- description: Parameter for delay in treatment in the saturated recovery function
+    Φ(I) = γ / (1 + aI)
+  estimate: unknown
+  location: Page 8, varied, e.g., 0.1 and 2.0 used in examples
+  symbol: a
+population_structure: Structured by infection status (Susceptible, Infected) and partnership
+  status (single, paired).
+references:
+- doi: 10.1007/BF00277255
+  formatted: Dietz, K., & Hadeler, K. P. (1988). Epidemiological models for sexually
+    transmitted diseases. Journal of Mathematical Biology, 26(1), 1-25.
+  reason: Cited in the introduction as foundational work on epidemiological models
+    for STIs including pair formation, where paired susceptibles are temporarily immune.
+    Manuscript refers to it for the concept that transmission only occurs when a susceptible
+    and an infected individual form a partnership, and that S-S pairs are temporarily
+    immune if they do not dissolve the pair or seek other partners (page 1).
+- doi: 10.1016/S0025-5564(97)00099-9
+  formatted: Kretzschmar, M., & Dietz, K. (1998). The effect of pair formation and
+    variable infectivity on the spread of an infection without recovery. Mathematical
+    Biosciences, 148(1), 83-113.
+  reason: The model in the manuscript is described as a generalization of the work
+    presented in Kretzschmar and Dietz (1998) to an SIS structure (page 2).
+- doi: 10.3390/ijerph7020635
+  formatted: Muller, H., & Bauch, C. (2010). When do sexual partnerships need to be
+    accounted for in transmission models of human papillomavirus? International Journal
+    of Environmental Research and Public Health, 7(2), 635-650.
+  reason: Cited in the introduction for the importance of explicitly including sexual
+    partnerships in STI models (page 1).
+- doi: 10.1016/j.idm.2017.07.002
+  formatted: 'Kretzschmar, M., & Heijne, J. C. (2017). Pair formation models for sexually
+    transmitted infections: A primer. Infectious Disease Modelling, 2(3), 368-378.'
+  reason: The full model (System 1) in the manuscript is stated to be an extension
+    of the pair model proposed by Kretzschmar and Heijne (2017) (page 2).
+simulation_type: continuous
+summaries:
+- description: Average number of new partners per year per individual (behavioral
+    assumption).
+  location: Page 3, Section 2
+  value: 1.5
+- description: Percentage of the population in a partnership at steady state (behavioral
+    assumption).
+  location: Page 3, Section 2
+  value: 70.0
+- description: Fraction of single people at the equilibrium of partnership dynamics
+    (X*).
+  location: Table 2, page 4 (also derivable from 70% in partnership on page 3)
+  value: 0.3
+title: The role of behavioral changes and prompt treatment in the control of STIs

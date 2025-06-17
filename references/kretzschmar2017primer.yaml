@@ -1,0 +1,151 @@
+confidence: 4
+description: 'The manuscript introduces pair formation models for STIs, starting with
+  a basic model for partnership dynamics without infection (Section 2). This model
+  considers a population of singles (X) and individuals in pairs (P). Singles form
+  new pairs (rate constant ρ for a single to find a partner), and pairs separate (rate
+  constant σ). Individuals enter as singles (rate B) and leave the population from
+  any state (rate μ).
+
+  Equations:
+
+  dX/dt = B – μX – ρX + 2σP + 2μP
+
+  dP/dt = (1/2)ρX – σP – 2μP
+
+
+  This is then extended to an SIS (Susceptible-Infected-Susceptible) infection model
+  (Section 3). The population is divided into susceptible singles (X0), infected singles
+  (X1), susceptible-susceptible pairs (P00), susceptible-infected pairs (P01), and
+  infected-infected pairs (P11). Transmission occurs in P01 pairs (rate β), and infected
+  individuals recover (rate γ). Pair formation occurs via random mixing of singles
+  based on their proportions among all singles X_total = X0+X1.
+
+  Equations (1) describe this system:
+
+  dX0/dt = B – μX0 – ρX0 + σ(2P00 + P01) + μ(2P00 + P01) + γX1
+
+  dX1/dt = –μX1 – ρX1 + σ(2P11 + P01) + μ(2P11 + P01) – γX1
+
+  dP00/dt = (1/2)ρX0^2/X_total – σP00 – 2μP00 + γP01
+
+  dP01/dt = ρX0X1/X_total – σP01 – 2μP01 – γP01 - βP01 + 2γP11
+
+  dP11/dt = (1/2)ρX1^2/X_total – σP11 – 2μP11 + βP01 – 2γP11
+
+
+  Finally, a model with two types of partnerships (steady, P, and casual, Q) is introduced
+  (Section 5). These differ in dissolution rates (σ1, σ2) and potentially transmission
+  rates (β1, β2). A fraction `f` of new partnerships are steady. This leads to a larger
+  system of ODEs (Equations 2 for dX0/dt, dX1/dt and Equations 3 for dPij/dt, dQij/dt).
+  For example:
+
+  dX0/dt = B – μX0 – ρX0 + σ1(2P00 + P01) + σ2(2Q00 + Q01) + μ(2P00 + P01 + 2Q00 +
+  Q01) + γX1
+
+  (And 7 more equations for dX1/dt, dPij/dt and dQij/dt as per Eq. 2 and 3).
+
+  The models assume continuous time and are deterministic. The manuscript is a primer
+  and does not provide sufficient detail for full reproduction of all derivations
+  or more complex extensions mentioned (e.g. concurrency models).'
+infection_model: SIS
+network_type: unimodal
+parameters:
+- description: Recruitment rate of new individuals into the single population.
+  estimate: unknown
+  location: Section 2, Page 2
+  symbol: B
+- description: Per-capita rate of leaving the population (death or ceasing sexual
+    activity) for both singles and paired individuals.
+  estimate: unknown
+  location: Section 2, Page 2
+  symbol: μ
+- description: Per-capita rate for a single individual to form a pair. ρX is the total
+    rate of singles leaving state X to form pairs; (1/2)ρX is the rate of formation
+    of new pair entities.
+  estimate: 5.0
+  location: Section 2, Page 2 (derived from example data with B=μ=0)
+  symbol: ρ
+- description: Per-capita rate at which pairs separate into singles. σP is the rate
+    of dissolution of P pair entities.
+  estimate: 2.1
+  location: Section 2, Page 2 (derived from example data with B=μ=0)
+  symbol: σ
+- description: Natural clearance rate of infection (recovery rate from infected to
+    susceptible).
+  estimate: unknown
+  location: Section 3, Page 3
+  symbol: γ
+- description: Transmission rate of infection within a discordant pair (e.g., P01
+    type).
+  estimate: unknown
+  location: Section 3, Page 3
+  symbol: β
+- description: Dissolution rate for steady pairs.
+  estimate: unknown
+  location: Section 5, Page 5
+  symbol: σ1
+- description: Dissolution rate for casual pairs.
+  estimate: unknown
+  location: Section 5, Page 5
+  symbol: σ2
+- description: Fraction of newly formed partnerships that are steady.
+  estimate: unknown
+  location: Section 5, Page 5
+  symbol: f
+- description: Transmission rate of infection in steady discordant pairs.
+  estimate: unknown
+  location: Section 5, Page 6
+  symbol: β1
+- description: Transmission rate of infection in casual discordant pairs.
+  estimate: unknown
+  location: Section 5, Page 6
+  symbol: β2
+population_structure: structured by partnership type (steady vs casual) and infection
+  status for the most complex ODE model presented
+references:
+- doi: 10.1007/BF00276902
+  formatted: Dietz, K., & Hadeler, K. P. (1988). Epidemiological models for sexually
+    transmitted diseases. Journal of Mathematical Biology, 26(1), 1-25.
+  reason: Cited as one of the first introductions of pair formation models to mathematical
+    epidemiology for STIs. Modifies models from mathematical demography. Introduces
+    age-structured two-sex population model with infection transmission. (Page 2)
+- doi: 10.1016/S0025-5564(97)10005-X
+  formatted: Kretzschmar, M., & Dietz, K. (1998). The effect of pair formation and
+    variable infectivity on the spread of an infection without recovery. Mathematical
+    Biosciences, 148(1), 83-113.
+  reason: Cited for formulating simplified versions of pair formation epidemic models
+    and comparing them with models not accounting for partnership duration. (Page
+    2)
+- doi: 10.1007/BF00275336
+  formatted: Hadeler, K. P., Waldstätter, R., & Wörz-Busekros, A. (1988). Models for
+    pair formation in bisexual populations. Journal of Mathematical Biology, 26(6),
+    635-649.
+  reason: Cited for mathematical analysis of pair formation models in structured (bisexual)
+    populations. (Page 2)
+- doi: 10.1016/0025-5564(94)90044-0
+  formatted: Kretzschmar, M. E., Jager, J. C., Reinking, D. P., Van Zessen, G., &
+    Brouwers, H. (1994). The basic reproduction ratio Ro for a sexually transmitted
+    disease in a pair formation model with two types of pairs. Mathematical Biosciences,
+    124(2), 181-205.
+  reason: Cited for the R0 formula (Eq 5) in a pair formation model with two types
+    of partnerships (steady and casual). (Page 7)
+- doi: 10.1016/j.tpb.2012.07.003
+  formatted: Leung, K. Y., Kretzschmar, M. E., & Diekmann, O. (2012). Dynamic concurrent
+    partnership networks incorporating demography. Theoretical Population Biology,
+    82(3), 229-239.
+  reason: Cited as an extension to the pair formation approach capable of describing
+    concurrent partnerships. (Page 2, Page 9)
+simulation_type: continuous
+summaries:
+- description: Mean number of new partners per year reported by survey participants
+    (used in an example calculation).
+  location: Section 2, Page 2
+  value: 1.5
+- description: Fraction of survey participants reporting being in a partnership (used
+    in an example calculation).
+  location: Section 2, Page 2
+  value: 0.7
+- description: Average infectious period for chlamydia infection in years.
+  location: Section 6, Page 7
+  value: 1.0
+title: 'Pair formation models for sexually transmitted infections: A primer'

@@ -1,0 +1,153 @@
+confidence: 5
+description: "The manuscript does not define a new, self-contained pair-formation\
+  \ model with explicit simulation algorithms. Instead, it meticulously describes\
+  \ a methodology to estimate age- and gender-specific heterosexual partnership formation\
+  \ and dissolution rates, and partnership durations, using data from a population-based\
+  \ survey (2003-2004 Seattle RDD survey, N=1,194, ages 18-39). These estimates are\
+  \ intended as parameters for mathematical models of STI transmission.\nThe core\
+  \ estimation approach is the \"observed-plus-imputed\" method. This method combines:\n\
+  1.  Egocentric partnership data: Start and end dates for up to five most recent\
+  \ partners.\n2.  Imputation for missing data:\n    *   Missing days/months in reported\
+  \ partnerships were imputed (e.g., random day assignment, assumed average durations\
+  \ like 7 or 67 days based on context).\n    *   Partnerships beyond the five enumerated\
+  \ (for individuals reporting >5 lifetime partners) were imputed. If one partner\
+  \ was \"missing\" from enumeration but accounted for in lifetime total, it was assumed\
+  \ to begin at sexual debut. For multiple \"missing\" partners, their start dates\
+  \ were equally distributed between age at sexual debut and the start of the earliest\
+  \ enumerated partnership.\n    *   Durations for these imputed, unenumerated partnerships\
+  \ were randomly sampled with replacement from the durations of fully described partnerships,\
+  \ matched by gender, age (±1 year), and constrained by the maximum possible duration\
+  \ for that imputed partnership.\nPartnership Formation Rates: Calculated per age\
+  \ group by dividing the total number of partnerships (observed + imputed) begun\
+  \ at each age by the total person-time observed at that age. Person-time accrued\
+  \ from age 16.\nPartnership Dissolution: Analyzed using Kaplan-Meier techniques\
+  \ on observed and imputed partnership durations to calculate dissolution probabilities\
+  \ over time.\nThe paper also presents \"observed-only\" analyses (limited to explicitly\
+  \ reported recent partnerships) for comparison, highlighting that these tend to\
+  \ underestimate formation rates and overestimate durations due to sampling biases.\
+  \ The \"observed-plus-imputed\" method is presented as a way to mitigate these biases."
+infection_model: none
+network_type: bimodal
+parameters:
+- description: Peak partnership formation rate for women (age 19, observed-plus-imputed
+    data)
+  estimate: 0.9
+  location: Page 5, paragraph 2; Abstract
+  symbol: Annual partnership formation rate
+- description: Peak partnership formation rate for men (age 20, observed-plus-imputed
+    data)
+  estimate: 1.36
+  location: Page 5, paragraph 3 (text states 1.36, abstract 1.4)
+  symbol: Annual partnership formation rate
+- description: Overall partnership formation rate for women (observed-plus-imputed
+    data)
+  estimate: 0.54
+  location: Page 5, paragraph 2
+  symbol: Annual partnership formation rate
+- description: Overall partnership formation rate for men (observed-plus-imputed data)
+  estimate: 0.85
+  location: Page 5, paragraph 2
+  symbol: Annual partnership formation rate
+- description: Partnership formation rate for women in an extant partnership (per
+    100 partnership-years)
+  estimate: 6.0
+  location: Page 5, paragraph 4
+  symbol: Annual partnership formation rate (concurrent)
+- description: Partnership formation rate for women not in an extant partnership (per
+    100 non-partnership-years)
+  estimate: 31.0
+  location: Page 5, paragraph 4
+  symbol: Annual partnership formation rate (sequential)
+- description: Partnership formation rate for men in an extant partnership (per 100
+    partnership-years)
+  estimate: 10.0
+  location: Page 5, paragraph 4
+  symbol: Annual partnership formation rate (concurrent)
+- description: Partnership formation rate for men not in an extant partnership (per
+    100 non-partnership-years)
+  estimate: 35.0
+  location: Page 5, paragraph 4
+  symbol: Annual partnership formation rate (sequential)
+- description: Dissolution probability for male-reported partnerships by 1 year (observed-plus-imputed
+    data)
+  estimate: 0.739
+  location: Page 6, paragraph 2 (text 73.9%, Fig 5 table 0.74)
+  symbol: P(dissolution by 1 year)
+- description: Dissolution probability for female-reported partnerships by 1 year
+    (observed-plus-imputed data)
+  estimate: 0.674
+  location: Page 6, paragraph 2 (text 67.4%, Fig 5 table 0.67)
+  symbol: P(dissolution by 1 year)
+- description: Dissolution probability for male-reported partnerships by 3 years (observed-plus-imputed
+    data)
+  estimate: 0.901
+  location: Page 6, paragraph 2 (text 90.1%, Fig 5 table 0.90)
+  symbol: P(dissolution by 3 years)
+- description: Dissolution probability for female-reported partnerships by 3 years
+    (observed-plus-imputed data)
+  estimate: 0.846
+  location: Page 6, paragraph 2 (text 84.6%, Fig 5 table 0.85)
+  symbol: P(dissolution by 3 years)
+population_structure: Structured by age (18-39 years) and gender. Data from Seattle
+  residents participating in a 2003-2004 Random Digit Dialing (RDD) survey.
+references:
+- doi: 10.1038/333514a0
+  formatted: 1. Anderson RM, May RM. Epidemiological parameters of HIV transmission.
+    Nature. 1988;333:514-519.
+  reason: Classic paper on epidemiological parameters for HIV, likely including partnership
+    dynamics relevant to pair formation models_
+- doi: 10.1097/00007435-200011000-00009
+  formatted: 2. Anderson RM, Garnett GP. Mathematical models of the transmission and
+    control of sexually transmitted diseases. Sex Transm Dis. 2000;27:636-643.
+  reason: Directly discusses mathematical models for STIs, which rely on pair formation
+    dynamics_
+- doi: unknown
+  formatted: '3. Morris M, Goodreau S, Moody J. Sexual networks, concurrency, and
+    STD/HIV. In: Holmes KK, Sparling PF, Stamm WE, et al., eds. Sexually transmitted
+    diseases. 4th ed. New York: McGraw-Hill; 2008.'
+  reason: Book chapter focusing on sexual networks and concurrency, core concepts
+    in pair formation modeling_
+- doi: 10.1093/oxfordjournals.aje.a008937
+  formatted: 5. Kretzschmar M, van Duynhoven YT, Severijnen AJ. Modeling prevention
+    strategies for gonorrhea and Chlamydia using stochastic network simulations. Am
+    J Epidemiol. 1996;144:306-317.
+  reason: Employs stochastic network simulations, a type of pair-formation model,
+    for STIs_
+- doi: 10.1097/00002030-199610000-00012
+  formatted: 7. Morris M, Podhisita C, Wawer MJ, Handcock MS. Bridge populations in
+    the spread of HIV/AIDS in Thailand. AIDS. 1996;10:1265-1271.
+  reason: The manuscript states this reference developed a model to estimate partnership
+    formation rates_
+- doi: 10.1093/aje/153.1.90
+  formatted: 16. Kretzschmar M, Welte R, van den Hoek A, Postma MJ. A comparative
+    model-based analysis of screening programs for Chlamydia trachomatis infections.
+    Am J Epidemiol. 2001;153:90-101.
+  reason: A model-based analysis that would utilize or discuss pair formation parameters;
+    cited by the manuscript for dissolution rates.
+simulation_type: continuous
+summaries:
+- description: Mean age at sexual debut (years)
+  location: Page 4, Table 1
+  value: 17.6
+- description: Mean number of lifetime sexual partners
+  location: Page 4, Table 1
+  value: 10.9
+- description: Mean number of sexual partners in the last year
+  location: Page 4, Table 1
+  value: 1.4
+- description: Proportion of all partnerships (observed-plus-imputed) ending within
+    1 week
+  location: Page 5, last paragraph; Abstract
+  value: 0.237
+- description: Proportion of all partnerships (observed-plus-imputed) ending within
+    12 weeks
+  location: Page 5, last paragraph; Abstract
+  value: 0.512
+- description: Median partnership duration for men (observed-plus-imputed, weeks)
+  location: Page 6, paragraph 2
+  value: 10.0
+- description: Median partnership duration for women (observed-plus-imputed, weeks)
+  location: Page 6, paragraph 2
+  value: 17.0
+title: Age- and Gender-Specific Estimates of Partnership Formation and Dissolution
+  Rates in the Seattle Sex Survey

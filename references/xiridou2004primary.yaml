@@ -1,0 +1,200 @@
+confidence: 5
+description: 'The manuscript describes a deterministic compartmental model of HIV
+  transmission among homosexual men, based on ordinary differential equations (ODEs)
+  previously defined in Xiridou et al. [16] and extended in this study. The model
+  categorizes homosexual men by HIV infection status (susceptible/X0, Primary HIV
+  Infection/X1, Chronic HIV Infection/X2) and partnership status (single or in a steady
+  pair).
+
+
+  Steady partnership dynamics:
+
+  - Singles form steady partnerships at a rate ρ. Partners are chosen proportionally
+  based on the availability of different types of singles in the population (e.g.,
+  an X0 single forms a pair with an X1 single at a rate proportional to ρ * X0 * X1
+  / X_total_singles).
+
+  - Steady partnerships have a mean duration of 1/σ (dissolution rate σ), after which
+  individuals return to their respective single pools.
+
+
+  Casual partnership dynamics:
+
+  - Both single men and men in steady partnerships engage in casual sexual contacts.
+  These are modeled as instantaneous events.
+
+  - Single men acquire casual contacts at a rate Ps.
+
+  - Men in steady partnerships acquire casual contacts at a rate Pm.
+
+  - The proportion of casual contacts that are URAI is αa, and UIAI is αb.
+
+
+  Sexual behavior within steady partnerships:
+
+  - The frequency of URAI is φa acts/year and UIAI is φb acts/year.
+
+  - A parameter (1-θ) exists for reduction in risky casual behavior for uninfected
+  men in steady pairs with uninfected partners due to negotiated safety, though its
+  specific effect on pair formation rates versus transmission probability within contacts
+  needs clarification from the original model [16].
+
+
+  Population demographics:
+
+  - There is an influx of uninfected single men into the population at a rate v (symbol
+  υ in Appendix).
+
+  - Men leave the sexually active population at a rate μ (so 1/μ is the average duration
+  of sexual activity).
+
+  - The initial population size is N.
+
+
+  The model tracks the number of individuals in each single state (X0, X1, X2) and
+  in each type of pair (P00, P01, P02, P11, P12, P22, where subscripts denote the
+  infection status of the partners). The full system of differential equations is
+  provided in the Appendix of the manuscript.'
+infection_model: 'Dynamic, deterministic, compartmental model using ODEs. HIV infection
+  has two stages: Primary HIV Infection (PHI) and Chronic HIV Infection (CHI). Infectivity
+  is higher during PHI. HIV transmission is possible through unprotected receptive
+  anal intercourse (URAI) or unprotected insertive anal intercourse (UIAI). Transmission
+  probabilities per act depend on the act type, the infection stage of the source
+  partner (PHI or CHI), and their HAART status. HAART reduces infectivity and increases
+  the time to AIDS development. The model considers treatment initiated during PHI
+  or CHI.'
+network_type: unimodal
+parameters:
+- description: Rate of acquiring casual partners for men with a steady partner.
+  estimate: 8.0
+  location: Page 2, paragraph 4 & Table 1
+  symbol: Pm
+- description: Rate of acquiring casual partners for men without a steady partner.
+  estimate: 22.0
+  location: Page 2, paragraph 4 & Table 1
+  symbol: Ps
+- description: Proportion of casual contacts that are URAI.
+  estimate: 0.05
+  location: Page 2, paragraph 4 & Table 1
+  symbol: αa
+- description: Proportion of casual contacts that are UIAI.
+  estimate: 0.05
+  location: Page 2, paragraph 4 & Table 1
+  symbol: αb
+- description: Rate of acquiring steady partners.
+  estimate: unknown
+  location: Table 1 & Page 3, paragraph 1 (calculated as ρ = σ + 2μ)
+  symbol: ρ
+- description: Duration of steady partnerships.
+  estimate: 1.5
+  location: Page 2, paragraph 4 & Table 1
+  symbol: 1/σ
+- description: Frequency of all types of sexual intercourse between steady partners.
+  estimate: unknown
+  location: Table 1
+  symbol: φ
+- description: Frequency of URAI intercourse between steady partners.
+  estimate: 15.0
+  location: Page 2, paragraph 4 & Table 1
+  symbol: φa
+- description: Frequency of UIAI intercourse between steady partners.
+  estimate: 15.0
+  location: Page 2, paragraph 4 & Table 1
+  symbol: φb
+- description: Percentage reduction in risky behaviour with casual partners for uninfected
+    men with an uninfected steady partner as a result of negotiated safety agreements.
+  estimate: unknown
+  location: Table 1
+  symbol: 1-θ
+- description: Initial population size.
+  estimate: unknown
+  location: Table 1
+  symbol: N
+- description: Influx of uninfected singles.
+  estimate: unknown
+  location: Table 1 (symbol v), Appendix (symbol υ)
+  symbol: v
+- description: Length of time during which men are sexually active.
+  estimate: unknown
+  location: Table 1
+  symbol: 1/μ
+population_structure: Population of homosexual men, structured by HIV infection status
+  (uninfected, Primary HIV Infection - PHI, Chronic HIV Infection - CHI) and partnership
+  status (single, or in a steady pair with a partner of a given infection status).
+references:
+- doi: 10.1097/00002030-200305020-00008
+  formatted: Xiridou M, Geskus R, de Wit J, Coutinho R, Kretzschmar M. The contribution
+    of steady and casual partnerships to the incidence of HIV infection among homosexual
+    men in Amsterdam. AIDS 2003, 17:1029–1038.
+  reason: This is the foundational model upon which the current manuscript's model
+    is based and extended. It explicitly details the pair formation and partnership
+    dynamics used in this study (Page 2).
+- doi: 10.1016/s0025-5564(97)00109-8
+  formatted: Kretzschmar M, Dietz K. The effect of pair formation and variable infectivity
+    on the spread of an infection without recovery. Math Biosci 1998, 148:83–113.
+  reason: Cited in the discussion (Page 6) as a pair-formation model (without casual
+    contacts), providing context and comparison for the current study's approach to
+    modeling partnerships and infection stages (PHI/CHI).
+- doi: 10.1097/00042560-199411000-00008
+  formatted: Jacquez J, Koopman J, Simon C, Longini I. Role of the primary infection
+    in epidemics of HIV infection in gay cohorts. J Acquired Immune Defic Syndr 1994,
+    7:1169–1184.
+  reason: Cited in the discussion (Page 6) as a relevant model considering HIV stages,
+    infectivity, and sexual activity groups. It is used for comparing PHI's role,
+    particularly in relation to casual partnership modeling aspects of the current
+    study's model (Page 6).
+- doi: 10.1097/00042560-199703010-00009
+  formatted: Koopman J, Jacquez J, Welch G, Simon C, Foxman B, Pollock S, et al. The
+    role of early HIV infection in the spread of HIV through populations. J Acquired
+    Immune Defic Syndr Hum Retroviruses 1997, 14:249-258.
+  reason: Cited in the discussion (Page 6) alongside Jacquez et al. [45] as a model
+    distinguishing HIV stages and infectivity, considering activity groups (e.g.,
+    by age), and used for comparing predictions regarding PHI's contribution, especially
+    concerning casual partnerships (Page 6).
+simulation_type: continuous
+summaries:
+- description: Annual HIV incidence (baseline model, 6 years after HAART for CHI intro,
+    no PHI treatment)
+  location: Page 4, Paragraph 1
+  value: 0.008
+- description: Proportion of total new infections from casual partners with PHI (baseline
+    model)
+  location: Table 2 & Page 4, Paragraph 1
+  value: 0.0642
+- description: Proportion of total new infections from casual partners with CHI (baseline
+    model)
+  location: Table 2 & Page 4, Paragraph 1
+  value: 0.1068
+- description: Proportion of total new infections from steady partners with PHI (baseline
+    model)
+  location: Table 2 & Page 4, Paragraph 1
+  value: 0.0479
+- description: Proportion of total new infections from steady partners with CHI (baseline
+    model)
+  location: Table 2 & Page 4, Paragraph 1
+  value: 0.781
+- description: Total proportion of new infections occurring during PHI (baseline model)
+  location: Table 2 & Page 4, Paragraph 1
+  value: 0.1121
+- description: Proportion of new infections from casual partners that occur during
+    PHI (baseline model)
+  location: Table 2 & Page 4, Paragraph 2
+  value: 0.3512
+- description: Proportion of new infections from steady partners that occur during
+    PHI (baseline model)
+  location: Table 2 & Page 4, Paragraph 2
+  value: 0.0591
+- description: Total proportion of new infections attributed to casual partners (baseline
+    model)
+  location: Table 2 & Page 4, Paragraph 1
+  value: 0.1711
+- description: Proportion of infections occurring during PHI that are attributed to
+    casual partners (baseline model)
+  location: Table 2 & Page 4, Paragraph 4
+  value: 0.5726
+- description: Proportion of infections occurring during CHI that are attributed to
+    casual partners (baseline model)
+  location: Table 2 & Page 4, Paragraph 4
+  value: 0.1206
+title: Primary HIV infection as source of HIV transmission within steady and casual
+  partnerships among homosexual men

@@ -1,0 +1,152 @@
+confidence: 4
+description: 'The manuscript describes a stochastic, discrete-time microsimulation
+  model of pair formation and dissolution in a heterosexual population of fixed size
+  (N=2000). The model aims to study the effect of concurrent partnerships on HIV spread.
+
+
+  Key features of the pair-formation model:
+
+  1.  **Population**: Fixed size (N=2000), structured by sex (men and women having
+  different concurrency patterns and degree distributions).
+
+  2.  **Partnership Types**: Two types are modeled: spousal (long-term) and non-spousal
+  (short-term, e.g., consensual lovers).
+
+  3.  **Partnership Dissolution**: Existing partnerships dissolve at constant rates:
+  `σ1` for spousal and `σ2` for non-spousal. This implies exponential partnership
+  durations, with mean durations estimated from the 1994 Ugandan sexual network survey
+  data (239.1 months for spousal, 28.4 months for non-spousal).
+
+  4.  **Partnership Formation**: New partnerships form based on a process governed
+  by an overall rate parameter `ρ` and a parameter `φ` (the fraction of new partnerships
+  that are spousal). The deterministic average rates of formation are given by `ρφ(M
+  - P - Q)` for spousal and `ρ(1-φ)(M - P - Q)` for non-spousal, where `P` and `Q`
+  are the current numbers of spousal and non-spousal pairs, respectively. `M` is the
+  maximum number of possible partnerships in the network, defined as `3 * (Nm + Nf)/2`,
+  reflecting a data-informed maximum of 3 partners per person. The parameters `ρ`
+  and `φ` are derived from empirical estimates of equilibrium `P` (670) and `Q` (122),
+  dissolution rates (`σ1`, `σ2`), and `M`, using equilibrium equations.
+
+  5.  **Concurrency**: The model explicitly incorporates concurrent partnerships.
+  The probability of forming a new partnership is conditioned on the current number
+  of partners (degree) of both individuals involved. Individuals can form new partnerships
+  even if already partnered, up to the maximum of 3 partners.
+
+  6.  **Mixing**: Mixing by degree is proportional. Men and women have different marginal
+  rates of concurrency. The mixing matrix `r_ij` (where `r_ij = i*m_i*N_m * j*f_j*N_f
+  / D^2`) is used to represent proportional mixing by degree and is an input to the
+  simulation. This means individuals with many partners are as likely to pair with
+  monogamous individuals as with multi-partnered individuals, given their marginal
+  degree distributions.
+
+  7.  **Simulation Dynamics**: The simulation starts by running the partnership formation
+  and dissolution process until it reaches a dynamic equilibrium. After this, the
+  disease transmission process is initiated.
+
+  8.  **Data Source**: Model parameters and structures are based on the 1994 Ugandan
+  Sexual Network Study in Rakai District.'
+infection_model: HIV transmission is modeled as a stochastic process. Disease transmission
+  occurs within active partnerships between susceptible and infected individuals at
+  a constant rate of 0.05 per day. This rate is stated to be consistent with per-act
+  female-to-male transmission probability estimates from Thailand (Mastro et al.,
+  1994). There are no vital dynamics (births, deaths unrelated to HIV) or disease-related
+  mortality considered in the 5-year simulation runs, so the population size remains
+  constant.
+network_type: bimodal
+parameters:
+- description: Separation rate for spousal partnerships (per month). Derived as 1
+    / (mean spousal duration).
+  estimate: 1.0
+  location: Page 7, Table 1 (mean duration is 239.1 months)
+  symbol: σ1
+- description: Separation rate for non-spousal partnerships (per month). Derived as
+    1 / (mean non-spousal duration).
+  estimate: 1.0
+  location: Page 7, Table 1 (mean duration is 28.4 months)
+  symbol: σ2
+- description: Partnership formation rate parameter (per month, assuming σ1 and σ2
+    are in monthly units).
+  estimate: 0.00010564
+  location: Page 9, equation (6)
+  symbol: ρ
+- description: Fraction of new partnerships that are spousal.
+  estimate: 0.389
+  location: Page 9, equation (5)
+  symbol: φ
+- description: Maximum number of partners an individual can have (data collection
+    limit).
+  estimate: 3.0
+  location: Page 8
+  symbol: max_partners_per_person
+population_structure: Structured by sex (men and women with different concurrency
+  levels) and partnership type (spousal and non-spousal). The model uses empirical
+  data from Rakai District, Uganda, respondents aged 15-49. Degree distributions are
+  sex-specific.
+references:
+- doi: 10.1006/mab.1996.0007
+  formatted: 'Kretzschmar, M. and Morris, M. (1996). Measures of concurrency in networks
+    and the spread of infectious disease. Math. Biosc., 133: 165-95.'
+  reason: This paper is cited as providing a complete description of the modeling
+    framework used in the manuscript (page 7). It specifically discusses concurrency
+    measures relevant to pair-formation models and disease spread.
+- doi: unknown
+  formatted: 'Morris, M. and Kretzschmar, M. (1997). Concurrent partnerships and the
+    spread of HIV. AIDS, 11: 641-648.'
+  reason: This is previous work by the same authors on concurrent partnerships and
+    HIV spread, likely foundational to the model presented (page 3, 12).
+- doi: 10.1016/0025-5564(92)90005-5
+  formatted: 'Watts, C. H. and May, R. M. (1992). The Influence of Concurrent Partnerships
+    on the Dynamics of HIV/AIDS. Math. Biosc., 108: 89-104.'
+  reason: Cited as an early work showing that concurrent partnerships can dramatically
+    change epidemic course (page 3), relevant to pair-formation modeling with concurrency.
+- doi: unknown
+  formatted: 'Altmann, M. (1995). Susceptible-Infected-Removed epidemic models with
+    dynamic partnerships. J. Math. Biol., 33: 661-675.'
+  reason: Cited for identifying concurrent partnerships as an important behavioral
+    factor and for modeling dynamic partnerships (page 3).
+simulation_type: discrete
+summaries:
+- description: Percent of ongoing partnerships that are spousal (from 1994 Ugandan
+    data)
+  location: Table 1, Page 5
+  value: 84.6
+- description: Percent of ongoing partnerships that are non-spousal (from 1994 Ugandan
+    data)
+  location: Table 1, Page 5
+  value: 15.3
+- description: Mean duration of spousal partnerships (months, from 1994 Ugandan data)
+  location: Table 1, Page 5
+  value: 239.1
+- description: Mean duration of non-spousal partnerships (months, from 1994 Ugandan
+    data)
+  location: Table 1, Page 5
+  value: 28.4
+- description: Mean degree of partnerships per person (observed parameters, momentary)
+  location: Page 7 (stated as 0.8), Table 3 (simulation 1 output as 0.79)
+  value: 0.79
+- description: Mean number of partners accumulated per person during one year of simulation
+    (observed parameters)
+  location: Page 7
+  value: 0.87
+- description: Number of spousal partnerships at equilibrium (P)
+  location: Page 8
+  value: 670.0
+- description: Number of non-spousal partnerships at equilibrium (Q)
+  location: Page 9
+  value: 122.0
+- description: Male to Female ratio in the sexually active population (observed scenario,
+    start of run)
+  location: Table 3, Page 11
+  value: 0.89
+- description: Percentage of persons in concurrent partnerships (observed scenario,
+    end of run)
+  location: Table 3, Page 11
+  value: 6.7
+- description: Percentage of persons single (observed scenario, end of run)
+  location: Table 3, Page 11
+  value: 28.1
+- description: Concurrency index kappa (median value, observed scenario)
+  location: Page 15
+  value: 0.22
+title: A microsimulation study of the effect of concurrent partnerships on the spread
+  of HIV in Uganda

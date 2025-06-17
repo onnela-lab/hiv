@@ -1,0 +1,147 @@
+confidence: 4
+description: 'The manuscript describes a dynamic network model for Men who have Sex
+  with Men (MSM), adapted from previous models for HIV and gonorrhea (Refs 3,4) and
+  implemented using the EpiModel R package (Ref 8). The model simulates sexual behavior
+  among a population of 10,000 MSM.
+
+  Individuals (men) can have three types of partnerships:
+
+  1. Main partnerships: An individual can have zero or one main partnership at a time.
+  These are assumed to last 477 days on average.
+
+  2. Casual partnerships: An individual can have zero, one, or two casual partnerships
+  at a time. These are assumed to last 166 days on average.
+
+  3. One-time partnerships: These represent single sexual encounters that are not
+  repeated and are assumed to last 1 day.
+
+  Men can have main, casual, and one-time partnerships concurrently.
+
+  The population is structured into six sexual activity strata, which are informed
+  by data from MSM in Atlanta, Georgia (2016–2019, Refs 3,4,6). These strata primarily
+  differ in their rate of one-time partnership formation. For instance, men in the
+  lowest activity stratum (stratum 1) have a 0.000 probability of forming a one-time
+  partnership on any given day, while men in the highest activity stratum (stratum
+  6) have a 0.286 probability (details for intermediate strata are not fully specified
+  but are between these endpoints).
+
+  The manuscript does not provide explicit formation rate parameters for main and
+  casual partnerships across all strata, nor does it fully detail the partner choice
+  mechanisms or how concurrency limits are managed beyond the stated maximums for
+  each partnership type. These details would be needed for full model reproduction.'
+infection_model: 'Monkeypox virus (MPXV) infection model. The model incorporates MPXV
+  natural history and MSM care-seeking behaviors based on previous publications and
+  metrics observed during the 2022 outbreak (Ref 7, Supplementary Box 2). Transmission
+  is modeled based on a per-act transmission probability. This probability was adjusted
+  to create two scenarios: a lower transmission scenario where MPXV would eventually
+  infect approximately 15% of the MSM population, and a higher transmission scenario
+  resulting in 25% infection. Simulations started with an introduction of 10 highly
+  active MPXV cases into the susceptible population. The model tracks individual risk
+  and acquisition of MPXV.'
+network_type: unimodal
+parameters:
+- description: Average duration of main partnerships (days)
+  estimate: 477.0
+  location: Page 1, Paragraph 3
+  symbol: unknown
+- description: Average duration of casual partnerships (days)
+  estimate: 166.0
+  location: Page 1, Paragraph 3
+  symbol: unknown
+- description: Duration of one-time partnerships (days)
+  estimate: 1.0
+  location: Page 1, Paragraph 3
+  symbol: unknown
+- description: Number of sexual activity strata
+  estimate: 6.0
+  location: Page 1, Paragraph 3
+  symbol: unknown
+- description: Probability of forming a one-time partnership on any given day for
+    sexual activity stratum 1 (lowest activity)
+  estimate: 0.0
+  location: Table footnote, page 2
+  symbol: unknown
+- description: Probability of forming a one-time partnership on any given day for
+    sexual activity stratum 6 (highest activity)
+  estimate: 0.286
+  location: Table footnote, page 2
+  symbol: unknown
+- description: Simulated population size of MSM
+  estimate: 10000.0
+  location: Page 1, Paragraph 4
+  symbol: unknown
+population_structure: Structured by six levels of sexual activity, which differ in
+  their rate of one-time partnership formation. These strata were informed by data
+  from MSM in Atlanta, Georgia (2016–2019).
+references:
+- doi: 10.1016/j.epidem.2020.100386
+  formatted: 'Weiss KM, Goodreau SM, Morris M, et al. Egocentric sexual networks of
+    men who have sex with men in the United States: Results from the ARTnet study.
+    Epidemics 2020;30:100386.'
+  reason: Cited as a source (Ref 3, Page 1) for adapting the previous models and for
+    data informing partnership strata. The ARTnet study provides data on sexual networks
+    crucial for pair formation models developed by these authors previously and used
+    here as a basis for the current model parameterization (partnership number, type,
+    duration).
+- doi: 10.1093/infdis/jiw223
+  formatted: Jenness SM, Goodreau SM, Rosenberg E, et al. Impact of the Centers for
+    Disease Control’s HIV preexposure prophylaxis guidelines for men who have sex
+    with men in the United States. J Infect Dis 2016;214:1800-7.
+  reason: Cited as a source (Ref 4, Page 1) for adapting the previous models and for
+    data informing partnership strata. This paper utilizes network models, likely
+    including pair formation dynamics, developed by the same research group and provides
+    context for the current model's framework for MSM populations in the US context
+    for STI transmission dynamics and partnership data (number, type, duration).
+- doi: 10.18637/jss.v084.i08
+  formatted: 'Jenness SM, Goodreau SM, Morris M. EpiModel: An R package for mathematical
+    modeling of infectious disease over networks. J Stat Softw 2018;84:8.'
+  reason: This is the software package (EpiModel) used for the simulations (Page 1).
+    EpiModel is specifically designed for building and simulating dynamic network
+    models, including pair formation processes, for infectious diseases. Its description
+    would detail the types of pair formation models it supports.
+simulation_type: continuous
+summaries:
+- description: Proportion of total daily partnerships that are one-time partnerships
+    in the model.
+  location: Page 1, Abstract; Page 2, Paragraph 1
+  value: 0.03
+- description: Proportion of sexual contacts on any given day occurring in one-time
+    partnerships in the model.
+  location: Page 1, Abstract; Page 2, Paragraph 1
+  value: 0.16
+- description: Mean number of partners (all types) in the past year for lowest sexual
+    activity stratum (stratum 1).
+  location: Table, Page 2
+  value: 1.8
+- description: Mean number of partners (all types) in the past year for highest sexual
+    activity stratum (stratum 6).
+  location: Table, Page 2
+  value: 124.7
+- description: Mean number of one-time only partners in the past 3 weeks for lowest
+    sexual activity stratum (stratum 1).
+  location: Table, Page 2
+  value: 0.0
+- description: Mean number of one-time only partners in the past 3 weeks for highest
+    sexual activity stratum (stratum 6).
+  location: Table, Page 2
+  value: 5.8
+- description: Percentage of population in sexual activity stratum 1 (lowest).
+  location: Table, Page 2
+  value: 19.0
+- description: Percentage of population in sexual activity stratum 2.
+  location: Table, Page 2
+  value: 19.0
+- description: Percentage of population in sexual activity stratum 3.
+  location: Table, Page 2
+  value: 19.0
+- description: Percentage of population in sexual activity stratum 4.
+  location: Table, Page 2
+  value: 19.0
+- description: Percentage of population in sexual activity stratum 5.
+  location: Table, Page 2
+  value: 19.0
+- description: Percentage of population in sexual activity stratum 6 (highest).
+  location: Table, Page 2
+  value: 5.0
+title: Modeling the Impact of Sexual Networks in the Transmission of Monkeypox virus
+  Among Gay, Bisexual, and Other Men Who Have Sex With Men – United States, 2022

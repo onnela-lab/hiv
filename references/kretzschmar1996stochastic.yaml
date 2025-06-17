@@ -1,0 +1,188 @@
+confidence: 4
+description: "The manuscript describes a discrete-time stochastic Markov model simulating\
+  \ STD spread in a heterosexual population of 10,000 individuals (sex ratio 1:1,\
+  \ max 5 partners per individual). Time steps are 1 day. Individuals are characterized\
+  \ by age (15-64 years, 5 age groups, replacement at 65), gender, sexual activity\
+  \ level (c=0 for low, c=1 for high/core), disease status, time since infection,\
+  \ number of current partners (d), and a list of current partners (N).\n\nSexual\
+  \ Activity (Core Group):\nIndividuals aged 15-34 (or new entrants at age 15) are\
+  \ assigned to the core group (c=1) with probability 0.05. Otherwise, they are non-core\
+  \ (c=0). Individuals become non-core (c=0) when they age to 35. \n\nPair Formation:\n\
+  1.  Potential new partnerships: Each day, n_p = (Population Size / 2) - P(t) potential\
+  \ partnership 'slots' are available, where P(t) is the current number of partnerships.\n\
+  2.  Partnership initiation: For each of the n_p slots, an attempt to form a new\
+  \ partnership occurs with probability p_form = 0.006.\n3.  Partnership type: If\
+  \ a partnership is initiated, it is designated as 'steady' with probability f=0.2,\
+  \ otherwise it's 'casual'.\n4.  Partner selection and confirmation: A male (y) and\
+  \ a female (x) are drawn randomly from the population. They form the partnership\
+  \ with a mixing probability phi(x,y). This selection process (drawing x and y) is\
+  \ repeated until a pair is successfully formed for the initiated partnership. The\
+  \ mixing probability phi(x,y) = phi_age(j,k) * phi_cd(cx,cy,dx,dy) depends on:\n\
+  \    a.  Partnership type i (1 for steady, 2 for casual).\n    b.  Age classes (j\
+  \ for female, k for male): phi_age(j,k) = 1 if j=k (same age class), and phi_age(j,k)\
+  \ = (0.2)^(1+|j-k|) if j!=k. (The paper notes that the model's resulting age mixing\
+  \ in Table 3 is asymmetric, while this formula is symmetric, suggesting other model\
+  \ dynamics or a simplification in the textual formula.)\n    c.  Activity levels\
+  \ (cx, cy) and number of current partners (dx, dy):\n        i.  For steady partnerships\
+  \ (phi^1_cd): Equals 1 if both individuals are currently single (dx=0 and dy=0);\
+  \ 0 otherwise.\n        ii. For casual partnerships (phi^2_cd): Equals 1 if both\
+  \ are core (cx=1, cy=1). Equals 0.1 if one is core and the other is non-core and\
+  \ single (e.g., cx=1, cy=0, dy=0). Equals 0.01 if both are non-core and single (cx=0,\
+  \ cy=0, dx=0, dy=0). Equals 0 otherwise.\n\nPair Separation:\n- Steady partnerships\
+  \ separate with a daily probability sigma1 = 0.0004.\n- Casual partnerships separate\
+  \ with a daily probability sigma2 = 0.1.\n\nDemographics:\n- Individuals are replaced\
+  \ upon reaching age 65 with a new 15-year-old individual, whose activity status\
+  \ c' is assigned according to the rules for new entrants.\n\nThe model was run for\
+  \ a pre-simulation period to reach a stationary state for partnership dynamics before\
+  \ introducing infection."
+infection_model: 'The model simulates two STDs: gonorrhea and chlamydia. Individuals
+  can be in one of three states: susceptible (s=0), symptomatically infected (s=1),
+  or asymptomatically infected (s=2). Upon infection from s=0, an individual becomes
+  s=1 with a disease- and gender-specific probability p, or s=2 with probability 1-p
+  (details in Table 4 of the manuscript).
+
+  Transmission occurs within established partnerships between a susceptible individual
+  and an infectious partner (s=1 or s=2, provided time since infection T is greater
+  than the incubation period). Daily transmission probabilities are disease- and gender-specific
+  (Table 4) and are calculated based on per-contact transmission probabilities and
+  fixed daily contact frequencies (0.25/day for steady, 1/day for casual partnerships).
+
+  Infection parameters (Table 4) include: percentage of asymptomatic infections, incubation
+  times (men/women), patient delay + treatment times (men/women), and recovery rates
+  from asymptomatic/symptomatic states (men/women).
+
+  Treatment: Symptomatically infected individuals (s=1) who have passed the incubation
+  time and patient delay period are treated and become susceptible (s=0) with 100%
+  effectiveness. Contact tracing is implemented: upon treatment of a symptomatic individual,
+  all their current partners listed in N are also immediately set to susceptible (s=0).
+  There is no snowball tracing (partners of partners are not traced).
+
+  Screening: At specified times, a percentage of a chosen subgroup can be screened,
+  and if found infected, their disease status is set to susceptible (s=0).'
+network_type: bimodal
+parameters:
+- description: Probability a newly formed partnership is 'steady'
+  estimate: 0.2
+  location: Page 309 (PDF p.4), section 'The model', 1.c.i
+  symbol: f
+- description: Probability of initiating a partnership formation process for each
+    available 'slot' (N_population/2 - P(t)) per day
+  estimate: 0.006
+  location: Page 309 (PDF p.4), section 'The model', 1.b
+  symbol: p
+- description: Daily probability of separation for steady partnerships
+  estimate: 0.0004
+  location: Page 310 (PDF p.5), section 'The model', 3
+  symbol: sigma1
+- description: Daily probability of separation for casual partnerships
+  estimate: 0.1
+  location: Page 310 (PDF p.5), section 'The model', 3
+  symbol: sigma2
+- description: Probability an individual aged 15-34 (or new entrant at 15) is assigned
+    to high activity group (c=1)
+  estimate: 0.05
+  location: Page 309 (PDF p.4), section 'The model', c
+  symbol: P_core_young
+- description: Maximum number of concurrent partners allowed for an individual (d
+    ranges 0-5)
+  estimate: 5.0
+  location: Page 309 (PDF p.4), section 'The model', d
+  symbol: d_max
+- description: Factor in age mixing probability phi_age(j,k) = factor^(1+|j-k|) for
+    different age classes j and k
+  estimate: 0.2
+  location: Page 310 (PDF p.5), definition of phi_age(j,k)
+  symbol: phi_age_decay_factor
+- description: Component of mixing probability for a casual partnership between a
+    core individual and a single non-core individual
+  estimate: 0.1
+  location: Page 310 (PDF p.5), definition of phi_cd (casual)
+  symbol: phi_casual_core_noncore_single
+- description: Component of mixing probability for a casual partnership between two
+    single non-core individuals
+  estimate: 0.01
+  location: Page 310 (PDF p.5), definition of phi_cd (casual)
+  symbol: phi_casual_noncore_noncore_single
+population_structure: 'The model uses an age-structured heterosexual population. Age
+  is structured into five classes: 15-24, 25-34, 35-44, 45-54, and 55-64 years. The
+  population includes a ''highly sexually active core group'' (defined by activity
+  status c=1), with rules for assignment to this group based on age (individuals aged
+  15-34 or new entrants assigned with 0.05 probability; individuals become non-core
+  at age 35).'
+references:
+- doi: unknown
+  formatted: Dietz K, Hadeler KP. Epidemiological models for sexually transmitted
+    diseases. J Math Biol 1988;26:1-25.
+  reason: Cited on p.306 as providing analogous deterministic models for the stochastic
+    pair formation and disease transmission processes used in this manuscript. Likely
+    to discuss pair formation principles relevant to STD modeling. (Ref 5)
+- doi: unknown
+  formatted: Kretzschmar M. Deterministic and stochastic pair formation models for
+    the spread of sexually transmitted diseases. J Biol Sys 1995;3:789-801.
+  reason: Cited on p.306 and p.309 as a source for technical details of the model
+    used in the manuscript. Explicitly about pair formation models. (Ref 6)
+- doi: unknown
+  formatted: Kretzschmar M, Reinking DP, Zessen G van, et al. A network modelling
+    approach for assessing the efficiency of prevention strategies. J Math Soc 1995;19:351-74.
+  reason: Cited on p.306 and p.309 as a source for technical details of the model
+    used in the manuscript. Likely describes the pair formation network model. (Ref
+    7)
+- doi: unknown
+  formatted: Kretzschmar M, Morris M. Measures of concurrency in networks and the
+    spread of infectious disease. Math Biosci 1996;133:165-95.
+  reason: Cited on p.306 and p.309 as a source for technical details of the model
+    used in the manuscript. Relevant to network structure and pair formation dynamics.
+    (Ref 8)
+- doi: unknown
+  formatted: 'Kretzschmar M, Reinking DP, Brouwers H, et al. Network models: from
+    paradigm to mathematical tool. In: Kaplan EH, Brandeau M, eds. Modeling the AIDS
+    epidemic. New York: Raven Press, 1994:561-83.'
+  reason: Cited on p.309 as discussing variants of the model used. (Ref 31)
+- doi: unknown
+  formatted: Kretzschmar M, Reinking DP, Zessen G van, et al. The basic reproduction
+    ratio Ro for a STD in a pair formation model with two types of pairs. Math Biosci
+    1994;124:181-205.
+  reason: Cited on p.309 as discussing related deterministic models. Specifically
+    mentions a 'pair formation model'. (Ref 32)
+simulation_type: discrete
+summaries:
+- description: Average duration of steady partnerships in the model population
+  location: Page 309 (PDF p.4), section 'The model'
+  value: 2518.5
+- description: Average duration of casual partnerships in the model population (days)
+  location: Page 309 (PDF p.4), section 'The model'
+  value: 10.0
+- description: Frequency of sexual contact in steady partnerships (contacts per day)
+    in the model
+  location: Page 309 (PDF p.4), section 'The model'
+  value: 0.25
+- description: Frequency of sexual contact in casual partnerships (contacts per day)
+    in the model
+  location: Page 309 (PDF p.4), section 'The model'
+  value: 1.0
+- description: Percentage of the model population that was single in the stationary
+    state of pair formation
+  location: Page 310 (PDF p.5), last paragraph before 'Prevention scenarios'
+  value: 28.7
+- description: Percentage of the model population that had one partner in the stationary
+    state of pair formation
+  location: Page 310 (PDF p.5), last paragraph before 'Prevention scenarios'
+  value: 71.0
+- description: Percentage of the model population that had more than one partner at
+    a time in the stationary state of pair formation
+  location: Page 310 (PDF p.5), last paragraph before 'Prevention scenarios'
+  value: 0.3
+- description: Effective contact rate (C = v/m + m) for the model simulations of prevention
+    scenarios
+  location: Page 312 (PDF p.7), first paragraph of 'Reference scenario'
+  value: 2.85
+- description: Duration of steady relationships for ages 18-24 years from survey data
+    (years)
+  location: Page 307 (PDF p.2), section 'Survey data'
+  value: 4.0
+- description: Average frequency of sexual intercourse in steady partnerships from
+    survey data (times per month)
+  location: Page 307 (PDF p.2), section 'Survey data'
+  value: 7.0
+title: Modeling Prevention Strategies for Gonorrhea and Chlamydia Using Stochastic
+  Network Simulations

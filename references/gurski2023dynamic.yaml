@@ -1,0 +1,173 @@
+confidence: 4
+description: "The manuscript presents a deterministic, autonomous population model\
+  \ for HIV transmission among men who have sex with men (MSM), formulated as a system\
+  \ of ordinary differential equations (ODEs). The model is an SIaIcIv type, where\
+  \ the population is divided into Susceptible (S), Acutely Infected (Ia), Chronically\
+  \ Infected (Ic), and Virally Suppressed (Iv) compartments. The model incorporates\
+  \ both casual and long-term sexual partnerships. The key innovation is how it accounts\
+  \ for the impact of long-term partnerships on the infection rate without explicitly\
+  \ tracking individual pairs. This is achieved by calculating the expected value\
+  \ of the rate of infection from these extended contacts, using a linearization of\
+  \ this expected value. \n\nThe total rate of infection (λ) is the sum of the rate\
+  \ from casual partners (λ^z) and long-term partners (λ^P). The rate from casual\
+  \ partners (λ^z) follows a standard mass action form: z * (βa*Ia + βc*Ic + βv*Iv)\
+  \ / N, where z is the rate of casual sexual encounters and βj are transmission probabilities\
+  \ per act. \n\nThe rate of infection from long-term partners (λ^P) is further divided\
+  \ into two components: λ^PI, for infection from a partner chosen while already infectious,\
+  \ and λ^PS, for infection from a partner who was chosen while susceptible but became\
+  \ infected later (potentially through an outside partnership, modeled by concurrency\
+  \ parameter ξ). \n\nFor λ^PI (Section 3.1, Eq. 3-14), the derivation involves an\
+  \ integral over the history of partnerships, considering the probability of acquiring\
+  \ an infected partner at a past time k, the probability of partnership survival\
+  \ until current time t, and the rates of transmission (Xa, Xc, Xv) from the three\
+  \ infected classes. Linear approximations are used for the historical population\
+  \ sizes N(k) and numbers in each infected class Ij(k) to make the calculation tractable.\
+  \ The resulting λ^PI is expressed as U^I - λ*Xa*U^S, where U^I depends on current\
+  \ infected populations and their rates of change, and U^S depends on the susceptible\
+  \ population and total population change rate.\n\nFor λ^PS (Section 3.2, Eq. 16-23),\
+  \ the derivation considers a partner acquired while susceptible. It involves the\
+  \ probability of acquiring a susceptible partner, partnership survival, the probability\
+  \ the partner is still susceptible (accounting for external partnerships via ξλ),\
+  \ and the probability the partner becomes infected during the partnership. This\
+  \ also involves an integral and linearization, resulting in λ^PS = λ*ψ*ξ*U^S + λ*W^S,\
+  \ where ψ is the transmission rate from a newly infected long-term partner and W^S\
+  \ is a term related to population dynamics.\n\nThe overall infection rate λ is then\
+  \ solved for implicitly from the combined equation λ = λ^z + λ^PI + λ^PS (Eq. 24-25).\
+  \ The model tracks susceptible individuals infected by casual partners versus long-term\
+  \ partners for each infection stage, leading to a system of 11 ODEs (Eq. 27). Transmission\
+  \ rates within long-term partnerships (Xj) account for the number of long-term partners\
+  \ per year (p/τ), condom use (θap, αp), and number of sexual contacts (nj) over\
+  \ the partnership duration for each stage j. Concurrency is incorporated via the\
+  \ parameter ξ in the λ^PS term."
+infection_model: 'HIV transmission model with three stages of infection: acute (Ia),
+  chronic (Ic), and virally suppressed (Iv). This is described as an SIaIcIv model.'
+network_type: unimodal
+parameters:
+- description: Long-term Partnership Duration.
+  estimate: 3.57
+  location: Table 1
+  symbol: τ
+- description: Average number of casual partners per year.
+  estimate: 12.05
+  location: Table 1
+  symbol: z
+- description: Average number of long-term partners per year (rate of acquiring long-term
+    partners).
+  estimate: 0.21
+  location: Table 1, page 16
+  symbol: p/τ
+- description: Average probability of an extra-partnership sexual act (measure of
+    concurrency).
+  estimate: 0.264
+  location: Table 1
+  symbol: ξ
+- description: Average number of sexual acts per year.
+  estimate: 52.0
+  location: Table 1
+  symbol: c
+- description: Transmission probability per sexual act from an acutely infected partner
+    (Ia).
+  estimate: 0.081
+  location: 'Table 1 (formula: 10.8 * βc, with βc=0.0075)'
+  symbol: βa
+- description: Transmission probability per sexual act from a chronically infected
+    partner (Ic).
+  estimate: 0.0075
+  location: Table 1
+  symbol: βc
+- description: Transmission probability per sexual act from a virally suppressed partner
+    (Iv).
+  estimate: unknown
+  location: Implied by model equations (Eq. 2, definition of Xv on page 16) but value
+    not provided in Table 1.
+  symbol: βv
+- description: Condom effectiveness.
+  estimate: 0.7
+  location: Table 1
+  symbol: θ
+- description: Condom usage in casual partnerships.
+  estimate: 0.85
+  location: Table 1
+  symbol: αz
+- description: Condom usage in long-term partnerships.
+  estimate: 0.2
+  location: Table 1
+  symbol: αp
+- description: Transition rate from acute infection stage (Ia) to chronic or virally
+    suppressed stage.
+  estimate: 4.0
+  location: Table 1 (derived from 1/ρ = 1/4 year)
+  symbol: ρ
+- description: Fraction of acutely infected individuals (Ia) who transition directly
+    to the virally suppressed stage (Iv) due to early intervention.
+  estimate: 0.1
+  location: Table 1
+  symbol: σ
+- description: Rate of obtaining viral suppression (transition from Ic to Iv).
+  estimate: 0.3158
+  location: 'Table 1 (value 12/38), page 15 (derivation: 1/ω = 38 months)'
+  symbol: ω
+- description: Rate of losing viral suppression (transition from Iv to Ic).
+  estimate: 0.235
+  location: Table 1
+  symbol: η
+population_structure: The model focuses on the MSM (men who have sex with men) population.
+  Within this population, individuals are structured by infection status (Susceptible,
+  Acute, Chronic, Virally Suppressed) and engage in casual or long-term partnerships.
+  No other explicit structuring (e.g., by age, detailed sexual activity levels beyond
+  partnership type) is described for the core model equations.
+references:
+- doi: https://doi.org/10.1016/j.idm.2017.07.002
+  formatted: 'Kretzschmar M, Heijne J (2017) Pair formation models for sexually transmitted
+    infections: a primer. Infect Dis Model 2:368–378.'
+  reason: The title explicitly mentions 'Pair formation models' and it is cited as
+    a review of such models (page 16).
+- doi: https://doi.org/10.1016/0025-5564(92)90006-i
+  formatted: Watts C, May R (1992) The influence of concurrent partnerships on the
+    dynamics of HIV/AIDS. Math Biosci 108:89–104.
+  reason: This is an early and influential paper modeling the impact of partnership
+    dynamics (specifically concurrency) on HIV/AIDS. Cited as foundational work (page
+    4, 5).
+- doi: https://doi.org/10.1016/j.idm.2019.05.002
+  formatted: Gurski K (2019) A sexually transmitted infection model with long-term
+    partnerships in homogeneous and heterogenous populations. Infect Dis Model 4:142–160.
+  reason: This is a prior work by the first author that develops the long-term partnership
+    model component used and extended in the current manuscript (cited on page 2,
+    3, 4, 5).
+- doi: https://doi.org/10.1016/s0025-5564(97)10008-6
+  formatted: Kretzschmar ME, Dietz K (1998) The effect of pair formation and variable
+    infectivity on the spread of an infection without recovery. Math Biosci 148(1):83–113.
+  reason: The title refers to 'pair formation' and its effect on infection spread
+    (cited on page 3).
+- doi: https://doi.org/10.1016/j.epidem.2018.05.003
+  formatted: Leng T, Keeling MJ (2018) Concurrency of partnerships, consistency with
+    data, and control of sexually transmitted infections. Epidemics 25:35–46.
+  reason: This reference discusses concurrency of partnerships in STI models, a key
+    aspect related to pair dynamics (cited on page 2, 4).
+simulation_type: continuous
+summaries:
+- description: Percentage of new HIV infections contributed by acutely infected individuals
+    in long-term partnerships, based on model results.
+  location: Page 3
+  value: 0.2
+- description: Percentage of new HIV infections attributed to chronically infected
+    partners in long-term partnerships.
+  location: Page 30
+  value: 0.58
+- description: Percentage of new HIV infections contributed by acutely infected individuals
+    in long-term partnerships (alternative value).
+  location: Page 31
+  value: 0.1
+- description: Percentage of new HIV infections contributed by acutely infected individuals
+    in casual partnerships.
+  location: Page 31
+  value: 0.09
+- description: Percentage of new HIV infections contributed by virally suppressed
+    individuals in casual partnerships.
+  location: Page 30
+  value: 0.01
+- description: Total percentage of new HIV infections from long-term partnerships
+    (all infectivity classes combined).
+  location: Page 31
+  value: 0.78
+title: Staged HIV transmission and treatment in a dynamic model with long-term partnerships

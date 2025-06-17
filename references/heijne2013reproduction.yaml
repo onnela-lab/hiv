@@ -1,0 +1,105 @@
+confidence: 4
+description: 'The manuscript presents a deterministic, continuous-time, compartmental
+  pair-formation model for sexually transmitted infections (STIs), specifically using
+  Chlamydia trachomatis as an example. The population is structured into singles and
+  pairs. Individuals transition from single to paired status at a rate ρ (pair formation
+  rate) and pairs dissolve at a rate σ (separation rate) or due to mortality (μ).
+  The model equations (System of ODEs 1) describe the dynamics of the proportion of
+  singles (X) and pairs (P, where X+2P=1 for the simplified, non-sex-stratified version).
+
+
+  For the STI dynamics, the model is an SIRS (Susceptible-Infected-Recovered-Susceptible)
+  type. It explicitly distinguishes between males and females. Individuals can be
+  single females (Xf), single males (Xm), or in pairs (P_xy, where x is female status,
+  y is male status). Infection states are Susceptible (S), Infected (I), and Recovered
+  (R). Transmission occurs within discordant pairs (e.g., SI) with a probability β
+  per sex act, and φ sex acts per week. Infected individuals recover naturally at
+  sex-specific rates (γf for females, γm for males). Recovered individuals lose immunity
+  at a rate ε and return to the susceptible state. A key feature is the modeling of
+  re-infection, both of a partner by an index case within an ongoing partnership,
+  and of an index case by their partner if the index case recovers while the partner
+  is still infectious. The full system of ODEs (System of ODEs 2) tracks the proportions
+  of individuals in each sex/infection state category for singles (e.g., Xf,S, Xm,I)
+  and pairs (e.g., P_SI, P_II). The total population N = Xf + Xm + 2P = 1. The model
+  is used to derive and analyze three reproduction numbers: Ro (basic reproduction
+  number), Rc (case reproduction number), and Rp (partnership reproduction number).
+  The baseline model assumes homogeneous sexual behavior, with an extension to heterogeneous
+  sexual behavior (low/high activity classes) discussed in Appendix B.'
+infection_model: 'SIRS model for a curable STI (Chlamydia trachomatis). States: Susceptible
+  (S), Asymptomatically Infected (I), Recovered (R). Transmission occurs within pairs.
+  Natural clearance of infection. Loss of immunity leading to S. Re-infection within
+  partnerships is a key feature.'
+network_type: bimodal
+parameters:
+- description: Pair formation rate (per year)
+  estimate: 5.0
+  location: Table 2
+  symbol: p
+- description: Separation rate (per year)
+  estimate: 1.9
+  location: Table 2
+  symbol: σ
+- description: Duration of sexual active life (years)
+  estimate: 9.0
+  location: Table 2
+  symbol: 1/μ
+- description: Number of unprotected sex acts (per week)
+  estimate: 1.0
+  location: Table 2
+  symbol: Φ
+- description: Transmission probability (per sex act)
+  estimate: 0.1
+  location: Table 2 (calibrated to 3% prevalence)
+  symbol: β
+- description: Infectious duration in women (years)
+  estimate: 1.0
+  location: Table 2
+  symbol: 1/γf
+- description: Infectious duration in men (years)
+  estimate: 1.0
+  location: Table 2
+  symbol: 1/γm
+- description: Duration of immunity (years)
+  estimate: 0.0
+  location: Table 2 (value 'None'), Page 6, Section 4 ('no period of immunity'), Figure
+    3c (baseline dot)
+  symbol: 1/ε
+population_structure: Structured by sex (male/female) for infection dynamics. Baseline
+  model assumes homogeneous sexual behavior. Appendix B describes an extension with
+  two sexual activity classes (low and high).
+references:
+- doi: 10.1007/BF00276902
+  formatted: Dietz, K., Hadeler, K.P., 1988. Epidemiological models for sexually transmitted
+    diseases. J. Math. Biol. 26, 1–25.
+  reason: Cited as first describing pair models for STIs (page 2).
+- doi: 10.1016/0025-5564(94)90036-7
+  formatted: Kretzschmar, M., Jager, J.C., Reinking, D.P., Van Zessen, G., Brouwers,
+    H., 1994. The basic reproduction ratio RO for a sexually transmitted disease in
+    a pair formation model with two types of pairs. Math. Biosci. 124, 181–205.
+  reason: Cited as an adoption of pair models and discusses Ro in pair models (page
+    2).
+- doi: 10.1093/infdis/jiq050
+  formatted: Heijne, J.C.M., Althaus, C.L., Herzog, S.A., Kretzschmar, M., Low, N.,
+    2011. The role of reinfection and partner notification in the efficacy of Chlamydia
+    screening programs. J. Infect. Dis. 203, 372–377.
+  reason: The model used in the current manuscript is described as being based on
+    this reference (page 2).
+simulation_type: continuous
+summaries:
+- description: Average partnership duration (years)
+  location: Page 3
+  value: 0.5
+- description: Average gap duration between partnerships (years)
+  location: Page 3
+  value: 0.2
+- description: Average number of new partners per year
+  location: Page 3
+  value: 1.5
+- description: Percentage of the population in a partnership at any time
+  location: Page 3
+  value: 70.0
+- description: Baseline prevalence of Chlamydia trachomatis used for calibration (%)
+  location: Table 2 footnote b, Page 6 Section 4
+  value: 3.0
+title: Case and partnership reproduction numbers for a curable sexually transmitted
+  infection

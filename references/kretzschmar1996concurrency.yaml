@@ -1,0 +1,148 @@
+confidence: 4
+description: "The manuscript describes a stochastic, discrete-time, agent-based simulation\
+  \ model to study the effects of concurrent partnerships on epidemic spread. The\
+  \ population consists of N individuals with a 1:1 male-female ratio. Each individual\
+  \ is characterized by disease status (Susceptible or Infected), current number of\
+  \ partners (degree), and the identities of their partners.\n\nThe simulation proceeds\
+  \ in discrete time steps (1 day). In each time step, the following events occur\
+  \ in sequence:\n\n1.  **Pair Formation:** \n    The number of potential new partnerships\
+  \ to be formed in this time step is `n = N/2 - P(t)`, where `P(t)` is the current\
+  \ total number of active pairs. The model attempts to form `n` new pairs. For each\
+  \ of these `n` attempts:\n    a.  **Partner Selection using Mixing Function (φ):**\
+  \ A pair of potential partners (one male `x`, one female `y`) is selected. This\
+  \ selection process involves repeatedly drawing random males and females until a\
+  \ pair is found for which a stochastic condition based on the mixing function `φ(x,y)`\
+  \ is met. The mixing function `φ(x,y)` represents the probability that individuals\
+  \ `x` and `y` will form a partnership upon encounter, based on their current degrees.\
+  \ The specific procedure is: \n        i.  Draw a random male (`x_candidate`) and\
+  \ a random female (`y_candidate`).\n        ii. Calculate `φ(x_candidate, y_candidate)`\
+  \ based on their current degrees using one of the specified mixing functions (Serial\
+  \ Monogamy, Random, Assortative, or Disassortative - see Equations 40-43).\n   \
+  \     iii. A random number is drawn; if it's less than `φ(x_candidate, y_candidate)`,\
+  \ then `x_candidate` and `y_candidate` are selected as the partners for this attempt.\
+  \ Otherwise, repeat from step (i) until such a pair is selected.\n    b.  **Partnership\
+  \ Actualization:** Once a pair (`x`, `y`) has been selected through the process\
+  \ above, this pair forms an actual partnership with probability `p` (pair-formation\
+  \ probability).\n\n    Different mixing functions `φ(x,y)` are used to model different\
+  \ partnership patterns:\n    *   **Serial Monogamy (Eq 40):** `φ(x,y) = 1` if `deg(x)\
+  \ = 0` and `deg(y) = 0` (both are single), and `0` otherwise.\n    *   **Random\
+  \ Mixing (Eq 41):** `φ(x,y) = 1` if `deg(x) = 0` and `deg(y) = 0`; otherwise `1-ξ`.\
+  \ `ξ` is a parameter ranging from 0 (pure random distribution of partnerships) to\
+  \ 1 (serial monogamy).\n    *   **Assortative Mixing (Eq 42):** `φ(x,y) = (1-ξ)\
+  \ + ξ * (deg(x) * deg(y) / d_max^2)`, where `d_max` is the maximum possible degree.\n\
+  \    *   **Disassortative Mixing (Eq 43):** `φ(x,y) = (1-ξ) + ξ * ((deg(x) - deg(y))\
+  \ / d_max)^2`.\n\n2.  **Disease Transmission:** \n    For every existing partnership\
+  \ between a susceptible (S) individual and an infected (I) individual, disease transmission\
+  \ from I to S occurs with probability `λ` within that time step. The model is an\
+  \ SI (Susceptible-Infected) model, meaning there is no recovery from infection.\n\
+  \n3.  **Pair Separation:** \n    Every existing partnership dissolves with probability\
+  \ `σ` in each time step.\n\nThe model aims to keep the mean number of partners per\
+  \ individual constant across simulations by setting the number of new partnership\
+  \ formation attempts to `n = N/2 - P(t)`, effectively limiting total partnerships\
+  \ to N/2. Demographic processes and recovery from infection are excluded."
+infection_model: SI model. In each discrete time step, for every existing partnership
+  between a susceptible (S) and an infected (I) individual, disease transmission from
+  I to S occurs with probability λ. There is no recovery from infection.
+network_type: bimodal
+parameters:
+- description: Total population size.
+  estimate: 2000.0
+  location: Table 1, page 182
+  symbol: N
+- description: Probability that a selected pair (via mixing function) forms a partnership,
+    per attempt. There are n = N/2 - P(t) attempts per time step.
+  estimate: 0.01
+  location: Table 1, page 182 (symbol 'p'); rule 1a page 181 (symbol 'ρ', assumed
+    to be 'p')
+  symbol: p
+- description: Probability that an existing pair separates per time step.
+  estimate: 0.005
+  location: Table 1, page 182
+  symbol: σ
+- description: Probability of disease transmission within an S-I pair per time step.
+  estimate: 0.05
+  location: Table 1, page 182
+  symbol: λ
+- description: Parameter controlling the type of mixing in Random, Assortative, and
+    Disassortative mixing functions. ξ=1 corresponds to serial monogamy in Eq 41.
+    ξ=0 corresponds to a 'pure random distribution of partnerships' baseline for Eqs
+    41-43.
+  estimate: unknown
+  location: Page 180 (Eqs 41, 42, 43), Page 182 (simulations varied ξ from 0 to 1)
+  symbol: ξ
+- description: Maximum number of simultaneous partnerships an individual can have,
+    used as a parameter in assortative and disassortative mixing functions.
+  estimate: 10.0
+  location: Page 180 (Eqs 42, 43), Page 182 (text states d_max was set to 10)
+  symbol: d_max
+population_structure: Structured by sex (male/female with a 1:1 ratio) and by current
+  degree (number of partners), which influences pair formation through the mixing
+  function φ. Otherwise, individuals are homogeneous.
+references:
+- doi: unknown
+  formatted: K. Dietz and K. P. Hadeler, Epidemiological models for sexually transmitted
+    diseases, J. Math. Biol. 26:1-25 (1988).
+  reason: Cited in the manuscript (page 166, page 176) as having introduced pair-formation
+    models in epidemiology, providing the basis for the model used.
+- doi: unknown
+  formatted: 'M. Kretzschmar, D. P. Reinking, H. Brouwers, G. van Zessen, and J. C.
+    Jager, Network models: from paradigm to mathematical tool, in Modeling the AIDS
+    Epidemic: Planning, Policy, and Prediction, E. H. Kaplan and M. Brandeau, Eds.,
+    Raven Press, New York, 1994, pp. 561-583.'
+  reason: Cited in the manuscript (page 176) as the source of the specific stochastic
+    pair-formation model that was adapted and used for the simulations presented.
+- doi: unknown
+  formatted: K. Dietz, On the transmission dynamics of HIV, Math. Biosci. 90:397-414
+    (1988).
+  reason: Cited in the manuscript (page 166) along with Dietz and Hadeler (1988) in
+    the context of introducing pair-formation models.
+- doi: unknown
+  formatted: X. Luo and C. Castillo-Chavez, Limit behaviour of pair formation for
+    a large dissolution rate, J. Math. Syst. Estimation, Control 3:247-264 (1993).
+  reason: Cited in the manuscript (page 166) as a discussion of a stochastic pair
+    formation model.
+- doi: unknown
+  formatted: 'K. Dietz and D. Tudor, Triangles in heterosexual HIV transmission, in
+    AIDS Epidemiology: Methodological Issues, N. P. Jewell, K. Dietz, and V. Farewell,
+    Eds., Birkhäuser, Boston, 1992, pp. 143-155.'
+  reason: Cited in the manuscript (page 167) for extending a pair-formation model
+    to include concurrent partnerships ('triangles').
+- doi: unknown
+  formatted: M. Altmann, SIR epidemic models with dynamic partnerships, J. Math. Biol.
+    33:661-675 (1995).
+  reason: Cited in the manuscript (page 167) as discussing a model where partnerships
+    form independently, relating to concurrency.
+simulation_type: discrete
+summaries:
+- description: Average number of active partnerships in the population across all
+    simulation types.
+  location: Page 182, paragraph 2
+  value: 666.0
+- description: Percentage of the population that is paired at any point in time under
+    serial monogamy.
+  location: Page 182, paragraph 2
+  value: 67.0
+- description: Average partnership duration in simulated scenarios.
+  location: Page 182, paragraph 1 (calculated as 1/σ = 1/0.005 days = 200 days; 200/30
+    ≈ 6-7 months)
+  value: 200.0
+- description: Fraction of population with 0 partners (singles) for serial monogamy
+    (K3=0, Trial 1).
+  location: Table 2, page 184
+  value: 0.3337
+- description: Fraction of population with 1 partner for serial monogamy (K3=0, Trial
+    1).
+  location: Table 2, page 184
+  value: 0.6663
+- description: Fraction of population with 0 partners (singles) for random mixing
+    (ξ=0, K3=0.66, Trial 10).
+  location: Table 2, page 184
+  value: 0.5132
+- description: Index of concurrency (K3) for serial monogamy simulations (Trial 1).
+  location: Table 2, page 184
+  value: 0.0
+- description: Index of concurrency (K3) for random mixing simulations with ξ=0 (Trial
+    10).
+  location: Table 2, page 184
+  value: 0.66
+title: Measures of Concurrency in Networks and the Spread of Infectious Disease

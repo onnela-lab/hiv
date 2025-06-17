@@ -1,0 +1,161 @@
+confidence: 4
+description: "The model is a stochastic, individual-based, dynamic sexual network\
+  \ model for chlamydia transmission in Britain, extending Ghani et al. [15]. It is\
+  \ exclusively heterosexual.\n\nPartnership Formation:\n- Individuals are available\
+  \ to form new partnerships if their current number of partnerships is less than\
+  \ their desired number. The desired number is 1 for 95% of those <35 years old and\
+  \ for all those 35+ years old; it is 2 for 5% of those <35 years old.\n- Potential\
+  \ pairs are selected randomly from the pool of available individuals.\n- Partnerships\
+  \ form stochastically according to age-mixing preference matrices derived from Natsal\
+  \ 2000 data (men tend to partner with women somewhat younger, with an age difference\
+  \ mode of 0 years and a mean of 2 years).\n- A gap between partnerships is enforced,\
+  \ during which an individual cannot form any new partnerships. The mean gap is 14\
+  \ days, with the duration drawn from a negative binomial distribution (dispersion\
+  \ parameter of 2). There's an additional period preventing an individual from re-forming\
+  \ a partnership with their most recent partner immediately after dissolution.\n\n\
+  Concurrency:\n- 5% of the population under 35 years old prefer 2 concurrent partners;\
+  \ the remaining 95% prefer 1.\n- Individuals aged 35 and older prefer only one sex\
+  \ partner. Existing concurrent partnerships are not ended when an individual turns\
+  \ 35, but no new ones are formed.\n- If either partner has an existing partner when\
+  \ a new partnership forms, the new concurrent partnership is always assigned as\
+  \ 'short'.\n\nPartnership Duration and Type:\n- Partnerships are categorized as\
+  \ 'short' or 'long', each with different mean durations.\n- The mean duration of\
+  \ short partnerships is 14 days.\n- The mean duration of long partnerships for 16-year-olds\
+  \ is 900 days. This preferred duration for long partnerships increases by 200 days\
+  \ for each year of an individual's age.\n- The duration of any given partnership\
+  \ is assumed to be exponentially distributed, implying a constant per time-step\
+  \ probability of dissolution equal to 1/(average duration).\n- When a new partnership\
+  \ forms, one person from the pair is selected at random, and that person's preferred\
+  \ duration type (long or short) is assigned to the new partnership.\n- Individuals'\
+  \ preference for short versus long partnerships is dynamic and age-dependent:\n\
+  \  - The initial proportion of 16-year-olds desiring short partnerships is 60% for\
+  \ men and 50% for women.\n  - Annually, a proportion of individuals who prefer short\
+  \ partnerships switch to preferring long partnerships (4% for men, 8% for women).\n\
+  \nAgeing and Population Dynamics:\n- Individuals age deterministically. When an\
+  \ individual reaches age 45, they are removed from the population, and a new 16-year-old\
+  \ individual of the same gender enters. Existing partnerships involving an individual\
+  \ who ages past 44 are flagged as 'external' to the core population, so individuals\
+  \ <45 in such partnerships do not become prematurely available for new partners.\n\
+  - As individuals age, they generally form fewer new partnerships. This is implemented\
+  \ by a fraction of the population preferring short partnerships switching to long,\
+  \ and all those who prefer long partnerships increasing the average duration of\
+  \ their preferred partnerships."
+infection_model: A Susceptible-Infected-Susceptible (SIS) model. Susceptible individuals
+  are infected stochastically based on a per-sex-act transmission probability. The
+  model assumes one sex act per day in partnerships that have lasted less than one
+  month and 0.25 sex acts per day in longer partnerships. Infected individuals then
+  either seek care or remain untreated, returning to a susceptible state following
+  spontaneous recovery or treatment. The average duration of infection is fixed at
+  one month for those seeking treatment and six months for those not seeking treatment.
+  A fraction of newly infected individuals are assumed to actively seek treatment
+  and recover at a faster rate than those not seeking treatment. After treatment for
+  any reason, individuals enter a variable refractory period during which re-infection
+  cannot occur (to simulate adherence to advice to abstain).
+network_type: bimodal
+parameters:
+- description: Proportion of individuals <35 years old wanting 2 concurrent partners
+  estimate: 0.05
+  location: Table 1 and Page 3 text (Sexual behaviour & Age dependent processes)
+  symbol: Not specified
+- description: Mean duration of short partnerships (days)
+  estimate: 14.0
+  location: Table 1
+  symbol: Not specified
+- description: Mean gap in days between partnerships (value is the mean of a negative
+    binomial distribution with dispersion 2)
+  estimate: 14.0
+  location: Table 1
+  symbol: Not specified
+- description: Proportion of men switching from desiring short to long partnerships
+    per year
+  estimate: 0.04
+  location: Table 2
+  symbol: Not specified
+- description: Proportion of women switching from desiring short to long partnerships
+    per year
+  estimate: 0.08
+  location: Table 2
+  symbol: Not specified
+- description: Initial proportion of 16-year-old men desiring short partnerships
+  estimate: 0.6
+  location: Table 2
+  symbol: Not specified
+- description: Initial proportion of 16-year-old women desiring short partnerships
+  estimate: 0.5
+  location: Table 2
+  symbol: Not specified
+- description: Mean duration of long partnerships for 16-year-olds (days)
+  estimate: 900.0
+  location: Table 2
+  symbol: Not specified
+- description: Annual increase in preferred duration of long partnerships (days per
+    year of age)
+  estimate: 200.0
+  location: Table 2
+  symbol: Not specified
+population_structure: Structured by age (16-44 years, uniform distribution at influx)
+  and gender (equal numbers). Age-dependent processes for sexual behaviour (e.g.,
+  partnership formation, duration preferences, switching preference from short to
+  long) are implemented. Individuals are removed at age 45 and new 16-year-olds enter.
+references:
+- doi: 10.1097/00007435-199701000-00007
+  formatted: 'Ghani AC, Swinton J, Garnett GP: The Role of Sexual Partnership Networks
+    in the Epidemiology of Gonorrhoea. Sex Transm Dis 1997, 24:45-56.'
+  reason: 'The manuscript states its model is based on and extends this Ghani et al.
+    model, which is an individual-based, dynamic sexual network model focusing on
+    partnership dynamics relevant to STI transmission. This reference is central to
+    understanding the foundations of the current model''s pair formation mechanisms
+    and network structure approach. It explicitly models partnerships and their formation/dissolution,
+    making it highly relevant to pair formation models for sexual contact networks. '
+- doi: 10.1093/oxfordjournals.aje.a008912
+  formatted: 'Kretzschmar M, Van Duynhoven YTHP, Severijnen AJ: Modeling prevention
+    strategies for gonorrhoea and chlamydia using stochastic network simulations.
+    Am J Epidemiol 1996, 144:306-317.'
+  reason: 'Cited in the manuscript as an example of an individual-based model of STI
+    transmission incorporating dynamic sexual partnerships. Such models inherently
+    deal with pair formation processes, detailing how partnerships are initiated,
+    maintained, and dissolved within a simulated population, which is crucial for
+    understanding sexual contact networks. '
+- doi: 10.1093/infdis/174.supplement_2.s150
+  formatted: 'Garnett GP, Anderson RM: Sexually transmitted diseases and sexual behaviour:
+    insights from mathematical models. J Infect Dis 1996, 174:S150-S161.'
+  reason: This reference is cited for providing insights from mathematical models
+    on sexually transmitted diseases and sexual behavior. Such review articles often
+    discuss different modeling approaches for sexual contact networks, including aspects
+    of pair formation, partnership dynamics, and their epidemiological implications,
+    making it relevant to the broader context of pair formation models.
+simulation_type: discrete
+summaries:
+- description: Chlamydia prevalence in young women (under 20 years old) attending
+    general practice in Britain (%)
+  location: Page 1, Background
+  value: 8.1
+- description: Chlamydia prevalence in young women (aged 20-24 years old) attending
+    general practice in Britain (%)
+  location: Page 1, Background
+  value: 5.2
+- description: Response rate in the Natsal 2000 core sample (%)
+  location: Page 2, Parameterisation of sexual behaviour
+  value: 65.4
+- description: Response rate in the Natsal 2000 ethnic minority boost sample (%)
+  location: Page 2, Parameterisation of sexual behaviour
+  value: 63.0
+- description: Ratio of mean number of sexual partners reported by men to that reported
+    by women in the Natsal 2000 survey
+  location: Page 5, Behavioural parameter estimation & Page 8, Discussion
+  value: 1.5
+- description: Mean age difference (men - women, in years) in partnerships, from Natsal
+    2000 data used to parameterize the model
+  location: Page 3, Sexual behaviour
+  value: 2.0
+- description: Total model population size (number of individuals)
+  location: Table 1
+  value: 40000.0
+- description: Minimum age of individuals in the model population (years)
+  location: Table 1
+  value: 16.0
+- description: Maximum age of individuals in the model population (years), after which
+    they are removed
+  location: Table 1 & Page 3, Age dependent processes
+  value: 44.0
+title: Developing a realistic sexual network model of chlamydia transmission in Britain

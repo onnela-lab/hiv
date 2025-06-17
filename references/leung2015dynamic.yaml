@@ -1,0 +1,95 @@
+confidence: 4
+description: "The manuscript presents a pair-formation model for a dynamic homosexual\
+  \ network to study the spread of an SI (Susceptible-Infectious) infection. Individuals\
+  \ enter the population at a constant rate and leave after an exponentially distributed\
+  \ time (rate \tochy). Each individual possesses 'n' independent 'binding sites'\
+  \ that can be either free or occupied by a partner. Partnership formation occurs\
+  \ when a free site of an individual forms a bond with a free site from the general\
+  \ pool of free sites (represented by F, the fraction of free sites in the population).\
+  \ The per-free-site partnership formation rate is \text{ρF}. Partnerships dissolve\
+  \ due to separation (rate \text{σ}) or death of a partner (rate \tochy). The state\
+  \ of an uninfected individual is defined by 'k', the number of occupied binding\
+  \ sites (0 ≤ k ≤ n). Newborn individuals have k=0 (all sites free).\n\nWhen SI infection\
+  \ is superimposed, an individual's state is (x, k-, k+), where x is disease status\
+  \ (Susceptible '-' or Infectious '+'), k- is the number of susceptible partners,\
+  \ and k+ is the number of infectious partners. Infection status does not alter partnership\
+  \ dynamics or individual death rates. Transmission occurs within an S-I partnership\
+  \ at a rate \text{β}. A 'mean field at distance one' approximation is employed:\
+  \ if a susceptible partner 'v' of a focal individual 'u' becomes infected by one\
+  \ of 'v's *other* partners, the rate at which this event affects 'u's state (i.e.,\
+  \ changing counts of k- and k+) depends on population-average infection characteristics\
+  \ of these second-order partners. These are captured by terms \text{Λ-} (if 'u'\
+  \ is susceptible) and \text{Λ+} (if 'u' is infectious). The model is formulated\
+  \ as a system of (n+1)(n+2) ordinary differential equations (ODEs) for the population\
+  \ fractions in each state. The basic reproduction number, R0, is characterized using\
+  \ a next-generation matrix (NGM) approach, analyzed at both the binding site and\
+  \ individual levels."
+infection_model: 'SI (Susceptible -> Infectious): Individuals become infectious upon
+  infection and remain so for life. The infection is transmitted within partnerships
+  between susceptible and infected individuals.'
+network_type: unimodal
+parameters:
+- description: 'Partnership capacity: the maximum number of simultaneous partners
+    an individual can have.'
+  estimate: unknown
+  location: Abstract, p.2, Section 2 (p.4)
+  symbol: n
+- description: Rate at which individuals enter the sexually active population and
+    also the rate at which they leave (death rate). It also contributes to partnership
+    dissolution through 'death of partner'.
+  estimate: unknown
+  location: Abstract, Section 2 (p.4, p.5)
+  symbol: "\tochy"
+- description: Rate of partnership dissolution due to separation (partners choosing
+    to end the partnership).
+  estimate: unknown
+  location: Section 2 (p.4)
+  symbol: "\text{σ}"
+- description: Rate constant for partnership formation per free binding site of an
+    individual and per available free binding site in the population pool.
+  estimate: unknown
+  location: Section 2 (p.4)
+  symbol: "\text{ρ}"
+- description: Transmission rate per unit time within a partnership between a susceptible
+    and an infectious individual.
+  estimate: unknown
+  location: Section 3.1.2 (p.8)
+  symbol: "\text{β}"
+population_structure: 'Structured by: 1. Number of current partners (k for the partnership
+  model, k- and k+ for the infection model). 2. Disease status (Susceptible or Infectious).
+  3. Demography: individuals enter and leave the population.'
+references:
+- doi: 10.1016/j.tpb.2012.07.005
+  formatted: Leung KY, Kretzschmar MEE, Diekmann O (2012) Dynamic concurrent partnership
+    networks incorporating demography. Theor Popul Biol 82:229–239
+  reason: This is the previous work by the same authors that introduced the underlying
+    dynamic partnership network model, which is extended in the current manuscript
+    to include SI infection. It's foundational for the presented model herein. (Cited
+    on p.2, p.36)
+- doi: 10.1007/BF00290595
+  formatted: Dietz K, Hadeler KP (1988) Epidemiological models for sexually transmitted
+    diseases. J Math Biol 26:1–25
+  reason: Cited as the paper that first introduced pair-formation models into epidemiology
+    (p.2). The current manuscript builds upon this tradition of modeling.
+simulation_type: continuous
+summaries:
+- description: 'F_bar: The steady-state fraction of binding sites in the population
+    that are free (unoccupied by a partner). Formula given by Eq (5).'
+  location: Section 2, Eq (5), p.5
+  value: 0.0
+- description: 'P_k: The steady-state probability distribution of the number of partners
+    (k) for a randomly chosen individual in the sexually active population. Formula
+    given by Eq (6).'
+  location: Section 2, Eq (6), p.6
+  value: 0.0
+- description: 'q_k: The probability distribution for the number of partners (k) of
+    an individual who has just acquired a new partner (representing the state of the
+    new partner immediately after the match is made). Formula given by Eq (7).'
+  location: Section 2, Eq (7), p.6
+  value: 0.0
+- description: 'Q_k: The probability distribution for the number of partners (k) of
+    an individual who is part of a randomly chosen partnership. Formula given by Eq
+    (8).'
+  location: Section 2, Eq (8), p.6
+  value: 0.0
+title: 'SI infection on a dynamic partnership network: characterization of R0'

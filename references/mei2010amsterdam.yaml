@@ -1,0 +1,221 @@
+confidence: 4
+description: "The manuscript describes a Complex Agent Network (CAN) model, a hybrid\
+  \ approach combining Multi-Agent Systems (MAS) and Complex Networks (CNs), to simulate\
+  \ HIV transmission among Men Who Have Sex with Men (MSM) in Amsterdam. \n\n1.  **Network\
+  \ Structure & Initialization**:\n    *   The population consists of N0 agents (MSM),\
+  \ with ages initialized randomly between 15 and 65 years.\n    *   Each agent is\
+  \ assigned a desired number of sexual partners per year (degree, k) from a scale-free\
+  \ power-law distribution pk = Ck^-gamma (for k >= 1) or pk = p0 (for k=0), with\
+  \ a maximum degree kmax.\n    *   Initial partnerships (edges) are formed using\
+  \ the configuration model: agents' 'stubs' (half-edges, summing to their degree\
+  \ k) are randomly matched.\n    *   Newly formed partnerships are designated as\
+  \ 'steady' with probability Psteady, or 'casual' otherwise. Steady partnerships\
+  \ are assigned an initial duration drawn from a discrete uniform distribution DU(1,\
+  \ 2) years.\n\n2.  **Dynamic Processes (per 1-year time step)**:\n    *   **Demographics**:\
+  \ Agents age. Agents are removed if age > 65, upon reaching AIDS stage (removed\
+  \ at the next time step), or by migrating (with probability Pmigration per year).\
+  \ Removed agents are replaced by new susceptible agents (age 15-65, assigned a degree\
+  \ k, form partnerships via configuration model), maintaining a constant population\
+  \ size.\n    *   **Partnership Dynamics (Pair Formation and Dissolution)**:\n  \
+  \      *   Durations of existing partnerships are incremented.\n        *   **Dissolution**:\
+  \ Steady partnerships dissolve if their duration exceeds their initialized expected\
+  \ duration. Casual partnerships from the previous time step are conserved with probability\
+  \ Pcasual_conserve; others dissolve. Partnerships also dissolve if a partner is\
+  \ removed.\n        *   **Formation**: New agents form partnerships as per initialization.\
+  \ Existing agents with dissolved partnerships (and thus available stubs or unfulfilled\
+  \ target degrees) reform partnerships. The manuscript states edges are reshuffled\
+  \ according to the configuration model (Section 3.2), implying stubs are re-matched\
+  \ to maintain the degree distribution. Newly formed partnerships are typed (steady/casual)\
+  \ and assigned durations as in initialization.\n    *   **Partnership Types**:\n\
+  \        *   **Steady**: Agents can have at most one steady partner. Characterized\
+  \ by longer duration and higher frequency of sexual acts (NAij_steady, drawn from\
+  \ P(30) per year).\n        *   **Casual**: Agents can have multiple casual partners.\
+  \ Characterized by shorter duration (typically 1 year if not renewed) and lower\
+  \ frequency of sexual acts (NAij_casual = 1 per year).\n\n3.  **Behavioral Modifiers\
+  \ for Transmission**: \n    *   If an agent Vj (susceptible) has a steady partner,\
+  \ their risk behavior in any concurrent casual partnership (e.g., with Vi) is modified\
+  \ by a partnership factor F Pj (typically reducing risk).\n    *   A general risk\
+  \ behavior factor FRij applies to a pair ViVj, varying by calendar year and HIV\
+  \ status of the infectious partner Vi."
+infection_model: "The model simulates HIV infection with the following stages: Susceptible,\
+  \ Primary Infection (PI), Asymptomatic Period (AP), and AIDS. \nTransmission is\
+  \ per unprotected anal intercourse (UAI) act; other routes are considered negligible.\
+  \ The per-act transmission probability from an infected agent Vi to a susceptible\
+  \ agent Vj (PTAij) depends on:\n1.  Vi's disease stage: TPPI,1 (for the first 3\
+  \ months of PI), TPPI,2 (for months 3-12 of PI), TPAP (for AP stage). TPAIDS = 0.\
+  \ Values are specified for unprotected receptive (URAI) and insertive (UIAI) acts,\
+  \ with roles chosen randomly per act.\n2.  Vi's treatment status: A treatment reduction\
+  \ factor FTi (e.g., due to HAART) modifies transmissibility.\n3.  Pair-specific\
+  \ risk behavior: An empirically derived factor FRij, varying by calendar year and\
+  \ Vi's HIV status.\n4.  Partnership context for Vj: If Vj has a steady partner,\
+  \ a factor FPj modifies transmission risk in Vj's casual partnerships.\n\nThe number\
+  \ of sexual acts per year (NAij) between Vi and Vj depends on partnership type:\n\
+  *   Steady partnerships: NAij_steady drawn from P(30) acts/year. During PI, acts\
+  \ are NAij,1_steady_PI from P(8) (first 3 months) and NAij,2_steady_PI from P(22)\
+  \ (next 9 months).\n*   Casual partnerships: NAij_casual = 1 act/year.\n\nThe overall\
+  \ probability per year that Vj becomes infected by Vi (PTYij) is calculated from\
+  \ PTAij and NAij, accounting for the two sub-stages of PI if Vi is in PI. The total\
+  \ probability per year for Vj to be infected by any partner (PTYj) is 1 - product_over_infected_partners_m(1\
+  \ - PTYmj).\n\nDisease progression: Susceptible -> PI -> AP -> AIDS. PI duration\
+  \ is implicitly 1 year (0.25y + 0.75y). AP duration is variable (Poisson distributed,\
+  \ mean depends on treatment success: 13 years for failed, 22 years for successful).\
+  \ AIDS is an absorbing state leading to removal from the population in the next\
+  \ time step. The model includes probabilities for diagnosis, treatment uptake, and\
+  \ treatment success."
+network_type: unimodal
+parameters:
+- description: Exponent of the power-law degree distribution (pk ~ k^-gamma).
+  estimate: 1.6
+  location: Section 5.2.1, p. 1027
+  symbol: gamma
+- description: Maximum degree (number of partners per year) an agent can have.
+  estimate: 200.0
+  location: Section 5.2.1, p. 1027
+  symbol: kmax
+- description: Initial total population size (number of MSM agents).
+  estimate: 2299.0
+  location: Section 5.2.1, p. 1027
+  symbol: N0
+- description: Fraction of agents with degree k=0 (no partners).
+  estimate: 0.01
+  location: Section 5.2.1, p. 1027
+  symbol: p0
+- description: Normalizing factor for the power-law degree distribution.
+  estimate: unknown
+  location: Eq. (1), Section 3.2, p. 1022
+  symbol: C
+- description: Probability that a newly formed partnership is initialized as 'steady'.
+  estimate: 0.054
+  location: Section 5.2.1, p. 1027 (calculated)
+  symbol: Psteady
+- description: Duration assigned to new steady partnerships, drawn from a discrete
+    uniform distribution.
+  estimate: unknown
+  location: Section 5.2.1, p. 1027 (describes DU(1,2) years)
+  symbol: Duration_steady
+- description: Mean duration of the Asymptomatic Period (AP) for individuals with
+    failed HIV treatment.
+  estimate: 13.0
+  location: Section 5.2.1, p. 1027 (used for Poisson dist.)
+  symbol: Mean_AP_failed_treat
+- description: Mean duration of the Asymptomatic Period (AP) for individuals with
+    successful HIV treatment.
+  estimate: 22.0
+  location: Section 5.2.1, p. 1027 (used for Poisson dist.)
+  symbol: Mean_AP_successful_treat
+- description: Number of sexual acts per year in steady partnerships (outside PI stage).
+    Drawn from Poisson dist P(30).
+  estimate: unknown
+  location: Section 5.2.1, p. 1027
+  symbol: NAij_steady_AP
+- description: Number of sexual acts in the first 3 months of Primary Infection (PI)
+    stage in steady partnerships. Drawn from Poisson dist P(8).
+  estimate: unknown
+  location: Section 5.2.1, p. 1027
+  symbol: NAij,1_steady_PI
+- description: Number of sexual acts in the months 3-12 of Primary Infection (PI)
+    stage in steady partnerships. Drawn from Poisson dist P(22).
+  estimate: unknown
+  location: Section 5.2.1, p. 1027
+  symbol: NAij,2_steady_PI
+- description: Number of sexual acts per year in casual partnerships.
+  estimate: 1.0
+  location: Section 3.3, p. 1022
+  symbol: NAij_casual
+- description: Per-act HIV transmission probability (URAI/UIAI) during the first 3
+    months of Primary Infection (PI).
+  estimate: unknown
+  location: Section 5.2.2, p. 1027 (values 0.22/0.044 given)
+  symbol: TPPI,1
+- description: Per-act HIV transmission probability (URAI/UIAI) during months 3-12
+    of Primary Infection (PI).
+  estimate: unknown
+  location: Section 5.2.2, p. 1027 (values 0.011/0.0022 given)
+  symbol: TPPI,2
+- description: Per-act HIV transmission probability (URAI/UIAI) during the Asymptomatic
+    Period (AP).
+  estimate: unknown
+  location: Section 5.2.2, p. 1027 (values 0.011/0.0022 given)
+  symbol: TPAP
+- description: Treatment-related reduction factor on transmissibility. Drawn from
+    Continuous Uniform CU(0.1, 0.5).
+  estimate: unknown
+  location: Section 5.2.2, p. 1028
+  symbol: FTi
+- description: Partnership factor reducing risk in casual partnerships if the susceptible
+    individual has a steady partner. Value is 0.84 if susceptible partner has a steady
+    partner and current partnership is casual, else 1.0.
+  estimate: 0.84
+  location: Section 5.2.2, p. 1028
+  symbol: FPj
+- description: Risk behavior factor modifying transmission, varies by year and HIV
+    status of infector.
+  estimate: unknown
+  location: Table 2, p. 1028
+  symbol: FRij
+- description: Probability that an existing casual partnership is conserved to the
+    next time step.
+  estimate: 0.2
+  location: Section 3.4, p. 1023
+  symbol: Pcasual_conserve
+- description: Annual probability of an individual migrating out of the population.
+  estimate: 0.01
+  location: Section 3.4, p. 1023
+  symbol: Pmigration
+- description: Minimum age of agents in the model.
+  estimate: 15.0
+  location: Section 3.2, p. 1022
+  symbol: min_age
+- description: Maximum age of agents in the model (removed if older).
+  estimate: 65.0
+  location: Section 3.2, p. 1022 & Section 3.4, p.1023
+  symbol: max_age
+population_structure: Population of Men Who Have Sex with Men (MSM) in Amsterdam,
+  structured by age (15-65 years), HIV disease stage (Susceptible, Primary Infection,
+  Asymptomatic Period, AIDS), partnership status (distinction between steady and casual
+  partners), and sexual activity level (degree k, number of partners per year).
+references:
+- doi: unknown
+  formatted: '[9] S.M. Goodreau, Assessing the effects of human mixing patterns on
+    human immunodeficiency virus-1 interhost phylogenetics through social network
+    simulation, Genetics 172 (4) (2006) 2035.'
+  reason: Describes a graph-theoretic framework for simulation of dynamic partnership
+    networks for HIV transmission, directly relevant to pair formation modeling approaches
+    in sexual networks for HIV described in the manuscript (Section 2.3).
+- doi: 10.1137/S003614450342480
+  formatted: '[14] M.E.J. Newman, The structure and function of complex networks,
+    SIAM Review 45 (2) (2003) 167-256.'
+  reason: Introduces concepts of complex networks, including the configuration model
+    (cited in Section 3.2), which is used for network construction in the manuscript's
+    pair formation model辦法。
+- doi: 10.1016/j.mbs.2005.08.004
+  formatted: '[19] W.J. Reed, A stochastic model for the spread of a sexually transmitted
+    disease which results in a scale-free network, Mathematical Biosciences 201 (1-2)
+    (2006) 3–14.'
+  reason: Presents a stochastic model for STD spread resulting in scale-free networks,
+    relevant as the manuscript models sexual contacts as a scale-free network (Section
+    3.2).
+- doi: 10.1097/01.OLQ.0000128710.18399.64
+  formatted: '[20] A. Schneeberger, R. Nat, C.H. Mercer, S.A.J. Gregson, N.M. Ferguson,
+    C.A. Nyamukapa, R.M. Anderson, A.M. Johnson, G.P. Garnett, Scale-free networks
+    and sexually transmitted diseases: a description of observed patterns of sexual
+    contacts in britain and zimbabwe, Sexually Transmitted Diseases 31 (6) (2004)
+    380-387.'
+  reason: Provides empirical evidence and discussion on scale-free properties of sexual
+    contact networks, supporting the manuscript's choice of network topology (Section
+    3.2, 5.2.1).
+- doi: 10.1097/00002030-200305020-00008
+  formatted: '[30] M. Xiridou, R. Geskus, J. De Wit, R. Coutinho, M. Kretzschmar,
+    The contribution of steady and casual partnerships to the incidence of HIV infection
+    among homosexual men in Amsterdam, AIDS 17 (7) (2003) 1029-1038.'
+  reason: This reference is heavily used for parameterizing partnership types (steady
+    vs. casual), their durations, sexual act frequency, and risk behaviors (Section
+    3.3, 5.2.1, 5.2.2), indicating it discusses detailed aspects of pair formation
+    and its epidemiological consequences relevant to the model presented.
+simulation_type: discrete
+summaries:
+- description: Averaged fraction of steady relationships observed in simulation runs.
+  location: Section 5.2.1, p. 1027
+  value: 0.051
+title: Complex agent networks explaining the HIV epidemic among homosexual men in
+  Amsterdam

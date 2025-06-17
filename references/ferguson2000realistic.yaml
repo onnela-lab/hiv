@@ -1,0 +1,142 @@
+confidence: 4
+description: "The manuscript presents deterministic ordinary differential equation\
+  \ (ODE) models for heterosexual pair formation and sexually transmitted disease\
+  \ (STD) dynamics. Two main models are described:\n\n1.  **Simple Pair Model (Serial\
+  \ Monogamy)**:\n    *   Tracks single males (m0), single females (f0), and monogamous\
+  \ pairs (p1,1).\n    *   Pair formation occurs between single individuals at a rate\
+  \ proportional to Φ0,0 * m0 * f0.\n    *   Pairs dissolve at a rate ν. Individuals\
+  \ also die at a rate μ.\n    *   Equations (1) on page 2 detail these dynamics without\
+  \ infection.\n    *   Infection (Susceptible 'S', Infected 'I') is introduced by\
+  \ stratifying individuals (mS0, mI0, fS0, fI0) and pairs (pSS1,1, pSI1,1, pIS1,1,\
+  \ pII1,1).\n    *   Transmission occurs within discordant pairs (rate β). Recovery\
+  \ occurs at rate σ.\n\n2.  **Extended Pair Model (Concurrency)**:\n    *   Allows\
+  \ individuals to have up to MP concurrent partners.\n    *   State variables include\
+  \ mi (males with i partners), fj (females with j partners), and pij (pairs where\
+  \ male has i partners, female has j partners).\n    *   Partnership dynamics are\
+  \ more complex, involving:\n        *   Formation of new pairs between individuals\
+  \ based on their current number of partners (i, j), governed by rates Φi,j.\n  \
+  \      *   Formation of new partnerships by individuals already in other partnerships,\
+  \ which changes their partner count i or j.\n        *   Dissolution of existing\
+  \ partnerships (rate ν for a specific pair).\n        *   Changes in i or j for\
+  \ a pair pij if one member loses/gains an *external* partner.\n        *   Death\
+  \ of individuals (rate μ).\n    *   The model considers higher-order structures\
+  \ like triples (Ui,j,k for male-centered, Vi,j,k for female-centered) which represent\
+  \ two partnerships sharing a common individual. The number of such triples is estimated\
+  \ using a **moment closure approximation** (Equation 10, page 5), assuming statistical\
+  \ independence of pairs forming a triple, conditional on the central individual.\n\
+  \    *   Infection (S, I) is included by stratifying all states (individuals, pairs\
+  \ pABij, triples UABC, VABC).\n        *   Transmission occurs within discordant\
+  \ pairs (rate β).\n        *   Transmission can also occur from an infected concurrent\
+  \ partner who is not part of the focal pair (Equations 11-14, page 5), with rates\
+  \ dependent on β and the number of relevant infected triples.\n    *   Recovery\
+  \ from infection occurs at rate σ.\n    *   The detailed ODEs for the extended model\
+  \ with infection are provided in the Appendix (page 10). The term ΛABij in these\
+  \ equations encapsulates the complex partnership formation, dissolution, and partner\
+  \ number change dynamics for pairs of type pABij."
+infection_model: SI (Susceptible-Infected) model. Individuals are either susceptible
+  or infected. Transmission occurs within discordant partnerships or from an infected
+  concurrent partner (in the extended model). Infected individuals recover to the
+  susceptible state at a specific rate. No latency or explicit immunity is modeled,
+  though it's mentioned that asymptomatic states could be added.
+network_type: bimodal
+parameters:
+- description: Per capita death rate of individuals.
+  estimate: 0.000274
+  location: Page 2, right column (definition); Page 6, right column (1/μ = 10 years,
+    converted to day^-1)
+  symbol: μ
+- description: Partnership dissolution rate per unit time. Value for Case A (serial
+    monogamy).
+  estimate: 0.003485
+  location: Page 2, right column (definition); Page 6, Eq. A (value for Case A)
+  symbol: ν
+- description: Partnership formation rate per unit time between an unpartnered male
+    and an unpartnered female (for Simple Model, or i=0, j=0 in Extended Model). Value
+    for Case A.
+  estimate: 1.394e-07
+  location: Page 2, right column (definition for simple model); Page 6, Eq. A (calculated
+    as (0.003485 / 1e6) * 40 day^-1)
+  symbol: Φ0,0
+- description: Partnership formation rate per unit time between a male with i partners
+    and a female with j partners. These are specified as a matrix of values for different
+    i,j, scaled by ν/((Nm+Nf)/2).
+  estimate: unknown
+  location: Page 3, right column (definition); Page 6 (specific matrices of coefficients
+    for cases A, B, C)
+  symbol: Φi,j
+- description: Per capita recovery rate from infection (1/σ is the infectious period
+    D). Value used in Table 2.
+  estimate: 0.1
+  location: Page 3 (inferred); Page 6, right col (D=1/σ); Table 2 (value σ=0.1/day)
+  symbol: σ
+- description: Transmission coefficient/rate per discordant partnership or per relevant
+    triple interaction for concurrent transmission. Value used in Table 2.
+  estimate: 1.0
+  location: Page 5, right column; Table 2 (value β=1.0/day)
+  symbol: β
+- description: Maximum number of concurrent partners an individual can have.
+  estimate: unknown
+  location: Page 3, right column (definition); Page 6 (varied as 1, 2, or 3 for cases
+    A,B,C)
+  symbol: MP
+- description: Size of the male population.
+  estimate: 1000000.0
+  location: Page 2, right col (definition); Page 6, right col (value used)
+  symbol: Nm
+- description: Size of the female population.
+  estimate: 1000000.0
+  location: Page 2, right col (definition); Page 6, right col (value used)
+  symbol: Nf
+population_structure: Structured by the number of concurrent sexual partners (up to
+  MP). The model can be extended to include multiple activity classes. Population
+  size for males (Nm) and females (Nf) is specified.
+references:
+- doi: unknown
+  formatted: Dietz K, Hadler KP. Epidemiological models for sexually transmitted diseases.
+    J Math Biol 1988; 26:1-25.
+  reason: Explicitly cited as developers of an earlier pair model (page 1). The model
+    described in the manuscript builds upon such pair models by incorporating concurrency
+    and moment closure techniques. This reference likely introduces foundational concepts
+    of pair modeling for STDs relevant to the manuscript's methods section on 'Simple
+    Pair Models'.
+- doi: unknown
+  formatted: 'Waldstatter R. Pair formation in sexually-transmitted diseases. In:
+    Castillo-Chavez C, ed. Mathematical and Statistical Approaches to AIDS: Lecture
+    Notes in Biomathematics 83. Berlin: Springer-Verlag, 1989:260-274.'
+  reason: Explicitly cited as a developer of an earlier pair model (page 1). This
+    work on pair formation is directly relevant to the core concept of modeling partnerships
+    as states, which is fundamental to both the simple and extended pair models presented
+    in the manuscript. It likely discusses the explicit representation of partnerships
+    which the manuscript adopts and extends for concurrency using moment closure for
+    triples which arise from individuals in multiple pairs simultaneously.
+simulation_type: continuous
+summaries:
+- description: 'Equilibrium proportion of the population with zero concurrent partners
+    (Scenario A: serial monogamy).'
+  location: Table 1, page 6
+  value: 0.147
+- description: 'Equilibrium proportion of the population with one concurrent partner
+    (Scenario A: serial monogamy).'
+  location: Table 1, page 6
+  value: 0.853
+- description: Per-year rate of gaining an additional partner for individuals with
+    zero existing concurrent partners (Scenario A).
+  location: Table 1, page 6
+  value: 7.47
+- description: Per-year rate of gaining an additional partner for individuals with
+    one existing concurrent partner (Scenario B, concurrency up to 2 partners).
+  location: Table 1, page 6
+  value: 0.17
+- description: Mean partner change rate targeted by model parameterization.
+  location: Page 6, left column, Results section
+  value: 1.1
+- description: Equilibrium infection prevalence for individuals with zero concurrent
+    partners (β=1.0/day, σ=0.1/day, concurrency up to 3 partners).
+  location: Table 2, page 7
+  value: 0.02
+- description: Equilibrium infection prevalence for individuals with one concurrent
+    partner (β=1.0/day, σ=0.1/day, concurrency up to 3 partners).
+  location: Table 2, page 7
+  value: 0.134
+title: 'More Realistic Models of Sexually Transmitted Disease Transmission Dynamics:
+  Sexual Partnership Networks, Pair Models, and Moment Closure'
