@@ -160,7 +160,7 @@ async def __main__(argv: list[str] | None = None) -> None:
 
     # Check a report was generated.
     if isinstance(output, NoReport):
-        raise ValueError(output.reason)
+        raise ValueError(output.reason)  # pragma: no cover
 
     # Write a json-representation to disk and the terminal.
     yaml_text = yaml.dump(output.model_dump(), allow_unicode=True)
