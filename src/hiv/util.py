@@ -13,10 +13,10 @@ class Timer:
     """
 
     def __init__(self):
-        self.times = {}
+        self.times: dict[str, float] = {}
 
     @contextlib.contextmanager
-    def __call__(self, key):
+    def __call__(self, key: str):
         start = time()
         yield
         self.times[key] = time() - start
@@ -213,6 +213,7 @@ def _validate_shapes(
         else:
             actual_shapes[key] = actual_shape
 
+    assert n_samples is not None, "Number of samples could not be determined."
     return n_samples, actual_shapes
 
 
@@ -261,7 +262,7 @@ def transform_proba_discrete(proba: float, factor: float) -> float:
     Returns:
         Transformed probability.
     """
-    if proba == 0:
+    if proba == 0:  # pragma: no cover
         return 0
     # The probability for the event to happen at least once is 1 - probability that the
     # event does not happen at all, i.e., at_least_once = 1 - (1 - proba) ** factor. We
@@ -270,7 +271,9 @@ def transform_proba_discrete(proba: float, factor: float) -> float:
     return np.exp(np.log1p(-not_proba))
 
 
-def transform_proba_continuous(rate: float, factor: float) -> float:
+def transform_proba_continuous(
+    rate: float | np.ndarray, factor: float | np.ndarray
+) -> float | np.ndarray:
     """
     Transform the probability for an event to happen on one timescale in continuous time
     to the event happening in a discrete time window.

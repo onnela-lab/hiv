@@ -1,5 +1,6 @@
 import collectiontools
 import numpy as np
+from typing import overload, Literal
 from .util import candidates_to_edges, NumpyGraph, Timer, decompress_edges
 
 
@@ -104,7 +105,19 @@ class UniversalSimulator:
     def init(self) -> NumpyGraph:
         return NumpyGraph(np.arange(round(self.n)))
 
-    def step(self, graph: NumpyGraph, return_times: bool = False) -> NumpyGraph:
+    @overload
+    def step(
+        self, graph: NumpyGraph, return_times: Literal[False] = False
+    ) -> NumpyGraph: ...
+
+    @overload
+    def step(
+        self, graph: NumpyGraph, return_times: Literal[True]
+    ) -> tuple[NumpyGraph, dict[str, float]]: ...
+
+    def step(
+        self, graph: NumpyGraph, return_times: bool = False
+    ) -> NumpyGraph | tuple[NumpyGraph, dict[str, float]]:
         label_offset = (graph.nodes.max() + 1) if graph.nodes.size else 0
         timer = Timer()
 
@@ -282,42 +295,43 @@ class UniversalSimulator:
             )
 
         weight = np.asarray(summaries["sample_size"]) / max(
-            sum(summaries["sample_size"]), 1
+            sum(summaries["sample_size"]), 1  # type: ignore
         )
         return {
             # Fraction of nodes retained which is monotonically decreasing. We expect
             # this statistics to change slowly because the migration probability `mu`
             # tends to be small.
             "frac_retained_nodes": np.intersect1d(*samples, assume_unique=True).size
-            / max(summaries["sample_size"][0], 1),
+            / max(summaries["sample_size"][0], 1),  # type: ignore
             # Fraction of retained steady edges. This is generally decreasing but there
             # may be increasing "blips" because a relationship could re-form, and we
             # don't ask "did you break up and make up again" in the survey. This
-            # statistic is indicative of the break up probability `sigma`.
+            # statistic is indicative of the break up probability `sigma` and to a
+            # lesser extent the migration probability `mu`.
             "frac_retained_steady_edges": np.intersect1d(
                 *summaries["_steady_edges"], assume_unique=True
             ).size
-            / max(summaries["_steady_edges"][0].size, 1),
+            / max(summaries["_steady_edges"][0].size, 1),  # type: ignore
             # Fraction of singles with a casual contact. This statistics is informative
-            # of `omega0`.
+            # of `omega_0`.
             "frac_single_with_casual": np.dot(
-                summaries["frac_single_with_casual"], weight
+                summaries["frac_single_with_casual"], weight  # type: ignore
             ),
             # Fraction of individuals in steady relationships with a casual contact.
-            # This statistics is indicative of `omega1`.
+            # This statistics is indicative of `omega_1`.
             "frac_paired_with_casual": np.dot(
-                summaries["frac_paired_with_casual"], weight
+                summaries["frac_paired_with_casual"], weight  # type: ignore
             ),
             # Fraction of nodes that have one or more steady relations. This statistics
             # informs `rho`, the tendency to form connections. In contrast to other
             # statistics, such as the fraction of retained nodes, this statistic is
-            # also affected by parameters like the dissolution rate `sigma` and
-            # emigration rate `mu`.
-            "frac_paired": np.dot(summaries["frac_paired"], weight),
+            # also affected by parameters like the dissolution rate `sigma`, emigration
+            # rate `mu`, and concurrency parameter `xi`.
+            "frac_paired": np.dot(summaries["frac_paired"], weight),  # type: ignore
             # Fraction of nodes in a steady relationship who have more than one steady
             # relationship. This is indicative of the monogamy parameter `xi`.
-            "frac_concurrent": num_nodes_by_degree[2:].sum()
-            / max(num_nodes_by_degree[1:].sum(), 1),
+            "frac_concurrent": num_nodes_by_degree[2:].sum()  # type: ignore
+            / max(num_nodes_by_degree[1:].sum(), 1),  # type: ignore
         } | {
             f"_{key}": value
             for key, value in summaries.items()
