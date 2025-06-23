@@ -1,10 +1,15 @@
+import collectiontools
 import contextlib
 import networkx as nx  # type: ignore
 import numpy as np
+import os
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.exceptions import NotFittedError
-import typing
+from typing import Any, Callable, Hashable, Iterable
 from time import time
+
+
+DEBUG = "CI" in os.environ
 
 
 class Timer:
@@ -23,9 +28,9 @@ class Timer:
 
 
 def to_np_dict(
-    x: dict[typing.Hashable, typing.Iterable],
-    cond: typing.Callable[[typing.Hashable], bool] | None = None,
-) -> dict[typing.Hashable, np.ndarray]:
+    x: dict[Hashable, Iterable],
+    cond: Callable[[Hashable], bool] | None = None,
+) -> dict[Hashable, np.ndarray]:
     cond = cond or (lambda _: True)
     result = {}
     for key, value in x.items():
@@ -43,6 +48,7 @@ def compress_edges(uv: np.ndarray) -> np.ndarray:
     Pack an edge list with shape `(num_edges, 2)` to a compressed edge with shape
     `(num_edges,)`.
     """
+    assert uv.ndim == 2
     assert uv.size == 0 or uv.max() < 0xFFFFFFFF
     uv.sort(axis=-1)
     u, v = uv.T
@@ -57,7 +63,9 @@ def decompress_edges(uv: np.ndarray) -> np.ndarray:
     `(num_edges, 2)`.
     """
     assert uv.dtype == np.uint64, f"Expected dtype {np.uint64}, got {uv.dtype}."
-    return np.transpose([(uv & 0xFFFFFFFF00000000) >> 32, uv & 0x00000000FFFFFFFF])
+    return np.transpose(
+        [(uv & 0xFFFFFFFF00000000) >> 32, uv & 0x00000000FFFFFFFF]
+    ).astype(np.uint32)
 
 
 def candidates_to_edges(candidates: np.ndarray) -> np.ndarray:
@@ -78,6 +86,40 @@ def candidates_to_edges(candidates: np.ndarray) -> np.ndarray:
     return compress_edges(edges)
 
 
+def coerce_matching_shape(
+    x: np.ndarray, attributes: dict[str, np.ndarray]
+) -> dict[str, np.ndarray]:
+    """Validate the shape of all attributes matches the shape of the input. If an
+    attribute is a scalar, it is broadcast to the shape of the input.
+
+    Args:
+        x: Input array.
+        attributes: Dictionary of attributes whose values must have shape matching the
+            input.
+
+    Returns:
+        Attributes with coerced shapes.
+    """
+    assert x.ndim == 1, "Input must be a vector."
+
+    coerced = {}
+    for key, value in attributes.items():
+        if np.size(value) == 1:
+            value = np.broadcast_to(value, x.shape)
+        assert x.shape == value.shape, (
+            f"Attribute '{key}' with shape '{value.shape}' does not match input with "
+            f"shape '{x.shape}'."
+        )
+        coerced[key] = value
+    return coerced
+
+
+def as_immutable_view(x: np.ndarray) -> np.ndarray:
+    y = x.view()
+    y.flags["WRITEABLE"] = False
+    return y
+
+
 class NumpyGraph:
     """
     Graph represented by numpy arrays. This implementation is fast for batch updates of
@@ -85,49 +127,160 @@ class NumpyGraph:
 
     Args:
         nodes: Set of nodes.
-        compressed: Mapping from edge types to compressed edge sets.
+        compressed: Set of compressed edges.
+        node_attributes: Mapping from names to node attributes.
+        edge_attributes: Mapping from names to edge attributes.
     """
 
     def __init__(
         self,
+        *,
         nodes: np.ndarray | None = None,
-        edges: dict[str, np.ndarray] | None = None,
+        edges: np.ndarray | None = None,
+        node_attributes: dict[str, np.ndarray | np.dtype] | None = None,
+        edge_attributes: dict[str, np.ndarray | np.dtype] | None = None,
+        attributes: dict[str, Any] | None = None,
     ) -> None:
-        self.nodes = np.empty((), dtype=int) if nodes is None else nodes
-        self.edges = edges or {}
+        self._nodes = np.empty((0,), dtype=np.uint32) if nodes is None else nodes
+        self._edges = np.empty((0,), dtype=np.uint64) if edges is None else edges
+        self.node_attributes = self._as_attribute_dict(node_attributes)
+        self.edge_attributes = self._as_attribute_dict(edge_attributes)
+        self.attributes = attributes or {}
+
+        # Run very basic checks that are cheap in the constructor.
+        self.validate_shapes()
+
+    @property
+    def nodes(self):
+        return as_immutable_view(self._nodes)
+
+    @property
+    def edges(self):
+        return as_immutable_view(self._edges)
+
+    def _as_attribute_dict(
+        self, value: dict[str, np.ndarray] | np.dtype | None
+    ) -> dict[str, np.ndarray | None]:
+        if value is None:
+            return {}
+        assert isinstance(value, dict)
+        return {
+            key: (
+                dtype_or_array
+                if isinstance(dtype_or_array, np.ndarray)
+                else np.empty((0,), dtype=dtype_or_array)
+            )
+            for key, dtype_or_array in value.items()
+        }
 
     def copy(self) -> "NumpyGraph":
         """
-        Shallow copy of the graph.
+        Copy of the graph. This is a shallow copy in the sense that numpy arrays are
+        *not* copied, but any container dictionaries *are* copied.
         """
-        return self.__class__(self.nodes, self.edges.copy())
+        return self.__class__(
+            nodes=self.nodes,
+            edges=self.edges,
+            node_attributes=self.node_attributes.copy(),
+            edge_attributes=self.edge_attributes.copy(),
+            attributes=self.attributes.copy(),
+        )
 
-    @typing.overload
-    def degrees(self, key: str) -> np.ndarray: ...
+    def _add(
+        self,
+        x_new: np.ndarray,
+        attrs_new: dict[str, np.ndarray],
+        x_old: np.ndarray,
+        attrs_old: dict[str, np.ndarray | None],
+    ) -> None:
+        attrs_new = coerce_matching_shape(x_new, attrs_new)
+        assert (
+            not DEBUG or np.intersect1d(x_new, x_old).size == 0
+        ), "Duplicate values detected."
 
-    @typing.overload
-    def degrees(self, key: None) -> dict[str, np.ndarray]: ...
+        keys_old = set(attrs_old)
+        keys_new = set(attrs_new)
+        assert keys_old == keys_new, (
+            f"Existing attributes '{keys_old}' do not match new attributes "
+            f"'{keys_new}'."
+        )
 
-    def degrees(self, key: str | None = None) -> np.ndarray | dict[str, np.ndarray]:
+        x_result = np.concatenate([x_old, x_new])
+        attrs_result = {}
+        for key, value in attrs_new.items():
+            if attrs_old[key].size:
+                value = np.concatenate([attrs_old[key], value])
+            attrs_result[key] = value
+
+        return x_result, attrs_result
+
+    def add_nodes(self, nodes: np.ndarray, **kwargs) -> None:
+        """Add edges and their attributes.
+
+        Args:
+            edges: Compressed edges.
+            kwargs: Edge attributes.
+        """
+        self._nodes, self.node_attributes = self._add(
+            nodes, kwargs, self._nodes, self.node_attributes
+        )
+
+    def _filter(
+        self, x: np.ndarray, attrs: dict[str, np.ndarray], fltr: np.ndarray
+    ) -> None:
+        return x[fltr], {
+            key: value if value is None else value[fltr] for key, value in attrs.items()
+        }
+
+    def filter_nodes(self, fltr: np.ndarray) -> None:
+        self._nodes, self.node_attributes = self._filter(
+            self._nodes, self.node_attributes, fltr
+        )
+        # We also need to filter out any edges that no longer have one of its vertices.
+        edges = decompress_edges(self._edges)
+        both_exist = np.isin(edges, self._nodes).all(axis=-1)
+        self.filter_edges(both_exist)
+
+    def add_edges(self, edges: np.ndarray, **kwargs) -> None:
+        """Add edges and their attributes.
+
+        Args:
+            edges: Compressed edges.
+            kwargs: Edge attributes.
+        """
+        self._edges, self.edge_attributes = self._add(
+            edges, kwargs, self._edges, self.edge_attributes
+        )
+
+    def filter_edges(self, fltr: np.ndarray) -> None:
+        self._edges, self.edge_attributes = self._filter(
+            self._edges, self.edge_attributes, fltr
+        )
+
+    def degrees(
+        self, *, key: Callable[[dict[str, np.ndarray]], np.ndarray] | None = None
+    ) -> np.ndarray:
         """
         Evaluate the degree of nodes.
 
         Args:
-            key: Edge key to evaluate the degree for.
+            key: Predicate to evaluate if an edge should be included in the evaluation
+                based on its attributes.
 
         Returns:
-            If `key` is given, vector of degrees for keyed edges corresponding to
-            :attr:`nodes`. If `key` is not given, a dictionary mapping edge keys to the
-            corresponding degree vector.
+            Vector of degrees for keyed edges corresponding to :attr:`nodes`.
         """
-        if key is None:
-            return {key: self.degrees(key) for key in self.edges}
-        try:
-            edges = decompress_edges(self.edges[key])
-        except KeyError:
-            return np.zeros_like(self.nodes)
+        # Restrict edge set based on predicate and decompress edges.
+        edges = self.edges
+        if key:
+            edges = edges[key(self.edge_attributes)]
+        edges = decompress_edges(edges)
+
+        # Get indices of non-isolated nodes and the corresponding number of connections.
         connected_nodes, connected_degrees = np.unique(edges, return_counts=True)
         assert connected_nodes.size <= self.nodes.size
+
+        # Get a mask of nodes that are non-isolated, and set the counts.
         degrees = np.zeros_like(self.nodes)
         idx = np.isin(self.nodes, connected_nodes)
         degrees[idx] = connected_degrees
@@ -138,49 +291,83 @@ class NumpyGraph:
         Convert the graph to a networkx graph.
         """
         graph = nx.Graph()
-        graph.add_nodes_from(self.nodes)
-        for key, edges in self.edges.items():
-            graph.add_edges_from(decompress_edges(edges), type=key)
+        graph.add_nodes_from(
+            (node, {key: value[i] for key, value in self.node_attributes.items()})
+            for i, node in enumerate(self.nodes)
+        )
+        graph.add_edges_from(
+            (
+                *decompress_edges(edge),
+                {key: value[i] for key, value in self.edge_attributes.items()},
+            )
+            for i, edge in enumerate(self.edges)
+        )
         return graph
 
     def validate(self) -> None:
         """
         Validate the structure of the graph, ensuring that
 
-        - node labels are sorted,
-        - edges do not refer to missing nodes,
-        - and edges are unique across keys (i.e., edges can only exist in one layer of a
-          multi-layer graph).
+        - node labels are sorted
+        - edges do not refer to missing nodes
+        - edges are unique across keys (i.e., edges can only exist in one layer of a
+          multi-layer graph)
+        - node and edge attributes match the structures of nodes and edges, respectively
         """
+        self.validate_shapes()
+
         # Check nodes are sorted.
         np.testing.assert_array_less(
             0, np.diff(self.nodes), err_msg="Node labels must be sorted."
         )
 
         # Check there are no edges that do not have corresponding nodes.
-        for key, compressed in self.edges.items():
-            decompressed = decompress_edges(compressed)
-            has_nodes = np.isin(decompressed, self.nodes).all(axis=-1)
-            assert has_nodes.all(), f"Edges with type {key} have missing nodes."
+        decompressed = decompress_edges(self.edges)
+        has_nodes = np.isin(decompressed, self.nodes).all(axis=-1)
+        assert has_nodes.all(), f"Edges have missing nodes."
+        assert np.unique(self.edges).size == self.edges.size
 
-        # Check that edges are unique.
-        if self.edges:
-            concatenated = np.concatenate(list(self.edges.values()))
-            nunique = np.unique(concatenated).size
-            assert concatenated.size == nunique, "Edges are not unique."
+    def validate_shapes(self) -> None:
+        """Validate that arrays have correct shapes."""
+        assert (
+            self.edges.ndim == 1
+        ), f"Compressed edges must be a vector, got shape {self.edges.shape}."
+        assert (
+            self.nodes.ndim == 1
+        ), f"Nodes must be a vector, got shape {self.nodes.shape}."
+
+        coerce_matching_shape(self.nodes, self.node_attributes)
+        coerce_matching_shape(self.edges, self.edge_attributes)
 
     @classmethod
     def from_networkx(cls, graph: nx.Graph) -> "NumpyGraph":
         """
         Create a graph from a networkx graph.
         """
-        nodes = np.asarray(list(graph.nodes))
-        assert np.issubdtype(nodes.dtype, int)
-        edges = {}
+        data: dict
+
+        # Construct nodes and node attributes.
+        nodes = []
+        node_attributes: dict[str, list] = {}
+        for node, data in graph.nodes(data=True):
+            nodes.append(node)
+            for key, value in data.items():
+                node_attributes.setdefault(key, []).append(value)
+
+        # Construct edges and edge attributes.
+        edges = []
+        edge_attributes: dict[str, list] = {}
         for *edge, data in graph.edges(data=True):
-            edges.setdefault(data.get("type", "default"), []).append(edge)
-        edges = {key: compress_edges(np.asarray(value)) for key, value in edges.items()}
-        return cls(nodes, edges)
+            edges.append(edge)
+            for key, value in data.items():
+                edge_attributes.setdefault(key, []).append(value)
+
+        return cls(
+            nodes=np.asarray(nodes),
+            edges=compress_edges(np.asarray(edges)),
+            node_attributes=collectiontools.map_values(np.asarray, node_attributes),
+            edge_attributes=collectiontools.map_values(np.asarray, edge_attributes),
+        )
 
     def __repr__(self) -> str:  # pragma: no cover
         return (

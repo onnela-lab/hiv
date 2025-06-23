@@ -103,7 +103,11 @@ class UniversalSimulator:
                 )
 
     def init(self) -> NumpyGraph:
-        return NumpyGraph(np.arange(round(self.n)))
+        return NumpyGraph(
+            nodes=np.arange(round(self.n)),
+            edge_attributes={"steady": bool, "created_at": int},
+            attributes={"step": 0},
+        )
 
     @overload
     def step(
@@ -123,63 +127,43 @@ class UniversalSimulator:
 
         # Keep nodes with probability 1 - mu.
         with timer("remove_nodes"):
-            graph.nodes = graph.nodes[
-                np.random.uniform(size=graph.nodes.size) > self.mu
-            ]
-
-        # Remove edges incident on a removed node.
-        if "steady" in graph.edges:
-            with timer("remove_lingering_edges"):
-                compressed_steady = graph.edges["steady"]
-                steady = decompress_edges(compressed_steady)
-                # We can't use assume_unique here because node indices may appear
-                # repeatedly in the edge list.
-                graph.edges["steady"] = compressed_steady[
-                    np.isin(steady, graph.nodes).all(axis=-1)
-                ]
+            graph.filter_nodes(np.random.uniform(size=graph.nodes.size) > self.mu)
 
         # Add new nodes that have migrated in.
         with timer("add_nodes"):
             num_new_nodes = np.random.poisson(self.n * self.mu)
-            graph.nodes = np.concatenate(
-                [graph.nodes, label_offset + np.arange(num_new_nodes)]
-            )
+            graph.add_nodes(label_offset + np.arange(num_new_nodes))
 
         # If there are no nodes, there's nothing else to be done.
         if not graph.nodes.size:
             return graph
 
-        # Keep steady relationships with probability 1 - sigma.
-        if "steady" in graph.edges:
-            with timer("remove_steady_edges"):
-                steady = graph.edges["steady"]
-                graph.edges["steady"] = steady[
-                    np.random.uniform(size=steady.size) > self.sigma
-                ]
+        # Remove steady relationships with probability sigma and remove all casual
+        # edges with probability 1.
+        with timer("remove_edges"):
+            proba_remove = np.where(graph.edge_attributes["steady"], self.sigma, 1)
+            fltr = proba_remove < np.random.uniform(size=proba_remove.size)
+            graph.filter_edges(fltr)
 
         with timer("add_steady_edges"):
-            # Seek steady edges with probability depending on being single.
-            if "steady" in graph.edges:
-                # We can't use assume_unique here because node indices may appear
-                # repeatedly in the edge list.
-                degrees = graph.degrees("steady")
-                is_partnered = degrees > 0
-                # proba = np.where(is_partnered, self.rho * self.xi, self.rho)
-                proba = self.rho * self.xi**degrees
-            else:
-                is_partnered = None
-                proba = self.rho
+            steady_degrees = graph.degrees(key=lambda attrs: attrs["steady"])
+            is_partnered = steady_degrees > 0
+            proba = np.where(is_partnered, self.rho * self.xi, self.rho)
             fltr = np.random.uniform(size=graph.nodes.size) < proba
             candidates = graph.nodes[fltr]
 
-            # Add new edges and deduplicate if already in a relationship.
             new_steady_edges = candidates_to_edges(candidates)
-            if "steady" in graph.edges:
-                graph.edges["steady"] = np.union1d(
-                    graph.edges["steady"], new_steady_edges
+            # Deduplicate the edges because two people may form the same relationship
+            # again if we allow concurrency, they both seek a new relationship, and they
+            # then get paired up with each other. An edge case, but happens in large
+            # simulations.
+            if self.xi:
+                new_steady_edges = np.setdiff1d(
+                    new_steady_edges, graph.edges[graph.edge_attributes["steady"]]
                 )
-            else:
-                graph.edges["steady"] = new_steady_edges
+            graph.add_edges(
+                new_steady_edges, steady=True, created_at=graph.attributes["step"]
+            )
 
         # Add casual relationships. Because we have already removed all casual
         # relationships from the previous iteration, any edge is a steady relationship,
@@ -188,10 +172,7 @@ class UniversalSimulator:
             # Seek casual edges with probability depending on being single. We don't
             # need to check if there are steady edges because we just created them.
             newly_partnered = np.isin(graph.nodes, decompress_edges(new_steady_edges))
-            if is_partnered is None:
-                is_partnered = newly_partnered
-            else:
-                is_partnered |= newly_partnered
+            is_partnered |= newly_partnered
             proba = np.where(is_partnered, self.omega1, self.omega0)
             fltr = np.random.uniform(size=graph.nodes.size) < proba
             candidates = graph.nodes[fltr]
@@ -199,9 +180,11 @@ class UniversalSimulator:
             # Add new edges and exclude edges that already exist in the steady edge set.
             # We need to first compress the edges to allow the set operations.
             casual_edges = candidates_to_edges(candidates)
-            graph.edges["casual"] = np.setdiff1d(
-                casual_edges, graph.edges["steady"], assume_unique=True
+            casual_edges = np.setdiff1d(casual_edges, graph.edges)
+            graph.add_edges(
+                casual_edges, steady=False, created_at=graph.attributes["step"]
             )
+        graph.attributes["step"] += 1
 
         return (graph, timer.times) if return_times else graph
 
@@ -233,7 +216,7 @@ class UniversalSimulator:
         summaries: dict[str, list[float | int | np.ndarray]] = {}
         for graph, sample in zip([graph0, graph1], samples):
             # Get degrees of nodes and degree distribution.
-            degrees = graph.degrees("steady")
+            degrees = graph.degrees(key=lambda attrs: attrs["steady"])
             assert degrees.shape == graph.nodes.shape, (
                 f"Expected degree vector shape ({degrees.shape}) to match nodes shape "
                 f"({graph.nodes.shape})."
@@ -251,7 +234,7 @@ class UniversalSimulator:
 
             # Filter to nodes that had a casual interaction.
             has_casual = np.isin(
-                sample, decompress_edges(graph.edges.get("casual", empty_int_array))
+                sample, decompress_edges(graph.edges[~graph.edge_attributes["steady"]])
             )
             assert has_casual.shape == sample.shape, (
                 f"Expected the `has_casual` indicator shape ({has_casual.shape}) to "
@@ -269,7 +252,7 @@ class UniversalSimulator:
 
             # Get compressed steady edges so we can evaluate how many are retained. We
             # restrict to edges where at least one member is in the sample.
-            steady_edges = graph.edges.get("steady", empty_int_array)
+            steady_edges = graph.edges[graph.edge_attributes["steady"]]
             steady_edges = steady_edges[
                 np.isin(decompress_edges(steady_edges), sample).any(axis=1)
             ]
@@ -291,13 +274,31 @@ class UniversalSimulator:
                     / max(num_nodes_by_degree_with_casual[1:].sum(), 1),
                     "min_node_label": sample.min() if sample.size else -1,
                     "max_node_label": sample.max() if sample.size else -1,
+                    # Clipped length of steady relationships from Hansson et al. (2019).
+                    # We divide by 52 to get another summary on the [0, 1] scale.
+                    "steady_length": (
+                        (
+                            graph.attributes["step"]
+                            - graph.edge_attributes["created_at"][
+                                graph.edge_attributes["steady"]
+                            ]
+                        )
+                        .clip(max=52)
+                        .mean()
+                        / 52
+                        if graph.edge_attributes["steady"].any()
+                        else 0
+                    ),
                 },
             )
 
         weight = np.asarray(summaries["sample_size"]) / max(
             sum(summaries["sample_size"]), 1  # type: ignore
         )
-        return {
+
+        # Summary statistics that are of particular interest to us for longitudinal
+        # surveys.
+        result = {
             # Fraction of nodes retained which is monotonically decreasing. We expect
             # this statistics to change slowly because the migration probability `mu`
             # tends to be small.
@@ -332,11 +333,37 @@ class UniversalSimulator:
             # relationship. This is indicative of the monogamy parameter `xi`.
             "frac_concurrent": num_nodes_by_degree[2:].sum()  # type: ignore
             / max(num_nodes_by_degree[1:].sum(), 1),  # type: ignore
-        } | {
-            f"_{key}": value
-            for key, value in summaries.items()
-            if not key.startswith("_")
         }
+
+        # Summary statistics from Hansson et al. (2019) from a survey on MSM in Sweden.
+        result.update(
+            {
+                # Fraction of paired individuals (reported as 0.64) is already covered
+                # above.
+                # They report the mean time between casual sexual partners as 101.9 days if
+                # in a relationship and 62.6 days if not in a relationship. We can translate
+                # that into the fraction of singles/paired with a casual partner in the last
+                # week. 0.06639 for paired, 0.1058 for singles.
+                # Fraction of concurrent relationships is 0.26 from S2.3 of the supplement.
+                # Any "frac_retained", we cannot get our hands on because the survey has
+                # only a single wave. Constraining `mu` is fundamentally difficult, but we
+                # can use something like the typical length of a relationship as additional
+                # information. They note that the self-reported mean duration of a
+                # partnership is 203.2 days = 29.03 weeks, although that is capped at one
+                # year or about 52 weeks.
+                "steady_length": np.dot(summaries["steady_length"], weight),
+            }
+        )
+
+        # Debugging summary statistics.
+        result.update(
+            {
+                f"_{key}": value
+                for key, value in summaries.items()
+                if not key.startswith("_")
+            }
+        )
+        return result
 
 
 def estimate_paired_fraction(rho, mu, sigma):

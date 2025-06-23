@@ -193,7 +193,7 @@ def __main__(argv=None) -> None:
                     f"{lag_summaries['frac_retained_nodes']}, but the graph is "
                     "unchanged."
                 )
-                steady_edges = graph0.edges["steady"]
+                steady_edges = graph0.edges[graph0.edge_attributes["steady"]]
                 steady_edges = steady_edges[
                     np.isin(decompress_edges(steady_edges), initial_sample).any(axis=1)
                 ]
