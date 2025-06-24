@@ -269,9 +269,9 @@ class UniversalSimulator:
                     "_steady_edges": steady_edges,
                     "frac_paired": num_nodes_by_degree[1:].sum() / max(sample.size, 1),
                     "frac_single_with_casual": num_nodes_by_degree_with_casual[0]
-                    / max(num_nodes_by_degree_with_casual[0], 1),
+                    / max(num_nodes_by_degree[0], 1),
                     "frac_paired_with_casual": num_nodes_by_degree_with_casual[1:].sum()
-                    / max(num_nodes_by_degree_with_casual[1:].sum(), 1),
+                    / max(num_nodes_by_degree[1:].sum(), 1),
                     "min_node_label": sample.min() if sample.size else -1,
                     "max_node_label": sample.max() if sample.size else -1,
                     # Clipped length of steady relationships from Hansson et al. (2019).
