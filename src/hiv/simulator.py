@@ -367,11 +367,28 @@ class UniversalSimulator:
         return result
 
 
-def estimate_paired_fraction(rho, mu, sigma):
+def estimate_paired_fraction(
+    rho: np.ndarray, mu: np.ndarray, sigma: np.ndarray, lag: np.ndarray | None = None
+) -> np.ndarray:
     """
     Estimate the fraction of paired nodes.
 
-    This differs from the continuous-time version based on inline text about 3/4 of the
-    way down page 369 of 10.1016/j.idm.2017.07.002: rho / (rho + sigma + 2 * mu)
+    Args:
+        rho: Probability to seek a new relationship.
+        mu: Probability to leave the population.
+        sigma: Probability for a relationship to dissolve naturally.
+        lag: Time since first interviewing the cohort. This is important because
+            subsequent interviews are with people who have, by definition, not left the
+            population, which leads to lower break-up rates and higher fraction of
+            paired nodes.
+
+    Returns:
+        Expected fraction of paired nodes.
     """
-    return rho / (1 - (1 - mu) ** 2 * (1 - sigma) * (1 - rho))
+    beta = (1 - mu) * (1 - sigma) * (1 - rho)
+    alpha = beta * (1 - mu)
+
+    if lag is None:
+        return rho / (1 - alpha)
+
+    return (rho / (1 - beta)) * (1 - (beta ** (lag + 1)) * (mu / (1 - alpha)))

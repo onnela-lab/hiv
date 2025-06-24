@@ -53,3 +53,18 @@ def test_invalid_type() -> None:
 def test_estimate_paired_fraction() -> None:
     np.testing.assert_allclose(estimate_paired_fraction(0.2, 0, 0), 1)
     np.testing.assert_allclose(estimate_paired_fraction(0, 0.5, 0.7), 0)
+    # Non-zero lag should have larger paired fraction ...
+    np.testing.assert_array_less(
+        estimate_paired_fraction(0.1, 0.2, 0.3, 10),
+        estimate_paired_fraction(0.1, 0.2, 0.3, 20),
+    )
+    # ... unless the migration rate is zero.
+    np.testing.assert_allclose(
+        estimate_paired_fraction(0.1, 0, 0.3, 10),
+        estimate_paired_fraction(0.1, 0, 0.3, 20),
+    )
+    # Zero lag is the same as no lag.
+    np.testing.assert_allclose(
+        estimate_paired_fraction(0.1, 0.2, 0.3, lag=None),
+        estimate_paired_fraction(0.1, 0.2, 0.3, lag=0),
+    )
