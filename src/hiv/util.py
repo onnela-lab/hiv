@@ -186,6 +186,34 @@ class NumpyGraph:
             attributes=self.attributes.copy(),
         )
 
+    def subgraph(self, nodes: np.ndarray) -> "NumpyGraph":  # pragma: no cover
+        """
+        Create a copy of the graph that includes only a subset of nodes.
+
+        Args:
+            nodes: Nodes to include in the graph.
+
+        Returns:
+            Copy of the graph that includes only a subset of nodes.
+        """
+        missing = np.setdiff1d(nodes, self._nodes)
+        assert (
+            missing.size == 0
+        ), f"{missing.size} nodes in the subset are missing from the graph."
+        node_mask = np.isin(self._nodes, nodes)
+        edge_mask = np.isin(decompress_edges(self._edges), nodes).any(axis=-1)
+        return self.__class__(
+            nodes=nodes,
+            edges=self._edges[edge_mask],
+            node_attributes={
+                key: value[node_mask] for key, value in self.node_attributes.items()
+            },
+            edge_attributes={
+                key: value[edge_mask] for key, value in self.edge_attributes.items()
+            },
+            attributes=self.attributes.copy(),
+        )
+
     def _add(
         self,
         x_new: np.ndarray,
