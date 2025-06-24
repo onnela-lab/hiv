@@ -227,7 +227,7 @@ class UniversalSimulator:
                 f"Expected degree vector shape ({degrees.shape}) to match node sample "
                 f"shape ({sample.shape})."
             )
-            num_nodes_by_degree = np.bincount(degrees)
+            num_nodes_by_degree = np.bincount(degrees, minlength=1)
             assert num_nodes_by_degree.sum() <= sample.size, (
                 f"Expected sum of degree distribution ({num_nodes_by_degree.sum()}) "
                 f"to match sample size ({sample.size})."
