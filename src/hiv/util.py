@@ -105,7 +105,8 @@ def coerce_matching_shape(
     coerced = {}
     for key, value in attributes.items():
         if np.size(value) == 1:
-            value = np.broadcast_to(value, x.shape)
+            # We make a copy because the result is otherwise not writeable.
+            value = np.broadcast_to(value, x.shape).copy()
         assert x.shape == value.shape, (
             f"Attribute '{key}' with shape '{value.shape}' does not match input with "
             f"shape '{x.shape}'."
