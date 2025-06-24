@@ -106,7 +106,10 @@ class UniversalSimulator:
         n = round(self.n)
         return NumpyGraph(
             nodes=np.arange(n),
-            node_attrs={"last_casual_at": -np.ones(n, dtype=int)},
+            node_attrs={
+                "last_casual_at": -np.ones(n, dtype=int),
+                "previous_casual_at": -np.ones(n, dtype=int),
+            },
             edge_attrs={"steady": bool, "created_at": int},
             attrs={"step": 0},
         )
@@ -131,16 +134,14 @@ class UniversalSimulator:
         with timer("remove_nodes"):
             graph.filter_nodes(np.random.uniform(size=graph.nodes.size) > self.mu)
 
-        # Update the time of the last casual encounter.
-        has_casual = np.isin(
-            graph.nodes, decompress_edges(graph.edges[~graph.edge_attrs["steady"]])
-        )
-        graph.node_attrs["last_casual_at"][has_casual] = graph.attrs["step"]
-
         # Add new nodes that have migrated in.
         with timer("add_nodes"):
             num_new_nodes = np.random.poisson(self.n * self.mu)
-            graph.add_nodes(label_offset + np.arange(num_new_nodes), last_casual_at=-1)
+            graph.add_nodes(
+                label_offset + np.arange(num_new_nodes), 
+                last_casual_at=-1, 
+                previous_casual_at=-1
+            )
 
         # If there are no nodes, there's nothing else to be done.
         if not graph.nodes.size:
@@ -191,6 +192,13 @@ class UniversalSimulator:
             casual_edges = candidates_to_edges(candidates)
             casual_edges = np.setdiff1d(casual_edges, graph.edges)
             graph.add_edges(casual_edges, steady=False, created_at=graph.attrs["step"])
+
+            # Update the time since the last casual encounter.
+            nodes_with_new_casual = np.isin(graph.nodes, decompress_edges(casual_edges))
+            # Move last_casual_at to previous_casual_at for nodes getting new encounters
+            graph.node_attrs["previous_casual_at"][nodes_with_new_casual] = graph.node_attrs["last_casual_at"][nodes_with_new_casual]
+            # Update last_casual_at to current step
+            graph.node_attrs["last_casual_at"][nodes_with_new_casual] = graph.attrs["step"]
 
         graph.attrs["step"] += 1
 
@@ -270,11 +278,13 @@ class UniversalSimulator:
         #
         # We process the data in stages to ensure we can break down by being in a steady
         # relationship.
+        previous_casual_at = graph.node_attrs["previous_casual_at"][sample_has_node]
         last_casual_at = graph.node_attrs["last_casual_at"][sample_has_node]
-        has_previous_and_current_casual = (last_casual_at != -1) & has_casual
-        last_casual_at = last_casual_at[has_previous_and_current_casual]
-        casual_gap = graph.attrs["step"] - last_casual_at
-        has_partner = steady_degrees[has_previous_and_current_casual] > 0
+        has_two_or_more_casual = previous_casual_at != -1
+        previous_casual_at = previous_casual_at[has_two_or_more_casual]
+        last_casual_at = last_casual_at[has_two_or_more_casual]
+        casual_gap = last_casual_at - previous_casual_at
+        has_partner = steady_degrees[has_two_or_more_casual] > 0
 
         casual_gap_single = casual_gap[~has_partner]
         if casual_gap_single.size:
