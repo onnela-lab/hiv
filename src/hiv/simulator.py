@@ -138,9 +138,9 @@ class UniversalSimulator:
         with timer("add_nodes"):
             num_new_nodes = np.random.poisson(self.n * self.mu)
             graph.add_nodes(
-                label_offset + np.arange(num_new_nodes), 
-                last_casual_at=-1, 
-                previous_casual_at=-1
+                label_offset + np.arange(num_new_nodes),
+                last_casual_at=-1,
+                previous_casual_at=-1,
             )
 
         # If there are no nodes, there's nothing else to be done.
@@ -196,9 +196,13 @@ class UniversalSimulator:
             # Update the time since the last casual encounter.
             nodes_with_new_casual = np.isin(graph.nodes, decompress_edges(casual_edges))
             # Move last_casual_at to previous_casual_at for nodes getting new encounters
-            graph.node_attrs["previous_casual_at"][nodes_with_new_casual] = graph.node_attrs["last_casual_at"][nodes_with_new_casual]
+            graph.node_attrs["previous_casual_at"][nodes_with_new_casual] = (
+                graph.node_attrs["last_casual_at"][nodes_with_new_casual]
+            )
             # Update last_casual_at to current step
-            graph.node_attrs["last_casual_at"][nodes_with_new_casual] = graph.attrs["step"]
+            graph.node_attrs["last_casual_at"][nodes_with_new_casual] = graph.attrs[
+                "step"
+            ]
 
         graph.attrs["step"] += 1
 
