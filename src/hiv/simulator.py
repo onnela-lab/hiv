@@ -106,9 +106,9 @@ class UniversalSimulator:
         n = round(self.n)
         return NumpyGraph(
             nodes=np.arange(n),
-            node_attributes={"last_casual_at": -np.ones(n, dtype=int)},
-            edge_attributes={"steady": bool, "created_at": int},
-            attributes={"step": 0},
+            node_attrs={"last_casual_at": -np.ones(n, dtype=int)},
+            edge_attrs={"steady": bool, "created_at": int},
+            attrs={"step": 0},
         )
 
     @overload
@@ -144,7 +144,7 @@ class UniversalSimulator:
         # edges with probability 1. When the probability to remove is high, we want the
         # corresponding filter to be False.
         with timer("remove_edges"):
-            proba_remove = np.where(graph.edge_attributes["steady"], self.sigma, 1)
+            proba_remove = np.where(graph.edge_attrs["steady"], self.sigma, 1)
             fltr = proba_remove < np.random.uniform(size=proba_remove.size)
             graph.filter_edges(fltr)
 
@@ -162,10 +162,10 @@ class UniversalSimulator:
             # simulations.
             if self.xi:
                 new_steady_edges = np.setdiff1d(
-                    new_steady_edges, graph.edges[graph.edge_attributes["steady"]]
+                    new_steady_edges, graph.edges[graph.edge_attrs["steady"]]
                 )
             graph.add_edges(
-                new_steady_edges, steady=True, created_at=graph.attributes["step"]
+                new_steady_edges, steady=True, created_at=graph.attrs["step"]
             )
 
         # Add casual relationships. Because we have already removed all casual
@@ -184,15 +184,13 @@ class UniversalSimulator:
             # We need to first compress the edges to allow the set operations.
             casual_edges = candidates_to_edges(candidates)
             casual_edges = np.setdiff1d(casual_edges, graph.edges)
-            graph.add_edges(
-                casual_edges, steady=False, created_at=graph.attributes["step"]
-            )
+            graph.add_edges(casual_edges, steady=False, created_at=graph.attrs["step"])
 
             # Update the time since the last casual encounter.
             fltr = np.isin(graph.nodes, decompress_edges(casual_edges))
-            graph.node_attributes["last_casual_at"][fltr] = graph.attributes["step"]
+            graph.node_attrs["last_casual_at"][fltr] = graph.attrs["step"]
 
-        graph.attributes["step"] += 1
+        graph.attrs["step"] += 1
 
         return (graph, timer.times) if return_times else graph
 
@@ -224,7 +222,7 @@ class UniversalSimulator:
 
         # Get a binary indicator if a node has a casual contact.
         has_casual = np.isin(
-            sample, decompress_edges(graph.edges[~graph.edge_attributes["steady"]])
+            sample, decompress_edges(graph.edges[~graph.edge_attrs["steady"]])
         )
         assert has_casual.shape == sample.shape
 
@@ -237,9 +235,7 @@ class UniversalSimulator:
 
         # Get all steady edges so we can compare how many were retained.
         sample_has_edge = np.isin(decompress_edges(graph.edges), sample).any(axis=-1)
-        sample_has_edge_and_is_steady = (
-            graph.edge_attributes["steady"] & sample_has_edge
-        )
+        sample_has_edge_and_is_steady = graph.edge_attrs["steady"] & sample_has_edge
         steady_edges = graph.edges[sample_has_edge_and_is_steady]
 
         # Evaluate steady relationship durations clipped above at 52 weeks as reported
@@ -249,8 +245,8 @@ class UniversalSimulator:
         # partner."
         if steady_edges.size:
             steady_length: np.ndarray = (
-                graph.attributes["step"]
-                - graph.edge_attributes["created_at"][sample_has_edge_and_is_steady]
+                graph.attrs["step"]
+                - graph.edge_attrs["created_at"][sample_has_edge_and_is_steady]
             )
             # We divide by 52 to get summaries on the same scale as the `frac_*`.
             steady_length = steady_length.clip(max=52).mean() / 52
@@ -274,7 +270,7 @@ class UniversalSimulator:
         #
         # We process the data in stages to ensure we can break down by being in a steady
         # relationship.
-        last_casual_at = graph.node_attributes["last_casual_at"][sample_has_node]
+        last_casual_at = graph.node_attrs["last_casual_at"][sample_has_node]
         has_previous_casual = last_casual_at != -1
         last_casual_at = last_casual_at[has_previous_casual]
         has_partner = steady_degrees[has_previous_casual] > 0
@@ -293,8 +289,7 @@ class UniversalSimulator:
 
         return {
             # Fraction of nodes who have at least one steady relationship.
-            "frac_paired": num_nodes_by_steady_degree[1:].sum()
-            / max(sample.size, 1),
+            "frac_paired": num_nodes_by_steady_degree[1:].sum() / max(sample.size, 1),
             # Fraction of nodes with at least one steady relationship who have more than
             # one steady relationship.
             "frac_concurrent": num_nodes_by_steady_degree[2:].sum()
@@ -352,7 +347,9 @@ class UniversalSimulator:
             "frac_retained_nodes": np.intersect1d(sample0, sample1).size
             / max(sample0.size, 1),
             # Fraction of edges that have at least one vertex in the sample.
-            "frac_retained_steady_edges": np.intersect1d(*pointwise["_steady_edges"]).size
+            "frac_retained_steady_edges": np.intersect1d(
+                *pointwise["_steady_edges"]
+            ).size
             / max(pointwise["_steady_edges"][0].size, 1),
         }
 

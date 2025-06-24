@@ -129,8 +129,9 @@ class NumpyGraph:
     Args:
         nodes: Set of nodes.
         compressed: Set of compressed edges.
-        node_attributes: Mapping from names to node attributes.
-        edge_attributes: Mapping from names to edge attributes.
+        node_attrs: Mapping from names to node attributes.
+        edge_attrs: Mapping from names to edge attributes.
+        attrs: Mapping from names to graph attributes.
     """
 
     def __init__(
@@ -138,15 +139,15 @@ class NumpyGraph:
         *,
         nodes: np.ndarray | None = None,
         edges: np.ndarray | None = None,
-        node_attributes: dict[str, np.ndarray | np.dtype] | None = None,
-        edge_attributes: dict[str, np.ndarray | np.dtype] | None = None,
-        attributes: dict[str, Any] | None = None,
+        node_attrs: dict[str, np.ndarray | np.dtype] | None = None,
+        edge_attrs: dict[str, np.ndarray | np.dtype] | None = None,
+        attrs: dict[str, Any] | None = None,
     ) -> None:
         self._nodes = np.empty((0,), dtype=np.uint32) if nodes is None else nodes
         self._edges = np.empty((0,), dtype=np.uint64) if edges is None else edges
-        self.node_attributes = self._as_attribute_dict(node_attributes)
-        self.edge_attributes = self._as_attribute_dict(edge_attributes)
-        self.attributes = attributes or {}
+        self.node_attrs = self._as_attribute_dict(node_attrs)
+        self.edge_attrs = self._as_attribute_dict(edge_attrs)
+        self.attrs = attrs or {}
 
         # Run very basic checks that are cheap in the constructor.
         self.validate_shapes()
@@ -182,9 +183,9 @@ class NumpyGraph:
         return self.__class__(
             nodes=self.nodes,
             edges=self.edges,
-            node_attributes=self.node_attributes.copy(),
-            edge_attributes=self.edge_attributes.copy(),
-            attributes=self.attributes.copy(),
+            node_attrs=self.node_attrs.copy(),
+            edge_attrs=self.edge_attrs.copy(),
+            attrs=self.attrs.copy(),
         )
 
     def subgraph(self, nodes: np.ndarray) -> "NumpyGraph":  # pragma: no cover
@@ -206,13 +207,13 @@ class NumpyGraph:
         return self.__class__(
             nodes=nodes,
             edges=self._edges[edge_mask],
-            node_attributes={
-                key: value[node_mask] for key, value in self.node_attributes.items()
+            node_attrs={
+                key: value[node_mask] for key, value in self.node_attrs.items()
             },
-            edge_attributes={
-                key: value[edge_mask] for key, value in self.edge_attributes.items()
+            edge_attrs={
+                key: value[edge_mask] for key, value in self.edge_attrs.items()
             },
-            attributes=self.attributes.copy(),
+            attrs=self.attrs.copy(),
         )
 
     def _add(
@@ -250,8 +251,8 @@ class NumpyGraph:
             edges: Compressed edges.
             kwargs: Edge attributes.
         """
-        self._nodes, self.node_attributes = self._add(
-            nodes, kwargs, self._nodes, self.node_attributes
+        self._nodes, self.node_attrs = self._add(
+            nodes, kwargs, self._nodes, self.node_attrs
         )
 
     def _filter(
@@ -262,9 +263,7 @@ class NumpyGraph:
         }
 
     def filter_nodes(self, fltr: np.ndarray) -> None:
-        self._nodes, self.node_attributes = self._filter(
-            self._nodes, self.node_attributes, fltr
-        )
+        self._nodes, self.node_attrs = self._filter(self._nodes, self.node_attrs, fltr)
         # We also need to filter out any edges that no longer have one of its vertices.
         edges = decompress_edges(self._edges)
         both_exist = np.isin(edges, self._nodes).all(axis=-1)
@@ -277,14 +276,12 @@ class NumpyGraph:
             edges: Compressed edges.
             kwargs: Edge attributes.
         """
-        self._edges, self.edge_attributes = self._add(
-            edges, kwargs, self._edges, self.edge_attributes
+        self._edges, self.edge_attrs = self._add(
+            edges, kwargs, self._edges, self.edge_attrs
         )
 
     def filter_edges(self, fltr: np.ndarray) -> None:
-        self._edges, self.edge_attributes = self._filter(
-            self._edges, self.edge_attributes, fltr
-        )
+        self._edges, self.edge_attrs = self._filter(self._edges, self.edge_attrs, fltr)
 
     def degrees(
         self, *, key: Callable[[dict[str, np.ndarray]], np.ndarray] | None = None
@@ -302,7 +299,7 @@ class NumpyGraph:
         # Restrict edge set based on predicate and decompress edges.
         edges = self.edges
         if key:
-            edges = edges[key(self.edge_attributes)]
+            edges = edges[key(self.edge_attrs)]
         edges = decompress_edges(edges)
 
         # Get indices of non-isolated nodes and the corresponding number of connections.
@@ -321,13 +318,13 @@ class NumpyGraph:
         """
         graph = nx.Graph()
         graph.add_nodes_from(
-            (node, {key: value[i] for key, value in self.node_attributes.items()})
+            (node, {key: value[i] for key, value in self.node_attrs.items()})
             for i, node in enumerate(self.nodes)
         )
         graph.add_edges_from(
             (
                 *decompress_edges(edge),
-                {key: value[i] for key, value in self.edge_attributes.items()},
+                {key: value[i] for key, value in self.edge_attrs.items()},
             )
             for i, edge in enumerate(self.edges)
         )
@@ -365,8 +362,8 @@ class NumpyGraph:
             self.nodes.ndim == 1
         ), f"Nodes must be a vector, got shape {self.nodes.shape}."
 
-        coerce_matching_shape(self.nodes, self.node_attributes)
-        coerce_matching_shape(self.edges, self.edge_attributes)
+        coerce_matching_shape(self.nodes, self.node_attrs)
+        coerce_matching_shape(self.edges, self.edge_attrs)
 
     @classmethod
     def from_networkx(cls, graph: nx.Graph) -> "NumpyGraph":
@@ -377,25 +374,25 @@ class NumpyGraph:
 
         # Construct nodes and node attributes.
         nodes = []
-        node_attributes: dict[str, list] = {}
+        node_attrs: dict[str, list] = {}
         for node, data in graph.nodes(data=True):
             nodes.append(node)
             for key, value in data.items():
-                node_attributes.setdefault(key, []).append(value)
+                node_attrs.setdefault(key, []).append(value)
 
         # Construct edges and edge attributes.
         edges = []
-        edge_attributes: dict[str, list] = {}
+        edge_attrs: dict[str, list] = {}
         for *edge, data in graph.edges(data=True):
             edges.append(edge)
             for key, value in data.items():
-                edge_attributes.setdefault(key, []).append(value)
+                edge_attrs.setdefault(key, []).append(value)
 
         return cls(
             nodes=np.asarray(nodes),
             edges=compress_edges(np.asarray(edges)),
-            node_attributes=collectiontools.map_values(np.asarray, node_attributes),
-            edge_attributes=collectiontools.map_values(np.asarray, edge_attributes),
+            node_attrs=collectiontools.map_values(np.asarray, node_attrs),
+            edge_attrs=collectiontools.map_values(np.asarray, edge_attrs),
         )
 
     def __repr__(self) -> str:  # pragma: no cover

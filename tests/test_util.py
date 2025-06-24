@@ -51,8 +51,8 @@ def test_to_from_numpy_graph() -> None:
         data["attr"] = "something"
 
     npgraph = util.NumpyGraph.from_networkx(nxgraph)
-    assert "attr" in npgraph.node_attributes
-    assert "type" in npgraph.edge_attributes
+    assert "attr" in npgraph.node_attrs
+    assert "type" in npgraph.edge_attrs
     nxgraph2 = npgraph.to_networkx()
     util.assert_graphs_equal(nxgraph, nxgraph2)
 
