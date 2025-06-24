@@ -103,8 +103,10 @@ class UniversalSimulator:
                 )
 
     def init(self) -> NumpyGraph:
+        n = round(self.n)
         return NumpyGraph(
-            nodes=np.arange(round(self.n)),
+            nodes=np.arange(n),
+            node_attributes={"last_casual_at": -np.ones(n, dtype=int)},
             edge_attributes={"steady": bool, "created_at": int},
             attributes={"step": 0},
         )
@@ -132,7 +134,7 @@ class UniversalSimulator:
         # Add new nodes that have migrated in.
         with timer("add_nodes"):
             num_new_nodes = np.random.poisson(self.n * self.mu)
-            graph.add_nodes(label_offset + np.arange(num_new_nodes))
+            graph.add_nodes(label_offset + np.arange(num_new_nodes), last_casual_at=-1)
 
         # If there are no nodes, there's nothing else to be done.
         if not graph.nodes.size:
@@ -185,11 +187,135 @@ class UniversalSimulator:
             graph.add_edges(
                 casual_edges, steady=False, created_at=graph.attributes["step"]
             )
+
+            # Update the time since the last casual encounter.
+            fltr = np.isin(graph.nodes, decompress_edges(casual_edges))
+            graph.node_attributes["last_casual_at"][fltr] = graph.attributes["step"]
+
         graph.attributes["step"] += 1
 
         return (graph, timer.times) if return_times else graph
 
-    def evaluate_summaries(
+    def evaluate_pointwise_summaries(
+        self, graph: NumpyGraph, sample: np.ndarray
+    ) -> dict[str, float]:
+        """
+        Evaluate pointwise summary statistics for a single graph.
+
+        Args:
+            graph: Graph for which to evaluate summaries.
+            sample: Sample of nodes to evaluate summaries.
+
+        Returns:
+            Summary statistics.
+        """
+        assert np.setdiff1d(sample, graph.nodes).size == 0
+        # Get the steady degree of individuals who are in the sample. Their partner may
+        # be outside of the sample, however.
+        sample_has_node = np.isin(graph.nodes, sample)
+        steady_degrees = graph.degrees(key=lambda attrs: attrs["steady"])[
+            sample_has_node
+        ]
+        assert steady_degrees.shape == sample.shape
+
+        # Get the frequency of different steady degrees.
+        num_nodes_by_steady_degree = np.bincount(steady_degrees, minlength=1)
+        assert num_nodes_by_steady_degree.sum() == sample.size
+
+        # Get a binary indicator if a node has a casual contact.
+        has_casual = np.isin(
+            sample, decompress_edges(graph.edges[~graph.edge_attributes["steady"]])
+        )
+        assert has_casual.shape == sample.shape
+
+        # Get the degree frequency for steady connections where the node also has a
+        # casual contact.
+        num_nodes_by_steady_degree_with_casual = np.bincount(
+            steady_degrees[has_casual], minlength=1
+        )
+        assert num_nodes_by_steady_degree_with_casual.sum() <= sample.size
+
+        # Get all steady edges so we can compare how many were retained.
+        sample_has_edge = np.isin(decompress_edges(graph.edges), sample).any(axis=-1)
+        sample_has_edge_and_is_steady = (
+            graph.edge_attributes["steady"] & sample_has_edge
+        )
+        steady_edges = graph.edges[sample_has_edge_and_is_steady]
+
+        # Evaluate steady relationship durations clipped above at 52 weeks as reported
+        # by Hansson et al. (2019). The clipping occurs because of the collection
+        # method: "showing the participant a timeline over the last 12 months where
+        # participants added the time period for a sexual relationship with a sex
+        # partner."
+        if steady_edges.size:
+            steady_length: np.ndarray = (
+                graph.attributes["step"]
+                - graph.edge_attributes["created_at"][sample_has_edge_and_is_steady]
+            )
+            # We divide by 52 to get summaries on the same scale as the `frac_*`.
+            steady_length = steady_length.clip(max=52).mean() / 52
+        else:
+            # If there are no steady edges, we set the relationship duration to zero,
+            # consistent with there being no relationships.
+            steady_length = 0
+
+        # FIXME: This is actually the time *since* the last contact, not the gap between
+        # contacts.
+        # Evaluate the gap since the last casual sexual contact as reported in Hansson
+        # et al. (2019). We only consider gaps where ALL of the following apply:
+        #
+        # - `in_sample` is true (because we won't observe otherwise).
+        # - `last_casual_at` is not -1 (that indicates no casual contact yet)
+        # - `casual_gap` is no more than 52 weeks because those casual contacts would
+        #   not have come up in the questionnaire that focused on the past year.
+        #
+        # If there are no casual contacts, we set the gap to the largest value
+        # consistent with there being no casual contacts.
+        #
+        # We process the data in stages to ensure we can break down by being in a steady
+        # relationship.
+        last_casual_at = graph.node_attributes["last_casual_at"][sample_has_node]
+        has_previous_casual = last_casual_at != -1
+        last_casual_at = last_casual_at[has_previous_casual]
+        has_partner = steady_degrees[has_previous_casual] > 0
+
+        casual_gap_single = last_casual_at[~has_partner]
+        if casual_gap_single.size:
+            casual_gap_single = casual_gap_single.mean() / 52
+        else:
+            casual_gap_single = 1
+
+        casual_gap_paired = last_casual_at[has_partner]
+        if casual_gap_paired.size:
+            casual_gap_paired = casual_gap_paired.mean() / 52
+        else:
+            casual_gap_paired = 1
+
+        return {
+            # Fraction of nodes who have at least one steady relationship.
+            "frac_paired": num_nodes_by_steady_degree[1:].sum()
+            / max(sample.size, 1),
+            # Fraction of nodes with at least one steady relationship who have more than
+            # one steady relationship.
+            "frac_concurrent": num_nodes_by_steady_degree[2:].sum()
+            / max(num_nodes_by_steady_degree[1:].sum(), 1),
+            # Fraction of singles who have a casual contact.
+            "frac_single_with_casual": num_nodes_by_steady_degree_with_casual[0]
+            / max(num_nodes_by_steady_degree[0], 1),
+            # Fraction of paired individuals who have a casual contact.
+            "frac_paired_with_casual": num_nodes_by_steady_degree_with_casual[1:].sum()
+            / max(num_nodes_by_steady_degree[1:].sum(), 1),
+            # Steady edges where at least one member is in the sample which we'll use to
+            # evaluate the fraction of retained steady edges. We prefix with "_" because
+            # we don't actually want to save these statistics.
+            "_steady_edges": steady_edges,
+            # Summaries from Hansson et al. (2019).
+            "steady_length": steady_length,
+            "casual_gap_single": casual_gap_single,
+            "casual_gap_paired": casual_gap_paired,
+        }
+
+    def evaluate_longitudinal_summaries(
         self, graph0: NumpyGraph, graph1: NumpyGraph, sample0: np.ndarray | None = None
     ) -> dict[str, float]:
         """
@@ -203,168 +329,46 @@ class UniversalSimulator:
         Returns:
             Dictionary of summary statistics.
         """
-        # Construct the set of nodes that we will use for each of the two graphs.
+        # Subsample the graphs.
         if sample0 is None:
             sample0 = graph0.nodes
-        else:
-            assert np.isin(
-                sample0, graph0.nodes
-            ).all(), "Some nodes in initial `sample0` are not present in `graph0`."
-        samples: list[np.ndarray] = [sample0, np.intersect1d(sample0, graph1.nodes)]
+        sample1 = np.intersect1d(sample0, graph1.nodes)
 
-        # Evaluate summary statistics for each of the graphs. We will then consolidate
-        # these statistics to obtain summaries for approximate Bayesian computation.
-        summaries: dict[str, list[float | int | np.ndarray]] = {}
-        for graph, sample in zip([graph0, graph1], samples):
-            # Get steady degrees of nodes and degree distribution.
-            degrees = graph.degrees(key=lambda attrs: attrs["steady"])
-            assert degrees.shape == graph.nodes.shape, (
-                f"Expected degree vector shape ({degrees.shape}) to match nodes shape "
-                f"({graph.nodes.shape})."
-            )
-            degrees = degrees[np.isin(graph.nodes, sample)]
-            assert degrees.size == sample.size, (
-                f"Expected degree vector shape ({degrees.shape}) to match node sample "
-                f"shape ({sample.shape})."
-            )
-            num_nodes_by_degree = np.bincount(degrees, minlength=1)
-            assert num_nodes_by_degree.sum() <= sample.size, (
-                f"Expected sum of degree distribution ({num_nodes_by_degree.sum()}) "
-                f"to match sample size ({sample.size})."
-            )
-
-            # Filter to nodes that had a casual interaction.
-            has_casual = np.isin(
-                sample, decompress_edges(graph.edges[~graph.edge_attributes["steady"]])
-            )
-            assert has_casual.shape == sample.shape, (
-                f"Expected the `has_casual` indicator shape ({has_casual.shape}) to "
-                f"match the sample shape ({sample.shape})."
-            )
-            degrees_with_casual = degrees[has_casual]
-            assert degrees_with_casual.shape == (has_casual.sum(),), (
-                f"Expected the degree vector shape ({degrees_with_casual.shape}) for "
-                "nodes with casual partners to match the number of nodes with casual "
-                f"partners ({has_casual.sum()})."
-            )
-            num_nodes_by_degree_with_casual = np.bincount(
-                degrees_with_casual, minlength=1
-            )
-
-            # Get compressed steady edges so we can evaluate how many are retained. We
-            # restrict to edges where at least one member is in the sample.
-            steady_edges = graph.edges[graph.edge_attributes["steady"]]
-            steady_edges = steady_edges[
-                np.isin(decompress_edges(steady_edges), sample).any(axis=1)
-            ]
-
-            # Append values to the summaries. Any keys prefixed with _ will not be
-            # stored. E.g., the vector of steady edges may be large, leading to big
-            # files (~GB) for the simulations.
-            collectiontools.append_values(
-                summaries,
-                {
-                    "sample_size": sample.size,
-                    "num_nodes_by_degree": num_nodes_by_degree,
-                    "num_nodes_by_degree_with_casual": num_nodes_by_degree_with_casual,
-                    "_steady_edges": steady_edges,
-                    "frac_paired": num_nodes_by_degree[1:].sum() / max(sample.size, 1),
-                    "frac_single_with_casual": num_nodes_by_degree_with_casual[0]
-                    / max(num_nodes_by_degree[0], 1),
-                    "frac_paired_with_casual": num_nodes_by_degree_with_casual[1:].sum()
-                    / max(num_nodes_by_degree[1:].sum(), 1),
-                    "min_node_label": sample.min() if sample.size else -1,
-                    "max_node_label": sample.max() if sample.size else -1,
-                    # Clipped length of steady relationships from Hansson et al. (2019).
-                    # We divide by 52 to get another summary on the [0, 1] scale.
-                    "steady_length": (
-                        (
-                            graph.attributes["step"]
-                            - graph.edge_attributes["created_at"][
-                                graph.edge_attributes["steady"]
-                            ]
-                        )
-                        .clip(max=52)
-                        .mean()
-                        / 52
-                        if graph.edge_attributes["steady"].any()
-                        else 0
-                    ),
-                },
-            )
-
-        weight = np.asarray(summaries["sample_size"]) / max(
-            sum(summaries["sample_size"]), 1  # type: ignore
+        # Evaluate pointwise summaries.
+        pointwise: dict[str, float] = {}
+        collectiontools.append_values(
+            pointwise, self.evaluate_pointwise_summaries(graph0, sample0)
+        )
+        collectiontools.append_values(
+            pointwise, self.evaluate_pointwise_summaries(graph1, sample1)
         )
 
-        # Summary statistics that are of particular interest to us for longitudinal
-        # surveys.
-        result = {
-            # Fraction of nodes retained which is monotonically decreasing. We expect
-            # this statistics to change slowly because the migration probability `mu`
-            # tends to be small.
-            "frac_retained_nodes": np.intersect1d(*samples, assume_unique=True).size
-            / max(summaries["sample_size"][0], 1),  # type: ignore
-            # Fraction of retained steady edges. This is generally decreasing but there
-            # may be increasing "blips" because a relationship could re-form, and we
-            # don't ask "did you break up and make up again" in the survey. This
-            # statistic is indicative of the break up probability `sigma` and to a
-            # lesser extent the migration probability `mu`.
-            "frac_retained_steady_edges": np.intersect1d(
-                *summaries["_steady_edges"], assume_unique=True
-            ).size
-            / max(summaries["_steady_edges"][0].size, 1),  # type: ignore
-            # Fraction of singles with a casual contact. This statistics is informative
-            # of `omega_0`.
-            "frac_single_with_casual": np.dot(
-                summaries["frac_single_with_casual"], weight  # type: ignore
-            ),
-            # Fraction of individuals in steady relationships with a casual contact.
-            # This statistics is indicative of `omega_1`.
-            "frac_paired_with_casual": np.dot(
-                summaries["frac_paired_with_casual"], weight  # type: ignore
-            ),
-            # Fraction of nodes that have one or more steady relations. This statistics
-            # informs `rho`, the tendency to form connections. In contrast to other
-            # statistics, such as the fraction of retained nodes, this statistic is
-            # also affected by parameters like the dissolution rate `sigma`, emigration
-            # rate `mu`, and concurrency parameter `xi`.
-            "frac_paired": np.dot(summaries["frac_paired"], weight),  # type: ignore
-            # Fraction of nodes in a steady relationship who have more than one steady
-            # relationship. This is indicative of the monogamy parameter `xi`.
-            "frac_concurrent": num_nodes_by_degree[2:].sum()  # type: ignore
-            / max(num_nodes_by_degree[1:].sum(), 1),  # type: ignore
+        counts = np.asarray([sample0.size, sample1.size])
+        weights = counts / counts.sum()
+
+        # Purely longitudinal statistics.
+        summaries = {
+            # Fraction of nodes that are retained in the sample.
+            "frac_retained_nodes": np.intersect1d(sample0, sample1).size
+            / max(sample0.size, 1),
+            # Fraction of edges that have at least one vertex in the sample.
+            "frac_retained_steady_edges": np.intersect1d(*pointwise["_steady_edges"]).size
+            / max(pointwise["_steady_edges"][0].size, 1),
         }
 
-        # Summary statistics from Hansson et al. (2019) from a survey on MSM in Sweden.
-        result.update(
-            {
-                # Fraction of paired individuals (reported as 0.64) is already covered
-                # above.
-                # They report the mean time between casual sexual partners as 101.9 days if
-                # in a relationship and 62.6 days if not in a relationship. We can translate
-                # that into the fraction of singles/paired with a casual partner in the last
-                # week. 0.06639 for paired, 0.1058 for singles.
-                # Fraction of concurrent relationships is 0.26 from S2.3 of the supplement.
-                # Any "frac_retained", we cannot get our hands on because the survey has
-                # only a single wave. Constraining `mu` is fundamentally difficult, but we
-                # can use something like the typical length of a relationship as additional
-                # information. They note that the self-reported mean duration of a
-                # partnership is 203.2 days = 29.03 weeks, although that is capped at one
-                # year or about 52 weeks.
-                "steady_length": np.dot(summaries["steady_length"], weight),
-            }
+        # Cross-sectional statistics averaged over the two samples, weighted by the
+        # sample size.
+        pointwise = {
+            key: value for key, value in pointwise.items() if not key.startswith("_")
+        }
+        summaries.update(
+            {key: np.dot(weights, value) for key, value in pointwise.items()}
         )
 
-        # Debugging summary statistics.
-        result.update(
-            {
-                f"_{key}": value
-                for key, value in summaries.items()
-                if not key.startswith("_")
-            }
-        )
-        return result
+        # Cross sectional statistics where we keep track separately, e.g., for
+        # debugging.
+        summaries.update({f"_{key}": value for key, value in pointwise.items()})
+        return summaries
 
 
 def estimate_paired_fraction(

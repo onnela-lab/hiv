@@ -180,7 +180,9 @@ def __main__(argv=None) -> None:
         for step in range(args.num_lags):
             if args.save_graphs:
                 graph_sequence.append(graph1.copy())
-            lag_summaries = simulator.evaluate_summaries(graph0, graph1, initial_sample)
+            lag_summaries = simulator.evaluate_longitudinal_summaries(
+                graph0, graph1, initial_sample
+            )
 
             # Sanity check for summary statistics if no evolution has happened yet.
             if step == 0:

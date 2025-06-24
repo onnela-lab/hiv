@@ -23,7 +23,7 @@ def test_simulator(
 
     graph1 = graph0.copy()
     simulator.step(graph1)
-    simulator.evaluate_summaries(graph0, graph1)
+    simulator.evaluate_longitudinal_summaries(graph0, graph1)
 
     simulator.run(graph1, 100, validate=True)
 
@@ -32,7 +32,7 @@ def test_simulator(
     else:
         sample_size = max(1, int(sample_size_frac * graph0.nodes.size))
         sample0 = np.random.choice(graph0.nodes, sample_size, replace=False)
-    simulator.evaluate_summaries(graph0, graph1, sample0)
+    simulator.evaluate_longitudinal_summaries(graph0, graph1, sample0)
 
 
 def test_invalid_param() -> None:
