@@ -23,7 +23,7 @@ def test_simulator(
 
     graph1 = graph0.copy()
     simulator.step(graph1)
-    simulator.evaluate_summaries(graph0, graph1)
+    simulator.evaluate_longitudinal_summaries(graph0, graph1)
 
     simulator.run(graph1, 100, validate=True)
 
@@ -32,7 +32,7 @@ def test_simulator(
     else:
         sample_size = max(1, int(sample_size_frac * graph0.nodes.size))
         sample0 = np.random.choice(graph0.nodes, sample_size, replace=False)
-    simulator.evaluate_summaries(graph0, graph1, sample0)
+    simulator.evaluate_longitudinal_summaries(graph0, graph1, sample0)
 
 
 def test_invalid_param() -> None:
@@ -53,3 +53,18 @@ def test_invalid_type() -> None:
 def test_estimate_paired_fraction() -> None:
     np.testing.assert_allclose(estimate_paired_fraction(0.2, 0, 0), 1)
     np.testing.assert_allclose(estimate_paired_fraction(0, 0.5, 0.7), 0)
+    # Non-zero lag should have larger paired fraction ...
+    np.testing.assert_array_less(
+        estimate_paired_fraction(0.1, 0.2, 0.3, 10),
+        estimate_paired_fraction(0.1, 0.2, 0.3, 20),
+    )
+    # ... unless the migration rate is zero.
+    np.testing.assert_allclose(
+        estimate_paired_fraction(0.1, 0, 0.3, 10),
+        estimate_paired_fraction(0.1, 0, 0.3, 20),
+    )
+    # Zero lag is the same as no lag.
+    np.testing.assert_allclose(
+        estimate_paired_fraction(0.1, 0.2, 0.3, lag=None),
+        estimate_paired_fraction(0.1, 0.2, 0.3, lag=0),
+    )

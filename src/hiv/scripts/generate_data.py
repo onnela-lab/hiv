@@ -180,7 +180,9 @@ def __main__(argv=None) -> None:
         for step in range(args.num_lags):
             if args.save_graphs:
                 graph_sequence.append(graph1.copy())
-            lag_summaries = simulator.evaluate_summaries(graph0, graph1, initial_sample)
+            lag_summaries = simulator.evaluate_longitudinal_summaries(
+                graph0, graph1, initial_sample
+            )
 
             # Sanity check for summary statistics if no evolution has happened yet.
             if step == 0:
@@ -193,7 +195,7 @@ def __main__(argv=None) -> None:
                     f"{lag_summaries['frac_retained_nodes']}, but the graph is "
                     "unchanged."
                 )
-                steady_edges = graph0.edges["steady"]
+                steady_edges = graph0.edges[graph0.edge_attrs["steady"]]
                 steady_edges = steady_edges[
                     np.isin(decompress_edges(steady_edges), initial_sample).any(axis=1)
                 ]

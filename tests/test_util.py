@@ -47,20 +47,25 @@ def test_to_from_numpy_graph() -> None:
     for *_, data in nxgraph.edges(data=True):
         data["type"] = "default"
 
+    for _, data in nxgraph.nodes(data=True):
+        data["attr"] = "something"
+
     npgraph = util.NumpyGraph.from_networkx(nxgraph)
+    assert "attr" in npgraph.node_attrs
+    assert "type" in npgraph.edge_attrs
     nxgraph2 = npgraph.to_networkx()
     util.assert_graphs_equal(nxgraph, nxgraph2)
 
 
 @pytest.mark.parametrize("density", [0.1, 0.5])
 def test_degree(density: float) -> None:
+    # TODO: Add edge test with predicate.
     nxgraph = nx.erdos_renyi_graph(10, density)
     npgraph = util.NumpyGraph.from_networkx(nxgraph)
     np.testing.assert_array_equal(
-        npgraph.degrees()["default"],
+        npgraph.degrees(),
         [degree for _, degree in sorted(nxgraph.degree)],
     )
-    assert npgraph.nodes.shape == npgraph.degrees(key="default").shape
 
 
 def test_flatten_dict() -> None:
