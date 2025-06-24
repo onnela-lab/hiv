@@ -139,7 +139,8 @@ class UniversalSimulator:
             return graph
 
         # Remove steady relationships with probability sigma and remove all casual
-        # edges with probability 1.
+        # edges with probability 1. When the probability to remove is high, we want the
+        # corresponding filter to be False.
         with timer("remove_edges"):
             proba_remove = np.where(graph.edge_attributes["steady"], self.sigma, 1)
             fltr = proba_remove < np.random.uniform(size=proba_remove.size)
@@ -215,7 +216,7 @@ class UniversalSimulator:
         # these statistics to obtain summaries for approximate Bayesian computation.
         summaries: dict[str, list[float | int | np.ndarray]] = {}
         for graph, sample in zip([graph0, graph1], samples):
-            # Get degrees of nodes and degree distribution.
+            # Get steady degrees of nodes and degree distribution.
             degrees = graph.degrees(key=lambda attrs: attrs["steady"])
             assert degrees.shape == graph.nodes.shape, (
                 f"Expected degree vector shape ({degrees.shape}) to match nodes shape "
