@@ -106,6 +106,17 @@ fig.tight_layout()
 ```
 
 ```{code-cell} ipython3
+fig, axes = plt.subplots(1, 2)
+
+for ax, (param, summary) in zip(axes, [("omega0", "casual_gap_single"), ("omega1", "casual_gap_paired")]):
+    ax.scatter(params[param], summaries[summary][:, 0])
+    ax.set_xlabel(param)
+    ax.set_ylabel(summary)
+
+fig.tight_layout()
+```
+
+```{code-cell} ipython3
 fig = plt.figure()
 gs = fig.add_gridspec(2, 2)
 ax = fig.add_subplot(gs[0, :])
