@@ -164,7 +164,7 @@ class NumpyGraph:
         self, value: dict[str, np.ndarray] | np.dtype | None
     ) -> dict[str, np.ndarray | None]:
         if value is None:
-            return {}
+            return {}  # pragma: no cover
         assert isinstance(value, dict)
         return {
             key: (
