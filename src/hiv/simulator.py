@@ -131,6 +131,12 @@ class UniversalSimulator:
         with timer("remove_nodes"):
             graph.filter_nodes(np.random.uniform(size=graph.nodes.size) > self.mu)
 
+        # Update the time of the last casual encounter.
+        has_casual = np.isin(
+            graph.nodes, decompress_edges(graph.edges[~graph.edge_attrs["steady"]])
+        )
+        graph.node_attrs["last_casual_at"][has_casual] = graph.attrs["step"]
+
         # Add new nodes that have migrated in.
         with timer("add_nodes"):
             num_new_nodes = np.random.poisson(self.n * self.mu)
@@ -185,10 +191,6 @@ class UniversalSimulator:
             casual_edges = candidates_to_edges(candidates)
             casual_edges = np.setdiff1d(casual_edges, graph.edges)
             graph.add_edges(casual_edges, steady=False, created_at=graph.attrs["step"])
-
-            # Update the time since the last casual encounter.
-            fltr = np.isin(graph.nodes, decompress_edges(casual_edges))
-            graph.node_attrs["last_casual_at"][fltr] = graph.attrs["step"]
 
         graph.attrs["step"] += 1
 
@@ -255,8 +257,6 @@ class UniversalSimulator:
             # consistent with there being no relationships.
             steady_length = 0
 
-        # FIXME: This is actually the time *since* the last contact, not the gap between
-        # contacts.
         # Evaluate the gap since the last casual sexual contact as reported in Hansson
         # et al. (2019). We only consider gaps where ALL of the following apply:
         #
@@ -271,17 +271,18 @@ class UniversalSimulator:
         # We process the data in stages to ensure we can break down by being in a steady
         # relationship.
         last_casual_at = graph.node_attrs["last_casual_at"][sample_has_node]
-        has_previous_casual = last_casual_at != -1
-        last_casual_at = last_casual_at[has_previous_casual]
-        has_partner = steady_degrees[has_previous_casual] > 0
+        has_previous_and_current_casual = (last_casual_at != -1) & has_casual
+        last_casual_at = last_casual_at[has_previous_and_current_casual]
+        casual_gap = graph.attrs["step"] - last_casual_at
+        has_partner = steady_degrees[has_previous_and_current_casual] > 0
 
-        casual_gap_single = last_casual_at[~has_partner]
+        casual_gap_single = casual_gap[~has_partner]
         if casual_gap_single.size:
             casual_gap_single = casual_gap_single.mean() / 52
         else:
             casual_gap_single = 1
 
-        casual_gap_paired = last_casual_at[has_partner]
+        casual_gap_paired = casual_gap[has_partner]
         if casual_gap_paired.size:
             casual_gap_paired = casual_gap_paired.mean() / 52
         else:
