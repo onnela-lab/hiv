@@ -204,7 +204,7 @@ def __main__(argv: list[str] | None = None) -> None:
             logit_samples = regression_adjust(
                 LinearRegression(),
                 feature_samples,
-                param_samples,
+                logit_samples,
                 test_features[:, lag],
             )
             param_samples = expit(logit_samples)
