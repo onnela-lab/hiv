@@ -207,16 +207,17 @@ def __main__(argv: list[str] | None = None) -> None:
         # Apply linear regression adjustment if requested. We apply it in the logit
         # space so we're on the full real line.
         if args.adjust:
-            logit_samples = logit(param_samples)
-            logit_samples = regression_adjust(
+            param_samples = logit(param_samples)
+            param_samples = regression_adjust(
                 LinearRegression(),
                 feature_samples,
-                logit_samples,
+                param_samples,
                 test_features[:, lag],
             )
-            param_samples = expit(logit_samples)
+            param_samples = expit(param_samples)
 
-        # Evaluate the MSE for this lag. We do the evaluation here because
+        # Evaluate the MSE for this lag. We do the evaluation here because collecting
+        # all the samples takes too much memory.
         assert param_samples.shape == (n_test_samples, n_posterior_samples, n_params)
         mses.append(np.square(param_samples - test_params[:, None, :]).mean(axis=1))
 
