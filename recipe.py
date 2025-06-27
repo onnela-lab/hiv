@@ -132,12 +132,15 @@ def main():
                 batches_by_split.setdefault(split, []).append(target)
 
         # Run inference on the batches with different configurations.
-        for adjust, standardize in itertools.product(
-            [False, True], [None, "global", "local"]
+        for adjust, standardize, summaries in itertools.product(
+            [False, True],
+            [None, "global", "local"],
+            ["all", "hansson-only", "frac-only"],
         ):
             parts = [
                 "adjusted" if adjust else "unadjusted",
                 standardize if standardize else "none",
+                summaries,
             ]
             task_name = "/".join([preset, "inference"] + parts)
 
@@ -146,6 +149,24 @@ def main():
                 argv.append("--adjust")
             if standardize:
                 argv.append(f"--standardize={standardize}")
+
+            # The summaries we're going to exclude for different configurations, e.g.,
+            # all the temporal features if we're limiting to fractions only.
+            exclude = {
+                "all": [],
+                "hansson-only": [
+                    "frac_retained_edges",
+                    "frac_retained_nodes",
+                    "frac_single_with_casual",
+                    "frac_paired_with_casual",
+                ],
+                "frac-only": [
+                    "steady_length",
+                    "casual_gap_single",
+                    "casual_gap_paired",
+                ],
+            }
+            argv.extend(f"--exclude={summary}" for summary in exclude[summaries])
 
             target = (workspace / preset / "-".join(["result"] + parts)).with_suffix(
                 ".pkl"
