@@ -3,6 +3,7 @@ import collectiontools
 import numpy as np
 import pathlib
 import pickle
+from scipy.special import expit, logit
 from sklearn.linear_model import LinearRegression
 from tqdm import tqdm
 from typing import Literal, Sequence
@@ -188,16 +189,17 @@ def __main__(argv: list[str] | None = None) -> None:
             test_features[:, lag], return_features=True
         )
 
-        # Apply linear regression adjustment if requested.
-        # TODO: Should this happen in the unconstrained logit space or is the
-        # probability space fine?
+        # Apply linear regression adjustment if requested. We apply it in the logit
+        # space so we're on the full real line.
         if args.adjust:
-            param_samples = regression_adjust(
+            logit_samples = logit(param_samples)
+            logit_samples = regression_adjust(
                 LinearRegression(),
                 feature_samples,
                 param_samples,
                 test_features[:, lag],
             )
+            param_samples = expit(logit_samples)
 
         # Evaluate the MSE for this lag. We do the evaluation here because
         assert param_samples.shape == (n_test_samples, n_posterior_samples, n_params)
