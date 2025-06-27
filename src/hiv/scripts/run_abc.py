@@ -6,7 +6,7 @@ import pickle
 from scipy.special import expit, logit
 from sklearn.linear_model import LinearRegression
 from tqdm import tqdm
-from typing import Literal, Sequence
+from typing import cast, Literal, Sequence
 from ..algorithm import NearestNeighborAlgorithm, regression_adjust
 from ..util import Timer
 
@@ -89,7 +89,10 @@ def __main__(argv: list[str] | None = None) -> None:
         default=0.01,
     )
     parser.add_argument(
-        "--exclude", "-e", nargs="*", help="Exclude summary statistic from ABC."
+        "--exclude",
+        "-e",
+        help="Exclude summary statistic from ABC.",
+        action="append",
     )
     parser.add_argument("--max-lag", "-m", help="Maximum lag to consider.", type=int)
     parser.add_argument(
@@ -113,7 +116,10 @@ def __main__(argv: list[str] | None = None) -> None:
     parser.add_argument(
         "output", help="File to save posterior samples.", type=pathlib.Path
     )
-    args: _Args = parser.parse_args(argv)
+    args = cast(_Args, parser.parse_args(argv))
+
+    if args.exclude:
+        print(f"Excluded features: {', '.join(args.exclude)}")
 
     # Load and flatten features and parameters.
     timer = Timer()
@@ -131,7 +137,8 @@ def __main__(argv: list[str] | None = None) -> None:
 
     print(
         f"Loaded {n_train_samples:,} training samples with {n_train_lags} lags, "
-        f"{n_features} features, and {n_params} parameters from "
+        f"{n_features} features ({', '.join(feature_names)}), and {n_params} "
+        f"parameters ({', '.join(param_names)}) from "
         f"{len(list(args.train.glob('*.pkl')))} files in '{args.train}', taking "
         f"{timer.times['train']:.1f} seconds."
     )
@@ -149,7 +156,7 @@ def __main__(argv: list[str] | None = None) -> None:
 
     print(
         f"Loaded {n_test_samples:,} test samples from "
-        f"{len(list(args.test.glob('*.pkl')))} files in '{args.test}', taking"
+        f"{len(list(args.test.glob('*.pkl')))} files in '{args.test}', taking "
         f"{timer.times['test']:.1f} seconds."
     )
 
