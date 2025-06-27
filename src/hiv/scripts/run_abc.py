@@ -8,7 +8,7 @@ from sklearn.linear_model import LinearRegression
 from tqdm import tqdm
 from typing import Literal, Sequence
 from ..algorithm import NearestNeighborAlgorithm, regression_adjust
-from ..util import FlattenDict
+from ..util import Timer
 
 
 class _Args:
@@ -116,33 +116,41 @@ def __main__(argv: list[str] | None = None) -> None:
     args: _Args = parser.parse_args(argv)
 
     # Load and flatten features and parameters.
-    train_features, train_params = load_batches(args.train, args.exclude)
-    test_features, test_params = load_batches(args.test, args.exclude)
+    timer = Timer()
+    with timer("train"):
+        train_features, train_params = load_batches(args.train, args.exclude)
+        feature_names = tuple(train_features)
+        param_names = tuple(train_params)
+        n_params = len(param_names)
 
-    feature_names = tuple(train_features)
-    assert feature_names == tuple(test_features)
-    param_names = tuple(train_params)
-    assert param_names == tuple(test_params)
+        train_features = flatten_dict(train_features, feature_names)
+        train_params = flatten_dict(train_params, param_names)
 
-    train_features = flatten_dict(train_features, feature_names)
-    test_features = flatten_dict(test_features, feature_names)
-    train_params = flatten_dict(train_params, param_names)
-    test_params = flatten_dict(test_params, param_names)
-
-    assert train_features.ndim == 3
-    n_train_samples, n_train_lags, n_features = train_features.shape
-    n_test_samples, n_test_lags, _ = test_features.shape
-    assert n_test_lags == n_train_lags
-    n_params = len(param_names)
+        assert train_features.ndim == 3
+        n_train_samples, n_train_lags, n_features = train_features.shape
 
     print(
         f"Loaded {n_train_samples:,} training samples with {n_train_lags} lags, "
         f"{n_features} features, and {n_params} parameters from "
-        f"{len(list(args.train.glob('*.pkl')))} files in '{args.train}'."
+        f"{len(list(args.train.glob('*.pkl')))} files in '{args.train}', taking "
+        f"{timer.times['train']:.1f} seconds."
     )
+
+    with timer("test"):
+        test_features, test_params = load_batches(args.test, args.exclude)
+        assert feature_names == tuple(test_features)
+        assert param_names == tuple(test_params)
+
+        test_features = flatten_dict(test_features, feature_names)
+        test_params = flatten_dict(test_params, param_names)
+
+        n_test_samples, n_test_lags, _ = test_features.shape
+        assert n_test_lags == n_train_lags
+
     print(
         f"Loaded {n_test_samples:,} test samples from "
-        f"{len(list(args.test.glob('*.pkl')))} files in'{args.test}'."
+        f"{len(list(args.test.glob('*.pkl')))} files in '{args.test}', taking"
+        f"{timer.times['test']:.1f} seconds."
     )
 
     # Apply feature standardization if desired.
