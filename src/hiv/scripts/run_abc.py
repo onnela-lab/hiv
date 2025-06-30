@@ -118,7 +118,7 @@ def __main__(argv: list[str] | None = None) -> None:
     )
     args = cast(_Args, parser.parse_args(argv))
 
-    if args.exclude:
+    if args.exclude:  # pragma: no cover
         print(f"Excluded features: {', '.join(args.exclude)}")
 
     # Load and flatten features and parameters.
@@ -237,6 +237,7 @@ def __main__(argv: list[str] | None = None) -> None:
     # if desired.
     result = {
         "args": vars(args),
+        "feature_names": feature_names,
         "param_names": param_names,
         "mses": mses,
         "standardize": {"loc": loc, "scale": scale},
