@@ -161,8 +161,8 @@ class NumpyGraph:
         return as_immutable_view(self._edges)
 
     def _as_attribute_dict(
-        self, value: dict[str, np.ndarray] | np.dtype | None
-    ) -> dict[str, np.ndarray | None]:
+        self, value: dict[str, np.ndarray | np.dtype] | None
+    ) -> dict[str, np.ndarray]:
         if value is None:
             return {}  # pragma: no cover
         assert isinstance(value, dict)
