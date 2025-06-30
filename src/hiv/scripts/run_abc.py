@@ -204,17 +204,14 @@ def __main__(argv: list[str] | None = None) -> None:
             test_features[:, lag], return_features=True
         )
 
-        # Apply linear regression adjustment if requested. We apply it in the logit
-        # space so we're on the full real line.
+        # Apply linear regression adjustment if requested.
         if args.adjust:
-            param_samples = logit(param_samples)
             param_samples = regression_adjust(
                 LinearRegression(),
                 feature_samples,
                 param_samples,
                 test_features[:, lag],
             )
-            param_samples = expit(param_samples)
 
         # Evaluate the MSE for this lag. We do the evaluation here because collecting
         # all the samples takes too much memory.
