@@ -221,8 +221,8 @@ class NumpyGraph:
         x_new: np.ndarray,
         attrs_new: dict[str, np.ndarray],
         x_old: np.ndarray,
-        attrs_old: dict[str, np.ndarray | None],
-    ) -> None:
+        attrs_old: dict[str, np.ndarray],
+    ) -> tuple[np.ndarray, dict[str, np.ndarray]]:
         attrs_new = coerce_matching_shape(x_new, attrs_new)
         assert (
             not DEBUG or np.intersect1d(x_new, x_old).size == 0
@@ -235,7 +235,9 @@ class NumpyGraph:
             f"'{keys_new}'."
         )
 
+        # Concatenate the identifiers (nodes or edges).
         x_result = np.concatenate([x_old, x_new])
+        # Concatenate the attributes.
         attrs_result = {}
         for key, value in attrs_new.items():
             if attrs_old[key].size:
@@ -257,7 +259,10 @@ class NumpyGraph:
 
     def _filter(
         self, x: np.ndarray, attrs: dict[str, np.ndarray], fltr: np.ndarray
-    ) -> None:
+    ) -> tuple[np.ndarray, dict[str, np.ndarray]]:
+        """Filter identifiers (nodes or edges) and corresponding attributes.
+
+        """
         return x[fltr], {
             key: value if value is None else value[fltr] for key, value in attrs.items()
         }
@@ -397,8 +402,8 @@ class NumpyGraph:
 
     def __repr__(self) -> str:  # pragma: no cover
         return (
-            f"{super().__repr__()} with {self.nodes.size} nodes and "
-            f"{({key: edges.size for key, edges in self.edges.items()})} edges"
+            f"{super().__repr__()} with {self.nodes.size} nodes and {self.edges.size} "
+            "edges"
         )
 
 
