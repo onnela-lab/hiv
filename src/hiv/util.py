@@ -260,9 +260,7 @@ class NumpyGraph:
     def _filter(
         self, x: np.ndarray, attrs: dict[str, np.ndarray], fltr: np.ndarray
     ) -> tuple[np.ndarray, dict[str, np.ndarray]]:
-        """Filter identifiers (nodes or edges) and corresponding attributes.
-
-        """
+        """Filter identifiers (nodes or edges) and corresponding attributes."""
         return x[fltr], {
             key: value if value is None else value[fltr] for key, value in attrs.items()
         }
