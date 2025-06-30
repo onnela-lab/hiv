@@ -158,7 +158,8 @@ class UniversalSimulator:
         with timer("add_steady_edges"):
             steady_degrees = graph.degrees(key=lambda attrs: attrs["steady"])
             is_partnered = steady_degrees > 0
-            proba = np.where(is_partnered, self.rho * self.xi, self.rho)
+            # proba = np.where(is_partnered, self.rho * self.xi, self.rho)
+            proba = self.rho * self.xi ** steady_degrees
             fltr = np.random.uniform(size=graph.nodes.size) < proba
             candidates = graph.nodes[fltr]
 
