@@ -3,6 +3,7 @@ import collectiontools
 import numpy as np
 from pathlib import Path
 import pickle
+from ..simulator import DAYS_PER_YEAR
 
 
 def __main__(argv: list[str] | None = None) -> None:
@@ -32,10 +33,10 @@ def __main__(argv: list[str] | None = None) -> None:
         # From S2.3 on page 3 of the supplement.
         "frac_concurrent": 0.26,
         # From the last paragraph in first column of page 70.
-        "steady_length": 203.2 / 365.25,
+        "steady_length": 203.2 / DAYS_PER_YEAR,
         # From about half-way down the second column of page 70 just after the equation.
-        "casual_gap_paired": 101.9 / 365.25,
-        "casual_gap_single": 62.6 / 365.25,
+        "casual_gap_paired": 101.9 / DAYS_PER_YEAR,
+        "casual_gap_single": 62.6 / DAYS_PER_YEAR,
         # Not part of the Hansson et al. dataset.
         "frac_retained_nodes": np.nan,
         "frac_single_with_casual": np.nan,

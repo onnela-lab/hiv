@@ -170,7 +170,7 @@ def __main__(argv: list[str] | None = None) -> None:
         # Warn if there is a mismatch in the number of lags in the training and test
         # sets. We pick the smaller of the two going forwards.
         n_test_samples, n_test_lags, _ = test_features.shape
-        if n_test_lags != n_train_lags:
+        if n_test_lags != n_train_lags:  # pragma: no cover
             print(
                 f"WARNING: Number of lags in training data ({n_train_lags}) does not "
                 f"match number of lags in test data ({n_test_lags})."
