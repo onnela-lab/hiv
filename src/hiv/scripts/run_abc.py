@@ -3,7 +3,6 @@ import collectiontools
 import numpy as np
 import pathlib
 import pickle
-from scipy.special import expit, logit
 from sklearn.linear_model import LinearRegression
 from tqdm import tqdm
 from typing import cast, Literal, Sequence
