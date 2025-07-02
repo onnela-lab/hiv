@@ -228,7 +228,10 @@ def __main__(argv: list[str] | None = None) -> None:
             test_features[:, lag], return_features=True
         )
 
-        # Apply linear regression adjustment if requested.
+        # Apply linear regression adjustment if requested. We *should* apply this in
+        # logit space to avoid getting outside the domain, but it's actually tricky
+        # because the probabilities we get are sometimes very small, leading to very
+        # large values in logit space.
         if args.adjust:
             param_samples = regression_adjust(
                 LinearRegression(),
