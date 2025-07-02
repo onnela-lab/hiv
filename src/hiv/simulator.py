@@ -266,7 +266,9 @@ class UniversalSimulator:
                 - graph.edge_attrs["created_at"][sample_has_edge_and_is_steady]
             )
             # We divide by 52 to get summaries on the same scale as the `frac_*`.
-            steady_length: float = steady_lengths.clip(max=52).mean() / 52
+            steady_length: float = (
+                steady_lengths.clip(max=WEEKS_PER_YEAR).mean() / WEEKS_PER_YEAR
+            )
         else:
             # If there are no steady edges, we set the relationship duration to zero,
             # consistent with there being no relationships.
@@ -299,14 +301,14 @@ class UniversalSimulator:
         # here.
         casual_gap_single = casual_gap_single[casual_gap_single < WEEKS_PER_YEAR]
         if casual_gap_single.size:
-            casual_gap_single = casual_gap_single.mean() / 52
+            casual_gap_single = casual_gap_single.mean() / WEEKS_PER_YEAR
         else:
             casual_gap_single = 1
 
         casual_gap_paired = casual_gap[has_partner]
         casual_gap_paired = casual_gap_paired[casual_gap_paired < WEEKS_PER_YEAR]
         if casual_gap_paired.size:
-            casual_gap_paired = casual_gap_paired.mean() / 52
+            casual_gap_paired = casual_gap_paired.mean() / WEEKS_PER_YEAR
         else:
             casual_gap_paired = 1
 
