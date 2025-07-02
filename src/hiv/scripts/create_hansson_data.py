@@ -31,7 +31,7 @@ def __main__(argv: list[str] | None = None) -> None:
         # From first paragraph in second column of page 70.
         "frac_paired": 0.64,
         # From S2.3 on page 3 of the supplement.
-        "frac_concurrent": 0.26,
+        "frac_concurrent": 0.146,
         # From the last paragraph in first column of page 70.
         "steady_length": 203.2 / DAYS_PER_YEAR,
         # From about half-way down the second column of page 70 just after the equation.
