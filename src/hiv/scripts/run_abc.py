@@ -167,8 +167,17 @@ def __main__(argv: list[str] | None = None) -> None:
         test_features = flatten_dict(test_features, feature_names)
         test_params = flatten_dict(test_params, param_names)
 
+        # Warn if there is a mismatch in the number of lags in the training and test
+        # sets. We pick the smaller of the two going forwards.
         n_test_samples, n_test_lags, _ = test_features.shape
-        assert n_test_lags == n_train_lags
+        if n_test_lags != n_train_lags:
+            print(
+                f"WARNING: Number of lags in training data ({n_train_lags}) does not "
+                f"match number of lags in test data ({n_test_lags})."
+            )
+            n_lags = min(n_train_lags, n_test_lags)
+        else:
+            n_lags = n_train_lags
 
     print(
         f"Loaded {n_test_samples:,} test samples from "
@@ -195,7 +204,6 @@ def __main__(argv: list[str] | None = None) -> None:
     test_features = (test_features - loc) / scale
 
     # Sample the posterior for each lag.
-    n_lags = n_train_lags
     if args.max_lag:
         n_lags = min(n_lags, args.max_lag)
 
