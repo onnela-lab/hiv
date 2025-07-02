@@ -14,7 +14,7 @@ from ..util import Timer
 class _Args:
     adjust: bool
     frac: float
-    exclude: list[str]
+    exclude: set[str]
     standardize: None | Literal["global", "local"]
     max_lag: int | None
     save_samples: bool
@@ -25,8 +25,8 @@ class _Args:
 
 def load_batches(
     path: pathlib.Path,
-    exclude_summaries: Sequence[str] | None = None,
-    exclude_params: Sequence[str] | None = None,
+    exclude_summaries: set[str] | None = None,
+    exclude_params: set[str] | None = None,
 ) -> tuple[dict[str, np.ndarray], dict[str, np.ndarray]]:
     """
     Load batches of summaries and parameters from a directory.
@@ -37,8 +37,8 @@ def load_batches(
         exclude_params: Parameters to exclude.
     """
     assert path.is_dir()
-    exclude_summaries = exclude_summaries or ()
-    exclude_params = exclude_params or ()
+    exclude_summaries = set(exclude_summaries or ())
+    exclude_params = set(exclude_params or ())
 
     summaries = {}
     params = {}
@@ -46,6 +46,17 @@ def load_batches(
     for filename in path.glob("*.pkl"):
         with filename.open("rb") as fp:
             result = pickle.load(fp)
+
+        # Verify that the summaries and parameters we're excluding are actually in the
+        # data. If they're not, we're likely to have a typo.
+        missing_summaries = exclude_summaries - set(result["summaries"])
+        assert (
+            not missing_summaries
+        ), f"Missing summaries ({missing_summaries}) in '{filename}'."
+        missing_params = exclude_params - set(result["params"])
+        assert (
+            not missing_params
+        ), f"Missing parameters ({missing_params}) in '{filename}'."
 
         summaries_batch = {
             key: value
@@ -145,8 +156,14 @@ def __main__(argv: list[str] | None = None) -> None:
 
     with timer("test"):
         test_features, test_params = load_batches(args.test, args.exclude)
-        assert feature_names == tuple(test_features)
-        assert param_names == tuple(test_params)
+        assert set(feature_names) == set(test_features), (
+            f"Training feature names ({feature_names}) do not match test feature names "
+            f"({test_features})."
+        )
+        assert set(param_names) == set(test_params), (
+            f"Training parameter names ({param_names}) do not match test parameter "
+            f"names ({test_params})."
+        )
 
         test_features = flatten_dict(test_features, feature_names)
         test_params = flatten_dict(test_params, param_names)
