@@ -3,7 +3,7 @@
 from __future__ import annotations
 import numpy as np
 from scipy.spatial import KDTree
-from sklearn.base import BaseEstimator
+from sklearn.base import BaseEstimator, RegressorMixin
 from sklearn.exceptions import NotFittedError
 from sklearn.utils.validation import check_array, check_X_y
 from typing import Any, Optional
@@ -27,7 +27,7 @@ class NearestNeighborAlgorithm(BaseEstimator):
         *,
         frac: float | None = None,
         n_samples: int | None = None,
-        minkowski_norm: float = 2,
+        minkowski_norm: int = 2,
         **kdtree_kwargs,
     ) -> None:
         super().__init__()
@@ -84,6 +84,7 @@ class NearestNeighborAlgorithm(BaseEstimator):
         # samples is one.
         idx = idx.reshape((*data.shape[:-1], n_samples))
 
+        assert self.params_ is not None, "Nearest neighbor sampler has not been fitted."
         params = self.params_[idx]
         if return_features:
             return (params, self.tree_.data[idx])
@@ -92,7 +93,7 @@ class NearestNeighborAlgorithm(BaseEstimator):
 
 
 def regression_adjust(
-    regressor: BaseEstimator, X: np.ndarray, y: np.ndarray, X_obs: np.ndarray
+    regressor: RegressorMixin, X: np.ndarray, y: np.ndarray, X_obs: np.ndarray
 ) -> np.ndarray:
     """
     Apply regression adjustment using a scikit-learn regressor.
@@ -126,6 +127,6 @@ def regression_adjust(
     assert n_summary_samples == n_param_samples
     assert X_obs.shape == (n_summaries,)
 
-    regressor.fit(X, y)
-    correction = regressor.predict(X_obs[None])[0] - regressor.predict(X)
+    regressor.fit(X, y)  # type: ignore[reportAttributeAccessIssue]
+    correction = regressor.predict(X_obs[None])[0] - regressor.predict(X)  # type: ignore[reportAttributeAccessIssue]
     return y + correction
