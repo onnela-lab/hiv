@@ -64,6 +64,15 @@ def main():
     )
     create_task("lint", action="black --check .")
 
+    # Create the data from Hansson et al. in the right format.
+    hansson2019data = workspace / "empirical" / "hansson2019data.pkl"
+    create_task(
+        "empirical/hansson2019data",
+        action=["python", "-m", "hiv.scripts.create_hansson_data", hansson2019data],
+        targets=[hansson2019data],
+        dependencies=["src/hiv/scripts/create_hansson_data.py"],
+    )
+
     # Tuple of (num_batches, batch_size) for more efficient generation of training data.
     split_sizes = {
         "debug": (1, 10),
@@ -144,7 +153,7 @@ def main():
             ]
             task_name = "/".join([preset, "inference"] + parts)
 
-            argv = ["python", "-m", "hiv.scripts.run_abc"]
+            argv: list[str | Path] = ["python", "-m", "hiv.scripts.run_abc"]
             if adjust:
                 argv.append("--adjust")
             if standardize:
@@ -155,7 +164,7 @@ def main():
             exclude = {
                 "all": [],
                 "hansson-only": [
-                    "frac_retained_edges",
+                    "frac_retained_steady_edges",
                     "frac_retained_nodes",
                     "frac_single_with_casual",
                     "frac_paired_with_casual",
@@ -202,6 +211,30 @@ def main():
                 preset=preset,
                 priors=priors | {"n": population_size},
             )
+
+        # Run different presets against the empirical data.
+        task_name = f"empirical/inference/{preset}"
+        target = workspace / f"empirical/samples/{preset}.pkl"
+        argv: list[str | Path] = [
+            "python",
+            "-m",
+            "hiv.scripts.run_abc",
+            "--adjust",
+            "--save-samples",
+            "--exclude=frac_retained_steady_edges",
+            "--exclude=frac_retained_nodes",
+            "--exclude=frac_single_with_casual",
+            "--exclude=frac_paired_with_casual",
+            workspace / preset / "train",
+            hansson2019data.parent,
+            target,
+        ]
+        create_task(
+            name=task_name,
+            targets=[target],
+            dependencies=[*batches_by_split["train"], hansson2019data],
+            action=argv,
+        )
 
 
 main()

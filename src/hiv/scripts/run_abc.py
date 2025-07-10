@@ -3,7 +3,6 @@ import collectiontools
 import numpy as np
 import pathlib
 import pickle
-from scipy.special import expit, logit
 from sklearn.linear_model import LinearRegression
 from tqdm import tqdm
 from typing import cast, Literal, Sequence
@@ -14,7 +13,7 @@ from ..util import Timer
 class _Args:
     adjust: bool
     frac: float
-    exclude: list[str]
+    exclude: set[str]
     standardize: None | Literal["global", "local"]
     max_lag: int | None
     save_samples: bool
@@ -25,8 +24,8 @@ class _Args:
 
 def load_batches(
     path: pathlib.Path,
-    exclude_summaries: Sequence[str] | None = None,
-    exclude_params: Sequence[str] | None = None,
+    exclude_summaries: set[str] | None = None,
+    exclude_params: set[str] | None = None,
 ) -> tuple[dict[str, np.ndarray], dict[str, np.ndarray]]:
     """
     Load batches of summaries and parameters from a directory.
@@ -37,8 +36,8 @@ def load_batches(
         exclude_params: Parameters to exclude.
     """
     assert path.is_dir()
-    exclude_summaries = exclude_summaries or ()
-    exclude_params = exclude_params or ()
+    exclude_summaries = set(exclude_summaries or ())
+    exclude_params = set(exclude_params or ())
 
     summaries = {}
     params = {}
@@ -46,6 +45,17 @@ def load_batches(
     for filename in path.glob("*.pkl"):
         with filename.open("rb") as fp:
             result = pickle.load(fp)
+
+        # Verify that the summaries and parameters we're excluding are actually in the
+        # data. If they're not, we're likely to have a typo.
+        missing_summaries = exclude_summaries - set(result["summaries"])
+        assert (
+            not missing_summaries
+        ), f"Missing summaries ({missing_summaries}) in '{filename}'."
+        missing_params = exclude_params - set(result["params"])
+        assert (
+            not missing_params
+        ), f"Missing parameters ({missing_params}) in '{filename}'."
 
         summaries_batch = {
             key: value
@@ -145,14 +155,29 @@ def __main__(argv: list[str] | None = None) -> None:
 
     with timer("test"):
         test_features, test_params = load_batches(args.test, args.exclude)
-        assert feature_names == tuple(test_features)
-        assert param_names == tuple(test_params)
+        assert set(feature_names) == set(test_features), (
+            f"Training feature names ({feature_names}) do not match test feature names "
+            f"({test_features})."
+        )
+        assert set(param_names) == set(test_params), (
+            f"Training parameter names ({param_names}) do not match test parameter "
+            f"names ({test_params})."
+        )
 
         test_features = flatten_dict(test_features, feature_names)
         test_params = flatten_dict(test_params, param_names)
 
+        # Warn if there is a mismatch in the number of lags in the training and test
+        # sets. We pick the smaller of the two going forwards.
         n_test_samples, n_test_lags, _ = test_features.shape
-        assert n_test_lags == n_train_lags
+        if n_test_lags != n_train_lags:  # pragma: no cover
+            print(
+                f"WARNING: Number of lags in training data ({n_train_lags}) does not "
+                f"match number of lags in test data ({n_test_lags})."
+            )
+            n_lags = min(n_train_lags, n_test_lags)
+        else:
+            n_lags = n_train_lags
 
     print(
         f"Loaded {n_test_samples:,} test samples from "
@@ -179,7 +204,6 @@ def __main__(argv: list[str] | None = None) -> None:
     test_features = (test_features - loc) / scale
 
     # Sample the posterior for each lag.
-    n_lags = n_train_lags
     if args.max_lag:
         n_lags = min(n_lags, args.max_lag)
 
@@ -194,8 +218,11 @@ def __main__(argv: list[str] | None = None) -> None:
             print("Exiting ...")
             return
 
-    samples = []
+    # Containers for the inference.
     mses = []
+    samples = []
+    features = []
+
     for lag in tqdm(range(n_lags)):
         # Draw samples using rejection ABC.
         sampler = NearestNeighborAlgorithm(frac=args.frac)
@@ -204,7 +231,10 @@ def __main__(argv: list[str] | None = None) -> None:
             test_features[:, lag], return_features=True
         )
 
-        # Apply linear regression adjustment if requested.
+        # Apply linear regression adjustment if requested. We *should* apply this in
+        # logit space to avoid getting outside the domain, but it's actually tricky
+        # because the probabilities we get are sometimes very small, leading to very
+        # large values in logit space.
         if args.adjust:
             param_samples = regression_adjust(
                 LinearRegression(),
@@ -220,6 +250,7 @@ def __main__(argv: list[str] | None = None) -> None:
 
         if args.save_samples:
             samples.append(param_samples)
+            features.append(feature_samples)
 
     if args.save_samples:
         # Starts out with (n_lags, n_test_samples, n_posterior_samples, n_params). We
@@ -229,6 +260,13 @@ def __main__(argv: list[str] | None = None) -> None:
         # ambiguity on whether the posterior samples or lags should lead.
         samples = np.swapaxes(np.stack(samples), 1, 2)
         assert samples.shape == (n_lags, n_posterior_samples, n_test_samples, n_params)
+        features = np.swapaxes(np.stack(features), 1, 2)
+        assert features.shape == (
+            n_lags,
+            n_posterior_samples,
+            n_test_samples,
+            n_features,
+        )
 
     mses = np.stack(mses)
     assert mses.shape == (n_lags, n_test_samples, n_params)
@@ -247,6 +285,7 @@ def __main__(argv: list[str] | None = None) -> None:
             {
                 "params": test_params,
                 "samples": samples,
+                "features": features,
             }
         )
     with open(args.output, "wb") as fp:

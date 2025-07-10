@@ -108,8 +108,15 @@ fig.tight_layout()
 ```{code-cell} ipython3
 fig, axes = plt.subplots(1, 2)
 
+# From Hansson et al. (2019).
+refs = {
+    "casual_gap_single": 23.1,
+    "casual_gap_paired": 36.3,
+}
+
 for ax, (param, summary) in zip(axes, [("omega0", "casual_gap_single"), ("omega1", "casual_gap_paired")]):
     ax.scatter(params[param], summaries[summary][:, 0])
+    ax.axhline(refs[summary] / 365.25)
     ax.set_xlabel(param)
     ax.set_ylabel(summary)
 

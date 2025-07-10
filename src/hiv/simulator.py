@@ -5,6 +5,8 @@ from .util import candidates_to_edges, NumpyGraph, Timer, decompress_edges
 
 
 empty_int_array = np.asarray((), dtype=np.uint64)
+DAYS_PER_YEAR = 365.25
+WEEKS_PER_YEAR = DAYS_PER_YEAR / 7
 
 
 class Constraint:
@@ -110,7 +112,7 @@ class UniversalSimulator:
                 "last_casual_at": -np.ones(n, dtype=int),
                 "previous_casual_at": -np.ones(n, dtype=int),
             },
-            edge_attrs={"steady": bool, "created_at": int},
+            edge_attrs={"steady": bool, "created_at": int},  # type: ignore
             attrs={"step": 0},
         )
 
@@ -211,7 +213,7 @@ class UniversalSimulator:
 
     def evaluate_pointwise_summaries(
         self, graph: NumpyGraph, sample: np.ndarray
-    ) -> dict[str, float]:
+    ) -> dict[str, float | np.ndarray]:
         """
         Evaluate pointwise summary statistics for a single graph.
 
@@ -259,16 +261,18 @@ class UniversalSimulator:
         # participants added the time period for a sexual relationship with a sex
         # partner."
         if steady_edges.size:
-            steady_length: np.ndarray = (
+            steady_lengths: np.ndarray = (
                 graph.attrs["step"]
                 - graph.edge_attrs["created_at"][sample_has_edge_and_is_steady]
             )
             # We divide by 52 to get summaries on the same scale as the `frac_*`.
-            steady_length = steady_length.clip(max=52).mean() / 52
+            steady_length: float = (
+                steady_lengths.clip(max=WEEKS_PER_YEAR).mean() / WEEKS_PER_YEAR
+            )
         else:
             # If there are no steady edges, we set the relationship duration to zero,
             # consistent with there being no relationships.
-            steady_length = 0
+            steady_length = 0.0
 
         # Evaluate the gap since the last casual sexual contact as reported in Hansson
         # et al. (2019). We only consider gaps where ALL of the following apply:
@@ -292,14 +296,19 @@ class UniversalSimulator:
         has_partner = steady_degrees[has_two_or_more_casual] > 0
 
         casual_gap_single = casual_gap[~has_partner]
+        # In the diary, we will only ever observe gaps that are less than one year. If
+        # there is a gap larger than a year, we do not observe that gap and must drop it
+        # here.
+        casual_gap_single = casual_gap_single[casual_gap_single < WEEKS_PER_YEAR]
         if casual_gap_single.size:
-            casual_gap_single = casual_gap_single.mean() / 52
+            casual_gap_single = casual_gap_single.mean() / WEEKS_PER_YEAR
         else:
             casual_gap_single = 1
 
         casual_gap_paired = casual_gap[has_partner]
+        casual_gap_paired = casual_gap_paired[casual_gap_paired < WEEKS_PER_YEAR]
         if casual_gap_paired.size:
-            casual_gap_paired = casual_gap_paired.mean() / 52
+            casual_gap_paired = casual_gap_paired.mean() / WEEKS_PER_YEAR
         else:
             casual_gap_paired = 1
 
@@ -346,7 +355,7 @@ class UniversalSimulator:
         sample1 = np.intersect1d(sample0, graph1.nodes)
 
         # Evaluate pointwise summaries.
-        pointwise: dict[str, float] = {}
+        pointwise: dict[str, list] = {}
         collectiontools.append_values(
             pointwise, self.evaluate_pointwise_summaries(graph0, sample0)
         )
@@ -380,7 +389,9 @@ class UniversalSimulator:
 
         # Cross sectional statistics where we keep track separately, e.g., for
         # debugging.
-        summaries.update({f"_{key}": value for key, value in pointwise.items()})
+        summaries.update(
+            {f"_{key}": np.asarray(value) for key, value in pointwise.items()}
+        )
         return summaries
 
 
