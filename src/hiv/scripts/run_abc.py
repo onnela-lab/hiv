@@ -218,8 +218,11 @@ def __main__(argv: list[str] | None = None) -> None:
             print("Exiting ...")
             return
 
-    samples = []
+    # Containers for the inference.
     mses = []
+    samples = []
+    features = []
+
     for lag in tqdm(range(n_lags)):
         # Draw samples using rejection ABC.
         sampler = NearestNeighborAlgorithm(frac=args.frac)
@@ -247,6 +250,7 @@ def __main__(argv: list[str] | None = None) -> None:
 
         if args.save_samples:
             samples.append(param_samples)
+            features.append(feature_samples)
 
     if args.save_samples:
         # Starts out with (n_lags, n_test_samples, n_posterior_samples, n_params). We
@@ -256,6 +260,13 @@ def __main__(argv: list[str] | None = None) -> None:
         # ambiguity on whether the posterior samples or lags should lead.
         samples = np.swapaxes(np.stack(samples), 1, 2)
         assert samples.shape == (n_lags, n_posterior_samples, n_test_samples, n_params)
+        features = np.swapaxes(np.stack(features), 1, 2)
+        assert features.shape == (
+            n_lags,
+            n_posterior_samples,
+            n_test_samples,
+            n_features,
+        )
 
     mses = np.stack(mses)
     assert mses.shape == (n_lags, n_test_samples, n_params)
@@ -274,6 +285,7 @@ def __main__(argv: list[str] | None = None) -> None:
             {
                 "params": test_params,
                 "samples": samples,
+                "features": features,
             }
         )
     with open(args.output, "wb") as fp:
