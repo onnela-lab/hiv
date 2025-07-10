@@ -112,7 +112,7 @@ class UniversalSimulator:
                 "last_casual_at": -np.ones(n, dtype=int),
                 "previous_casual_at": -np.ones(n, dtype=int),
             },
-            edge_attrs={"steady": bool, "created_at": int},
+            edge_attrs={"steady": bool, "created_at": int},  # type: ignore
             attrs={"step": 0},
         )
 
@@ -213,7 +213,7 @@ class UniversalSimulator:
 
     def evaluate_pointwise_summaries(
         self, graph: NumpyGraph, sample: np.ndarray
-    ) -> dict[str, float]:
+    ) -> dict[str, float | np.ndarray]:
         """
         Evaluate pointwise summary statistics for a single graph.
 
