@@ -389,7 +389,9 @@ class UniversalSimulator:
 
         # Cross sectional statistics where we keep track separately, e.g., for
         # debugging.
-        summaries.update({f"_{key}": value for key, value in pointwise.items()})
+        summaries.update(
+            {f"_{key}": np.asarray(value) for key, value in pointwise.items()}
+        )
         return summaries
 
 
