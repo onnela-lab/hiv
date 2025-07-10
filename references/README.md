@@ -185,3 +185,4 @@ This literature review was conducted in a semi-automated fashion. The search was
 Sullivan PS, Rosenberg ES, Sanchez TH, et al. Explaining racial disparities in HIV incidence in black and white men who have sex with men in Atlanta, GA: a prospective observational cohort study. Ann Epidemiol 2015; 25: 445–54.
 13	Grey JA, Rothenberg RB, Sullivan PS, et al. Disassortative Age-Mixing Does Not Explain Differences in HIV Prevalence between Young White and Black MSM: Findings from Four Studies. PLoS One 2015; 10: e0129877.
 - cite separable/temporal ergms as contrast, e.g., epimodel (https://www.jstatsoft.org/article/view/v084i08/0)
+- Weiss' Artnet study has some nice summaries, but not the breakdown of one-time acquisition rates by partnership status.
