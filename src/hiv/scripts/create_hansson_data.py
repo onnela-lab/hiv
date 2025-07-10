@@ -34,9 +34,9 @@ def __main__(argv: list[str] | None = None) -> None:
         "frac_concurrent": 0.146,
         # From the last paragraph in first column of page 70.
         "steady_length": 203.2 / DAYS_PER_YEAR,
-        # From about half-way down the second column of page 70 just after the equation.
-        "casual_gap_paired": 101.9 / DAYS_PER_YEAR,
-        "casual_gap_single": 62.6 / DAYS_PER_YEAR,
+        # From the second column of page 70.
+        "casual_gap_paired": 36.3 / DAYS_PER_YEAR,
+        "casual_gap_single": 23.1 / DAYS_PER_YEAR,
         # Not part of the Hansson et al. dataset.
         "frac_retained_nodes": np.nan,
         "frac_single_with_casual": np.nan,
