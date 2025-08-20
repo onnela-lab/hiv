@@ -42,7 +42,7 @@ def plot_rmse(filename, axes=None, **kwargs):
     else:
         fig = None
 
-    for ax, ys, name in zip(axes.ravel(), result["mses"].transpose(), result["param_names"]):
+    for i, (ax, ys, name) in enumerate(zip(axes.ravel(), result["mses"].transpose(), result["param_names"])):
 
         # MSE ro RMSE.
         ys = ys ** 0.5
@@ -54,7 +54,7 @@ def plot_rmse(filename, axes=None, **kwargs):
         line, = ax.plot(x, m, **kwargs, alpha=0.7)
         ax.fill_between(x, m - s, m + s, color=line.get_color(), alpha=0.2)
 
-        title = f"$\\{name}$".replace("0", "_0").replace("1", "_1")
+        title = f"({'abcdef'[i]}) $\\{name}$".replace("0", "_0").replace("1", "_1")
         ax.set_title(title)
 
         formatter = ax.yaxis.major.formatter
@@ -169,12 +169,6 @@ for i, (key, value) in enumerate(summaries.items()):
     ax.axvline(value, color="k", ls="--", label="observed")
     ax.set_xlabel(labels[key])
     ax.set_yticks([])
-
-    # We can turn this on to demonstrate that the residual variation here is mostly
-    # dominated by shot noise, not uncertaint about the parameter.
-    if key == "casual_gap_paired" and False:
-        z = np.random.poisson(x.mean(), 10000)
-        ax.hist(z, density=True)
 
 lax = axes[-1]
 lax.set_axis_off()
@@ -305,6 +299,10 @@ axes = []
 for i, (name, prior) in enumerate(priors.items()):
     xs = samples[name].clip(1e-6, 1)
 
+    # Report the raw probabilities.
+    print(f"### {name} ###")
+    print(f"proba: {name}", np.quantile(xs, [0.5, 0.025, 0.975]))
+
     # We want to plot the probabilities on the beta-prime scale because that's much more
     # interpretable. `xi` is an exception because it doesn't represent a notion of time.
     if name != "xi":
@@ -337,6 +335,7 @@ for i, (name, prior) in enumerate(priors.items()):
         label = fr"$\frac{{1-\{name}}}{{\{name}}}$ (weeks)"
 
         xs = (1 - xs) / xs
+        print(f"time: {name}", np.quantile(xs, [0.5, 0.025, 0.975]))
     else:
         ax = fig.add_subplot(gs[-1, -1])
         label = r"$\xi$"
@@ -345,7 +344,7 @@ for i, (name, prior) in enumerate(priors.items()):
 
     # Plot the prior.
     ax.plot(x, pdf, color="w", lw=5, zorder=2.5)
-    ax.plot(x, pdf, color="k", zorder=2.5, label="prior")
+    ax.plot(x, pdf, color="k", zorder=2.5, label="prior", ls="--")
 
     tax = ax.twinx()
     axes.append(ax)
@@ -408,7 +407,7 @@ handles_and_labels = tuple(zip(*(item[::-1] for item in labels_and_handles.items
 fig.legend(*handles_and_labels, fontsize="small", ncol=3, loc="center", bbox_to_anchor=(.5, 1.05))
 
 fig.tight_layout()
-fig.savefig("parameters.pdf")
+fig.savefig("parameters.pdf", bbox_inches="tight")
 ```
 
 ```{code-cell} ipython3
