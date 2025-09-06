@@ -29,6 +29,7 @@ import pandas as pd
 from scipy import stats
 from hiv.util import transform_proba_continuous, transform_proba_discrete
 from hiv.simulator import estimate_paired_fraction
+from tqdm.notebook import tqdm
 import collectiontools
 ```
 
@@ -99,7 +100,7 @@ fig.savefig("longitudinal-rmse.pdf")
 # Load a few batches of simulated data and stack them into "sims" for plotting.
 simulations = [
     pd.read_pickle(f"../workspace/default/train/{i}.pkl")
-    for i in range(20)
+    for i in tqdm(range(20))
 ]
 
 sims = {}
@@ -408,6 +409,10 @@ fig.legend(*handles_and_labels, fontsize="small", ncol=3, loc="center", bbox_to_
 
 fig.tight_layout()
 fig.savefig("parameters.pdf", bbox_inches="tight")
+```
+
+```{code-cell} ipython3
+pd.DataFrame(estimates)
 ```
 
 ```{code-cell} ipython3
