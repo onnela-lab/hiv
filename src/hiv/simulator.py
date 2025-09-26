@@ -392,6 +392,13 @@ class UniversalSimulator:
         summaries.update(
             {f"_{key}": np.asarray(value) for key, value in pointwise.items()}
         )
+        # Add the number of nodes and edges.
+        summaries.update(
+            {
+                "_num_nodes": graph1.nodes.size,
+                "_num_edges": graph1.edges.size,
+            }
+        )
         return summaries
 
 

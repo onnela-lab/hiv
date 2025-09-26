@@ -223,9 +223,7 @@ def __main__(argv=None) -> None:
     result.update(
         {
             "params": to_np_dict(result["params"]),
-            "summaries": to_np_dict(
-                result["summaries"], lambda key: not key.startswith("_")
-            ),
+            "summaries": to_np_dict(result["summaries"]),
             "end": end,
             "duration": (end - result["start"]).total_seconds(),
         }
